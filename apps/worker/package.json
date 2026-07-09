@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "start": "node dist/main.js",
+    "dev": "tsc-watch --noClear -p tsconfig.build.json --onSuccess \"node --enable-source-maps dist/main.js\"",
     "health": "node dist/health-cli.js"
   },
   "dependencies": {

@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
+    "tsc-watch": "7.2.1",
     "turbo": "2.10.4",
     "typescript": "6.0.3"
   },

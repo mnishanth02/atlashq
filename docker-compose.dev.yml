@@ -1,0 +1,122 @@
+# =============================================================================
+# docker-compose.dev.yml
+# -----------------------------------------------------------------------------
+# Hot reload for the `api` and `worker` services. (The `web` app already has
+# Vite HMR built in.) Layer this file ON TOP of docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml \
+#     --profile core --profile worker --profile storage up
+#
+# How it works
+# ------------
+# * Each app's `dev` script (see apps/api/package.json + apps/worker/package.json)
+#   runs `tsc-watch`, which recompiles on change and restarts the process only
+#   after a SUCCESSFUL compile. tsc-watch uses the real TypeScript compiler, so
+#   NestJS decorator metadata (`emitDecoratorMetadata`) is emitted correctly -
+#   unlike esbuild/swc-based runners (tsx) which would silently break type-based
+#   dependency injection.
+# * Application SOURCE is served from the repo bind mount (./ -> /workspace,
+#   defined in docker-compose.yml), so editing a .ts file on the host is seen
+#   inside the container and triggers the recompile + restart.
+#
+# Why the named `node_modules` volumes?
+# -------------------------------------
+# The repo bind mount also exposes the HOST's `node_modules`. On a Windows host
+# those are pnpm symlinks that resolve to Windows-only paths (/mnt/host/c/...)
+# and are unusable inside a Linux container - even `node dist/main.js` cannot
+# resolve `pino` or `@atlashq/*` through them. So we shadow every relevant
+# `node_modules` directory with a named volume and populate them with a
+# one-shot, Linux-native `pnpm install` (the `deps` service). These volumes are
+# completely separate from the host install; the two never interfere.
+#
+# Maintenance
+# -----------
+# The `deps` service runs a FILTERED install covering api + worker, their
+# workspace dependencies ({types, logger, config, auth, jobs}) and the root
+# project (which provides the `typescript` + `tsc-watch` dev tooling). If you
+# add a NEW workspace dependency to api or worker, add a matching
+# `atlas-nm-<pkg>` volume below (mounted at that package's node_modules) and
+# recreate the installer:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml \
+#     --profile core --profile worker up -d --force-recreate deps
+# =============================================================================
+
+# Shared set of Linux-native node_modules volumes (shadow the Windows host
+# node_modules). Reused by the installer and both app services.
+x-dev-node-modules: &dev-node-modules
+  - pnpm-store:/pnpm-store
+  - atlas-nm-root:/workspace/node_modules
+  - atlas-nm-api:/workspace/apps/api/node_modules
+  - atlas-nm-worker:/workspace/apps/worker/node_modules
+  - atlas-nm-types:/workspace/packages/types/node_modules
+  - atlas-nm-logger:/workspace/packages/logger/node_modules
+  - atlas-nm-config:/workspace/packages/config/node_modules
+  - atlas-nm-auth:/workspace/packages/auth/node_modules
+  - atlas-nm-jobs:/workspace/packages/jobs/node_modules
+
+services:
+  # One-shot installer: builds Linux-native node_modules into the shared
+  # volumes so `tsc-watch`, `tsc` and all runtime deps resolve inside the
+  # container. Runs to completion before api/worker start.
+  deps:
+    image: node:24.13.1-bookworm-slim
+    working_dir: /workspace
+    profiles: ["core", "worker", "storage"]
+    environment:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+    volumes:
+      - ./:/workspace
+      - pnpm-store:/pnpm-store
+      - atlas-nm-root:/workspace/node_modules
+      - atlas-nm-api:/workspace/apps/api/node_modules
+      - atlas-nm-worker:/workspace/apps/worker/node_modules
+      - atlas-nm-types:/workspace/packages/types/node_modules
+      - atlas-nm-logger:/workspace/packages/logger/node_modules
+      - atlas-nm-config:/workspace/packages/config/node_modules
+      - atlas-nm-auth:/workspace/packages/auth/node_modules
+      - atlas-nm-jobs:/workspace/packages/jobs/node_modules
+    command:
+      - sh
+      - -ceu
+      - |
+        corepack enable
+        pnpm install --frozen-lockfile --ignore-scripts --store-dir=/pnpm-store \
+          --filter "atlashq" \
+          --filter "@atlashq/api..." \
+          --filter "@atlashq/worker..."
+
+  api:
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+    # Docker Desktop on Windows/macOS does not forward inotify events across the
+    # bind mount, so TypeScript's native file watcher never fires. Force polling
+    # so tsc-watch reliably detects host-side edits.
+    environment:
+      TSC_WATCHFILE: DynamicPriorityPolling
+      TSC_WATCHDIRECTORY: DynamicPriorityPolling
+    volumes: *dev-node-modules
+    command: ["npm", "--prefix", "apps/api", "run", "dev"]
+
+  worker:
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+    # See the note on the api service above - force polling for the file watcher.
+    environment:
+      TSC_WATCHFILE: DynamicPriorityPolling
+      TSC_WATCHDIRECTORY: DynamicPriorityPolling
+    volumes: *dev-node-modules
+    command: ["npm", "--prefix", "apps/worker", "run", "dev"]
+
+volumes:
+  pnpm-store:
+  atlas-nm-root:
+  atlas-nm-api:
+  atlas-nm-worker:
+  atlas-nm-types:
+  atlas-nm-logger:
+  atlas-nm-config:
+  atlas-nm-auth:
+  atlas-nm-jobs:
