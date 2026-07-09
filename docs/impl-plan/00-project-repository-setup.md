@@ -470,24 +470,26 @@ CI expectations:
 
 ## 9. Final Acceptance Checklist
 
-- [ ] Repository uses `pnpm` workspaces and Turborepo.
-- [ ] Root scripts delegate to Turbo.
-- [ ] `apps/web` placeholder uses React + Vite + TanStack Router.
-- [ ] `apps/web` includes React Hook Form and TanStack Table readiness for Module 1.
-- [ ] `apps/api` placeholder uses NestJS REST and reserves `/api/v1` plus `/api/auth/*`.
-- [ ] `apps/worker` placeholder uses BullMQ queue conventions.
-- [ ] Shared packages exist with architecture-aligned boundaries.
-- [ ] TypeScript strict mode is configured.
-- [ ] Biome linting and formatting checks are configured.
-- [ ] Per-app environment examples exist and contain no real secrets.
-- [ ] Real env/secret files are ignored, examples are committed, and only one root `pnpm-lock.yaml` is used.
-- [ ] Better Auth placeholder is server-only and environment-driven.
-- [ ] Drizzle/PostgreSQL placeholder exists.
-- [ ] Database placeholder includes `pg_trgm` and `unaccent` extension setup.
-- [ ] MinIO/S3-compatible storage placeholder exists.
-- [ ] Redis/BullMQ placeholder exists.
-- [ ] Pino logging and correlation ID placeholders exist.
-- [ ] Docker Compose and Caddy topology placeholders exist.
-- [ ] CI runs install, lint, typecheck, test, build, OpenAPI, typed client generation, DB, and Docker checks.
-- [ ] No Next.js, AWS/Azure managed service, pgvector, CRDT, heavy task-management, or client-portal scaffold is introduced for V1.
-- [ ] Documentation explains setup conventions clearly enough for Module 1 implementation to begin.
+Phase 6 final review completed on 2026-07-09.
+
+- [x] Repository uses `pnpm` workspaces and Turborepo.
+- [x] Root scripts delegate to Turbo.
+- [x] `apps/web` placeholder uses React + Vite + TanStack Router.
+- [x] `apps/web` includes React Hook Form and TanStack Table readiness for Module 1.
+- [x] `apps/api` placeholder uses NestJS REST and reserves `/api/v1` plus `/api/auth/*`.
+- [x] `apps/worker` placeholder uses BullMQ queue conventions.
+- [x] Shared packages exist with architecture-aligned boundaries.
+- [x] TypeScript strict mode is configured.
+- [x] Biome linting and formatting checks are configured.
+- [x] Per-app environment examples exist and contain no real secrets.
+- [x] Real env/secret files are ignored, examples are committed, and only one root `pnpm-lock.yaml` is used.
+- [x] Better Auth placeholder is server-only and environment-driven.
+- [x] Drizzle/PostgreSQL placeholder exists.
+- [x] Database placeholder includes `pg_trgm` and `unaccent` extension setup.
+- [x] MinIO/S3-compatible storage placeholder exists.
+- [x] Redis/BullMQ placeholder exists.
+- [x] Pino logging and correlation ID placeholders exist.
+- [x] Docker Compose and Caddy topology placeholders exist.
+- [x] CI runs install, lint, typecheck, test, build, OpenAPI, typed client generation, DB, and Docker checks.
+- [x] No Next.js, AWS/Azure managed service, pgvector, CRDT, heavy task-management, or client-portal scaffold is introduced for V1.
+- [x] Documentation explains setup conventions clearly enough for Module 1 implementation to begin.

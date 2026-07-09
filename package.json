@@ -1,0 +1,38 @@
+{
+  "name": "atlashq",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.10.0",
+  "scripts": {
+    "build": "turbo run build",
+    "lint": "turbo run lint //#repo:lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "turbo run format //#repo:format",
+    "format:check": "turbo run format:check //#repo:format:check",
+    "openapi": "node scripts/require-package-scripts.mjs openapi @atlashq/api @atlashq/api-client && turbo run openapi",
+    "openapi:check": "node scripts/require-package-scripts.mjs openapi:check @atlashq/api && turbo run openapi:check",
+    "api-client:check": "node scripts/require-package-scripts.mjs api-client:check @atlashq/api-client && turbo run api-client:check",
+    "db:check": "node scripts/require-package-scripts.mjs db:check @atlashq/db && turbo run db:check",
+    "docker:check": "node scripts/docker-check.mjs",
+    "repo:lint": "biome check .",
+    "repo:format": "biome check --write .",
+    "repo:format:check": "biome format ."
+  },
+  "engines": {
+    "node": "24.13.1",
+    "pnpm": "11.10.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.2",
+    "turbo": "2.10.4",
+    "typescript": "6.0.3"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "@scarf/scarf",
+      "msgpackr-extract"
+    ]
+  }
+}

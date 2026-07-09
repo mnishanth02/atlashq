@@ -1,0 +1,34 @@
+{
+  "name": "@atlashq/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "dev": "vite --host 0.0.0.0 --port 4187 --strictPort"
+  },
+  "dependencies": {
+    "@atlashq/api-client": "workspace:*",
+    "@atlashq/ui": "workspace:*",
+    "@tailwindcss/vite": "4.3.2",
+    "@tanstack/react-query": "5.101.2",
+    "@tanstack/react-router": "1.170.17",
+    "@tanstack/react-table": "8.21.3",
+    "clsx": "2.1.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "react-hook-form": "7.81.0",
+    "tailwind-merge": "3.6.0",
+    "tailwindcss": "4.3.2"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.3",
+    "vite": "8.1.3",
+    "vitest": "4.1.10"
+  }
+}

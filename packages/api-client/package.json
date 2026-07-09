@@ -1,0 +1,33 @@
+{
+  "name": "@atlashq/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "openapi": "node scripts/generate.mjs --write",
+    "api-client:generate": "node scripts/generate.mjs --write",
+    "api-client:check": "node scripts/check.mjs"
+  },
+  "devDependencies": {
+    "vitest": "4.1.10"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0"
+  }
+}

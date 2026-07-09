@@ -1,0 +1,15 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "openapi": {
+      "dependsOn": ["@atlashq/api#openapi"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/api/openapi/openapi.json"],
+      "outputs": ["src/generated/openapi.ts"]
+    },
+    "api-client:check": {
+      "dependsOn": ["@atlashq/api#openapi:check"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/api/openapi/openapi.json"],
+      "outputs": []
+    }
+  }
+}

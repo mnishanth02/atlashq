@@ -1,0 +1,60 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "operationId": "HealthController_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "API placeholder is healthy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Report API process health",
+        "tags": ["health"]
+      }
+    }
+  },
+  "info": {
+    "title": "AtlasHQ API",
+    "description": "Generated placeholder OpenAPI contract for Phase 2.",
+    "version": "0.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "HealthResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ok"]
+          },
+          "service": {
+            "type": "string",
+            "enum": ["api"]
+          },
+          "version": {
+            "type": "string",
+            "example": "0.0.0"
+          }
+        },
+        "required": ["status", "service", "version"]
+      }
+    }
+  }
+}

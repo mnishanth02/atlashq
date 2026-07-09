@@ -1,6 +1,7 @@
 {
   "biome.enabled": true,
   "biome.requireConfiguration": true,
+  "files.eol": "\n",
   "editor.defaultFormatter": "biomejs.biome",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {

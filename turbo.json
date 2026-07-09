@@ -1,0 +1,69 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "biome.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "tsconfig.base.json"
+  ],
+  "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tsconfig.base.json"],
+      "outputs": ["dist/**", "build/**"]
+    },
+    "lint": {
+      "dependsOn": ["transit"],
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": ["transit"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tsconfig.base.json"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "format": {
+      "cache": false,
+      "outputs": []
+    },
+    "format:check": {
+      "outputs": []
+    },
+    "openapi": {
+      "dependsOn": ["^build"],
+      "outputs": ["openapi/**", "src/generated/openapi/**", "generated/openapi/**"]
+    },
+    "openapi:check": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "api-client:check": {
+      "dependsOn": ["transit"],
+      "outputs": []
+    },
+    "db:check": {
+      "dependsOn": ["transit"],
+      "outputs": []
+    },
+    "docker:check": {
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "//#repo:lint": {
+      "outputs": []
+    },
+    "//#repo:format": {
+      "cache": false,
+      "outputs": []
+    },
+    "//#repo:format:check": {
+      "outputs": []
+    }
+  }
+}
