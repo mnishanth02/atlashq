@@ -883,8 +883,7 @@ maintenance
 ### 17.3 Static Quality Gates
 
 - TypeScript strict mode.
-- ESLint.
-- Prettier or equivalent formatting.
+- Biome linting and formatting.
 - OpenAPI spec generation check.
 - OpenAPI client generation check.
 - Drizzle migration check.
