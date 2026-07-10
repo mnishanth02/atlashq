@@ -15,6 +15,7 @@ import {
   TraceabilityChain,
   type TraceNode,
 } from "@/components/atlas";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -189,9 +190,20 @@ export function DesignSystemRoute() {
       <header className="relative overflow-hidden border-b border-border/70">
         <div className="absolute inset-0 bg-grid-whisper opacity-70" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-6xl px-6 py-16">
-          <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-            <span className="inline-block size-1.5 rounded-full bg-primary" />
-            Cartographer — Ink + Meridian Teal
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+              <span className="inline-block size-1.5 rounded-full bg-primary" />
+              Cartographer — Ink + Meridian Teal
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className="h-5 border-border/70 px-1.5 font-mono text-[0.625rem] font-medium text-muted-foreground"
+              >
+                Dev-only preview
+              </Badge>
+              <ThemeToggle />
+            </div>
           </div>
           <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
             A precise, fast design system for software-delivery governance.

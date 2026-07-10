@@ -1,36 +1,46 @@
 import "reflect-metadata";
+import { createAuth } from "@atlashq/auth";
 import { loadApiEnv } from "@atlashq/config";
-import { RequestMethod } from "@nestjs/common";
-import { NestFactory } from "@nestjs/core";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { AppModule } from "./modules/app.module.js";
-import { createPinoRequestLogger } from "./observability/request-logger.js";
+import { createDatabaseClient } from "@atlashq/db";
+import { createApiApp } from "./app.factory.js";
 
 async function bootstrap() {
   const env = loadApiEnv(process.env);
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
-  app.setGlobalPrefix("api/v1", {
-    exclude: [
-      { path: "api/auth", method: RequestMethod.ALL },
-      { path: "api/auth/{*path}", method: RequestMethod.ALL },
-    ],
-  });
-  app.enableCors({ origin: env.WEB_ORIGIN, credentials: true });
-  app.use(createPinoRequestLogger());
+  // Lazily create the database client and Better Auth instance from validated
+  // env. Nothing here runs at module import time, so offline tooling is safe.
+  const databaseClient = createDatabaseClient({ connectionString: env.DATABASE_URL });
+  const auth = createAuth({ db: databaseClient.db, env });
 
-  const openApiConfig = new DocumentBuilder()
-    .setTitle("AtlasHQ API")
-    .setDescription("Phase 2 placeholder REST API contract. Operation IDs use Controller_method.")
-    .setVersion("0.0.0")
-    .addServer("http://localhost:3000", "Local development")
-    .build();
+  // Build the app through the shared factory so production and the integration
+  // tests exercise the exact same middleware/body-parser/auth/prefix/filter stack.
+  const app = await createApiApp({ auth, db: databaseClient.db, webOrigin: env.WEB_ORIGIN });
 
-  const document = SwaggerModule.createDocument(app, openApiConfig, {
-    operationIdFactory: (controllerKey, methodKey) => `${controllerKey}_${methodKey}`,
-  });
-  document.openapi = "3.1.0";
-  SwaggerModule.setup("api/v1/docs", app, document);
+  let shuttingDown = false;
+  const shutdown = async (signal: NodeJS.Signals) => {
+    if (shuttingDown) {
+      return;
+    }
+
+    shuttingDown = true;
+    app.flushLogs();
+
+    try {
+      await app.close();
+      await databaseClient.close();
+    } finally {
+      process.removeListener("SIGTERM", onSignal);
+      process.removeListener("SIGINT", onSignal);
+      process.kill(process.pid, signal);
+    }
+  };
+
+  const onSignal = (signal: NodeJS.Signals) => {
+    void shutdown(signal);
+  };
+
+  process.once("SIGTERM", onSignal);
+  process.once("SIGINT", onSignal);
 
   await app.listen(env.PORT);
 }

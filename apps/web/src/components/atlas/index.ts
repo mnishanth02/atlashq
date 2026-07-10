@@ -18,6 +18,7 @@ export {
   type EpistemicBadgeProps,
   type EpistemicStatus,
 } from "./epistemic-badge";
+export { ProjectStatusBadge, type ProjectStatusBadgeProps } from "./project-status-badge";
 export {
   PROVENANCE_KINDS,
   type ProvenanceKind,

@@ -1,6 +1,11 @@
-import { Outlet } from "@tanstack/react-router";
+import { Link, Outlet } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { Badge } from "@/components/ui/badge";
+import { useSession } from "@/lib/auth-client";
+import { AppBreadcrumbs } from "./shell/breadcrumbs";
+import { MobileNav } from "./shell/mobile-nav";
+import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from "./shell/nav-config";
+import { OrgContextSlot } from "./shell/org-context";
+import { UserMenu } from "./shell/user-menu";
 
 function AtlasMark({ className }: { className?: string }) {
   return (
@@ -32,27 +37,72 @@ function AtlasMark({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Authenticated product shell: a desktop nav rail (collapses to a `Sheet` on
+ * mobile via `MobileNav`), a header with breadcrumbs/org-context/theme/user
+ * affordances, and the routed `<Outlet />`. Rendered only once
+ * `authenticatedBeforeLoad` (see `routes/auth/authenticated-layout.tsx`) has
+ * confirmed a session exists, so `user` is expected to be defined — the `?.`
+ * fallbacks below only guard the brief instant before `useSession()` resolves
+ * its own cache.
+ */
 export function AppShell() {
+  const { data: session } = useSession();
+  const user = session?.user;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b border-border/80 bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-6">
-          <div className="flex items-center gap-2.5">
+      <div className="flex min-h-screen">
+        <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border/80 bg-card/40 md:flex">
+          <div className="flex h-14 items-center gap-2.5 border-b border-border/80 px-5">
             <AtlasMark className="size-6" />
             <span className="text-[0.95rem] font-semibold tracking-tight">AtlasHQ</span>
-            <Badge
-              variant="outline"
-              className="ml-0.5 h-5 border-border/70 px-1.5 font-mono text-[0.625rem] font-medium text-muted-foreground"
-            >
-              Design System
-            </Badge>
           </div>
-          <div className="flex items-center gap-1">
+          <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Primary">
+            {PRIMARY_NAV_ITEMS.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent data-[status=active]:bg-accent"
+              >
+                <item.icon className="text-muted-foreground" />
+                {item.label}
+              </Link>
+            ))}
+            <div className="mt-1 flex flex-col gap-1 border-t border-border/70 pt-2">
+              {SECONDARY_NAV_ITEMS.map((item) => (
+                <button
+                  key={item.to}
+                  type="button"
+                  disabled={item.disabled}
+                  title={item.disabledReason}
+                  className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm font-medium text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <item.icon />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </nav>
+          <div className="border-t border-border/80 p-3">
+            <OrgContextSlot />
+          </div>
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/80 bg-background/85 px-4 backdrop-blur-md md:px-6">
+            <MobileNav />
+            <div className="min-w-0 flex-1">
+              <AppBreadcrumbs />
+            </div>
             <ThemeToggle />
-          </div>
+            <UserMenu user={user} />
+          </header>
+          <main className="min-w-0 flex-1 p-4 md:p-6">
+            <Outlet />
+          </main>
         </div>
-      </header>
-      <Outlet />
+      </div>
     </div>
   );
 }

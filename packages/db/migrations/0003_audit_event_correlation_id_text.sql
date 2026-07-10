@@ -1,0 +1,2 @@
+ALTER TABLE "audit_event" ALTER COLUMN "correlation_id" SET DATA TYPE text;--> statement-breakpoint
+ALTER TABLE "audit_event" ADD CONSTRAINT "audit_event_correlation_id_check" CHECK (length(btrim("audit_event"."correlation_id")) > 0);

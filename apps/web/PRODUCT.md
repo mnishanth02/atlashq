@@ -53,4 +53,4 @@ dedicated semantic tokens, kept deliberately separate from the brand accent so t
 
 - Design‑system reference: [`DESIGN.md`](./DESIGN.md)
 - Full product specification: [`docs/core/core-plan.md`](../../docs/core/core-plan.md)
-- Living component documentation: run the app and open `/`.
+- Living component documentation: run the app in development and open `/design-system`.

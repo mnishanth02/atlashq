@@ -1,15 +1,80 @@
 ---
 title: "Module 1 Implementation Plan: Project Workspace"
 module: 1
-status: "Draft - implementation roadmap"
+status: "Revised - reconciled with repository scaffold and design system"
 source_docs:
   - "docs\\core\\core-plan.md"
   - "docs\\architecture\\v1-architecture-and-tech-stack.md"
+  - "docs\\impl-plan\\00-project-repository-setup.md"
+  - "apps\\web\\DESIGN.md"
+  - "apps\\web\\PRODUCT.md"
 owner_use: "Product, design, engineering, QA, and implementation planning for AtlasHQ V1 Module 1"
 last_updated: "2026-07-09"
 ---
 
 # Module 1: Project Workspace
+
+> **Revision note (2026-07-09).** This plan was authored before implementation began. Since
+> then two large bodies of work have landed and this revision reconciles the roadmap with
+> them: (1) the **repository scaffold** from `00-project-repository-setup.md` (pnpm + Turborepo
+> monorepo, all apps/packages, CI, Docker Compose profiles, quality gates), and (2) the
+> **"Cartographer" design system** in `apps/web` (`apps/web/DESIGN.md`, `apps/web/PRODUCT.md`).
+> Consequently: Phase 0 is now a verification pass, Phase 4 **consumes** the existing design
+> system instead of building UI from scratch, and several concrete deltas introduced by the
+> current code (env config, placeholder→real Better Auth, routing ownership, Zod↔OpenAPI
+> strategy, canonical `audit_event`/`ai_run` shapes) are called out explicitly below. The
+> requirements content (§1–§9) remains largely valid; the roadmap (§10–§11) and UI sections
+> (§9) received the most change.
+
+## Current implementation baseline
+
+### Already complete — verify and consume, do not rebuild
+
+- **Monorepo scaffold:** pnpm workspace + Turborepo; `apps/{web,api,worker}` and the twelve
+  `packages/*` exist. Root gates in `package.json`: `lint` (Biome), `format:check`, `typecheck`,
+  `test`, `build`, `openapi:check`, `api-client:check`, `db:check`, `docker:check`, plus CI.
+- **Docker Compose profiles:** `core` (`caddy`, `api`, `web`, `postgres`, `redis`), with
+  `worker`, `ai`, `storage` (MinIO), and `scan` (ClamAV) as separate profiles.
+- **API baseline:** NestJS app boots with `api/v1` global prefix, CORS, pino request logging,
+  Swagger/OpenAPI generation at `api/v1/docs`, and a working `GET /api/v1/health`.
+- **Contract pipeline:** OpenAPI JSON is generated from the API and a bespoke generator
+  (`packages/api-client/scripts/generate.mjs`) emits `openapi-fetch`-compatible types; only the
+  health endpoint is documented so far. `openapi:check` and `api-client:check` enforce drift.
+- **Design system ("Cartographer"):** OKLCH tokens (`apps/web/src/styles`), Tailwind v4
+  `@theme inline`, 24 shadcn/ui primitives (`apps/web/src/components/ui/*`), signature **atlas
+  domain components** (`apps/web/src/components/atlas/*`: `EpistemicBadge`, `ConfidenceMeter`,
+  `SeverityIndicator`, `StatusPill`, `ProvenanceTag`, `CitationChip`/`EvidencePopover`,
+  `TraceabilityChain`), `ThemeProvider`/`ThemeToggle` (localStorage key `atlashq-theme`,
+  no-FOUC), and TanStack Router/Query/Table. Documented in `apps/web/DESIGN.md` + `PRODUCT.md`.
+- **Codified roles/permissions:** `@atlashq/types` `projectRoleValues` (the seven V1 roles) and
+  `@atlashq/auth` `rolePermissions` + `ProjectPermission` union + `canProjectRole()` already
+  exist as the source of truth for RBAC.
+
+### Skeletons / placeholders — this is the real Module 1 work
+
+- **Database:** `packages/db` has **no `drizzle-orm`/`drizzle-kit` installed** (only depends on
+  `@atlashq/types`); `src/schema.ts` is convention constants with **no real `pgTable`s**;
+  `src/client.ts` is a placeholder; the only migration enables `pg_trgm`/`unaccent`. There is no
+  `drizzle.config`, `db:generate`, or `db:migrate` yet.
+- **Auth:** `packages/auth` exports a placeholder **config object** (not a real `betterAuth()`
+  instance); `apps/api` mounts an `auth-placeholder.controller.ts` that returns **501**.
+- **Authorization:** `apps/api/src/security/project-authorization.guard.ts` `canActivate` returns
+  **`true`** (TODO stub).
+- **Web app:** `apps/web/src/router.tsx` mounts **only `/` → the design-system route**; the app
+  shell is a static header badged "Design System" — no auth, navigation, org context, or project
+  routes. React Hook Form is **not installed** in `apps/web`.
+- **Audit/AI:** `apps/api/src/audit/audit-event.ts` and `packages/ai` are placeholder types whose
+  field shapes do **not** match §7.1 (reconciled below).
+
+### Concrete deltas to resolve (tracked in the sections that reference them)
+
+1. `apiEnvSchema` (`packages/config`) mandates S3/Redis/Auth envs and the API validates them at
+   boot, but Module 1's `core` profile has no MinIO — see §6 and Phase 0.
+2. `StatusPill` models **artifact/epistemic** lifecycle, not project status — see §5.2 / §9.4.
+3. Design system is **app-local** in `apps/web`; `packages/ui` is a stale skeleton — see Phase 0.
+4. `audit_event` and `ai_run` field shapes differ between plan and code — see §7.1.
+5. OpenAPI/Zod DTO strategy is unspecified and no global `ValidationPipe` is registered — see §8.
+6. `/` is owned by the design-system route; the auth-gated shell must be introduced — see §9/§10.
 
 ## 1. Purpose
 
@@ -107,6 +172,14 @@ Recommended controlled values:
 - Current phase: `intake`, `requirements`, `clarification`, `baseline`, `architecture`, `delivery`, `handoff`, `closed`.
 - Priority: `low`, `medium`, `high`, `critical`.
 
+> **Design-system note (project status vs `StatusPill`).** The existing `StatusPill` atlas
+> component models the **artifact/epistemic** lifecycle (`draft`, `ai-suggested`, `under-review`,
+> `needs-clarification`, `accepted`, `approved`, `rejected`, `changed`, `deprecated`) — only
+> `draft` overlaps with project status above. Do **not** reuse `StatusPill` for project status.
+> Module 1 must introduce a small project-status presentation (either a dedicated
+> `ProjectStatusBadge` built from the semantic `Badge` tokens, or an explicit
+> project-status→tone mapping), keeping teal reserved for action per `DESIGN.md`.
+
 ### 5.3 Project types
 
 - **External client project**
@@ -154,6 +227,14 @@ Recommended controlled values:
 - Project membership changes must be audit logged.
 - Membership rows should support role, status, invited/added metadata, and soft-delete/deactivation.
 
+> **Codified source of truth.** The seven roles already exist in `@atlashq/types`
+> (`projectRoleValues`), and `@atlashq/auth` provides the permission matrix (`rolePermissions`),
+> the `ProjectPermission` union (`project:read`/`project:write`/`project:admin`,
+> `requirements:review`, `architecture:review`), and `canProjectRole()`. Module 1 must reference
+> these rather than re-deriving roles, and the real work is replacing the stub
+> `ProjectAuthorizationGuard` (currently `return true`) with session + org-membership +
+> project-role + visibility checks.
+
 ### 5.6 Status lifecycle
 
 - Project lifecycle must support creation, activation, hold, completion, archive, and restore if allowed.
@@ -169,7 +250,7 @@ Recommended controlled values:
   - Project membership add, role change, and removal/deactivation.
   - Security-relevant auth events where practical.
   - Future artifact/download/export events, with the table ready now.
-- Audit events should include organization, actor, action, entity type, entity ID, before snapshot, after snapshot, and timestamp.
+- Audit events should include organization, actor, action, entity type, entity ID, before snapshot, after snapshot, and timestamp. See §7.1 for the canonical field shape, which also carries `project_id` and `correlation_id` and supersedes the divergent placeholder shapes currently in `apps/api/src/audit/audit-event.ts` and `@atlashq/types` `AuditMetadata`.
 - UI must expose a basic project audit/activity panel or placeholder backed by real project audit events.
 
 ### 5.8 Traceability readiness
@@ -220,6 +301,12 @@ Module 1 must leave clear extension points for Module 2 Source Document Vault:
 - **Versioning:** Major mutable business records include base fields and version where relevant; soft-delete normal business records.
 - **Observability:** Structured JSON logs with request IDs, API health endpoint, and visible audit records for project context.
 - **Portability:** Align with Docker Compose self-hosted V1; no AWS or Azure managed services.
+- **Configuration:** `apiEnvSchema` (`packages/config`) currently makes `S3_*` (and `REDIS_URL`)
+  mandatory and the API validates env at boot, but Module 1's `core` Compose profile has no MinIO
+  (storage is the `storage` profile, Module 2). To avoid blocking API boot, local dev, CI, and
+  Testcontainers for a module with no storage, **make storage env optional for Module 1** — split
+  a `storageEnvSchema` merged in from Module 2 onward, or otherwise defer `S3_*` — rather than
+  forcing inert placeholder S3 values everywhere.
 - **Accessibility:** Web screens should use accessible shadcn/Radix primitives and clear empty/error/loading states.
 
 ## 7. Data model requirements
@@ -238,11 +325,20 @@ Module 1 must leave clear extension points for Module 2 Source Document Vault:
 - `project_membership`
   - `id`, `organization_id`, `project_id`, `user_id`, `role`, `status`, `created_at`, `created_by`, `updated_at`, `updated_by`, `soft_deleted_at`.
 - `audit_event`
-  - `id`, `organization_id`, `actor_id`, `action`, `entity_type`, `entity_id`, `before`, `after`, `at`.
+  - `id`, `organization_id`, `actor_id`, `action`, `entity_type`, `entity_id`, `project_id` (nullable), `before`, `after`, `correlation_id`, `at`.
+  - **Canonical shape (decision).** This supersedes the two current placeholders: align
+    `apps/api/src/audit/audit-event.ts` (`resourceType`/`resourceId`/`correlationId`, no org/snapshots)
+    and `@atlashq/types` `AuditMetadata` (`occurredAt`) to `entity_type`/`entity_id`, `at`, and
+    always include `organization_id` and `before`/`after` snapshots. `project_id` and
+    `correlation_id` are adopted from the code placeholders.
 - `traceability_link`
   - `id`, `organization_id`, `from_type`, `from_id`, `to_type`, `to_id`, `relation`, `created_by`, `created_at`.
 - `ai_run`
-  - `id`, `organization_id`, `project_id`, `agent`, `model`, `provider`, `prompt_version`, `input_artifact_versions`, `output`, `status`, `cost`, `reviewed_by`, `accepted_rejected` or an explicitly documented mapping from `review_status`, timestamps.
+  - `id`, `organization_id`, `project_id`, `agent`, `model`, `provider`, `prompt_version`, `input_artifact_versions`, `output`, `run_status`, `cost`, `reviewed_by`, `review_status`, `created_at`, `updated_at`.
+  - **Decision:** use `review_status` (enum `pending` | `accepted` | `rejected`) rather than
+    `accepted_rejected`, and a separate `run_status` (enum `planned` | `running` | `succeeded` |
+    `failed`) for execution state. This supersedes the `packages/ai` placeholder
+    (`projectId`/`provider`/`prompt`/`status: "planned"`). Module 1 only creates the table; no AI runs execute yet.
 
 ### 7.2 Later-module tables prepared but not implemented
 
@@ -278,7 +374,16 @@ Module 1 should not implement business workflows for these tables, but its schem
 
 - Use NestJS REST APIs.
 - Generate OpenAPI 3.1 documentation from controllers and DTOs.
-- Generate typed frontend clients with `openapi-typescript` and `openapi-fetch`.
+- Generate the typed frontend client from the emitted OpenAPI JSON. **Current reality:**
+  `openapi-fetch` is the runtime client, but the type generation is a **bespoke generator**
+  (`packages/api-client/scripts/generate.mjs`), not `openapi-typescript`. Keep this generator as
+  the chosen approach for V1 (it already backs `openapi:check`/`api-client:check`); do not add
+  `openapi-typescript` unless the custom generator proves insufficient.
+- **Zod ↔ NestJS/OpenAPI strategy (decision).** Adopt `nestjs-zod` so the shared `@atlashq/validators`
+  Zod schemas are the single source of truth: use `createZodDto` for request/response DTOs, a
+  `ZodValidationPipe`, and `patchNestjsSwagger()` so OpenAPI is generated from the Zod DTOs. This
+  replaces the current split where `HealthResponseDto` uses `@nestjs/swagger` `@ApiProperty`
+  decorators while validation DTOs are standalone Zod — which would otherwise drift as two sources.
 - Use custom TanStack Query hooks in the web app.
 
 ### 8.2 Required endpoints
@@ -314,10 +419,39 @@ Recommended Module 1 endpoints:
 - Project-scoped endpoints enforce project membership for non-admin roles; organization Admins may act across organization projects with audit logging.
 - Client archive/deactivate behavior must prevent new client-project creation while preserving existing project history.
 - DTOs use shared Zod validation where practical.
+- A global validation pipe (`ZodValidationPipe` via `nestjs-zod`) must be registered in
+  `apps/api/src/main.ts` — none is registered today — so all DTOs are validated at the boundary.
 - API errors are stable enough for UI error states.
 - No endpoint returns raw object storage credentials or secrets.
 
 ## 9. UI/UX requirements
+
+### 9.0 Design system foundation (already built — consume, do not rebuild)
+
+The "Cartographer" design system already exists in `apps/web` and is the source of truth for
+Module 1 UI. `apps/web/DESIGN.md` and `apps/web/PRODUCT.md` govern tokens, primitives, domain
+components, and accessibility. Module 1 must **consume** it and must not re-implement tokens,
+theming, or primitives.
+
+- **Tokens & theming:** use the OKLCH semantic tokens (never hard-coded hex); reuse
+  `ThemeProvider`/`ThemeToggle` and the existing localStorage key `atlashq-theme`. Reserve teal
+  (`--primary`) for action/selection/focus only.
+- **Primitives:** import shadcn/ui from `@/components/ui/*` (`button`, `input`, `label`, `select`,
+  `checkbox`, `switch`, `textarea`, `card`, `table`, `dialog`, `sheet`, `dropdown-menu`, `command`,
+  `tabs`, `skeleton`, `alert`, `badge`, `breadcrumb`, `avatar`, `sonner`, etc.).
+- **Atlas domain components:** import from `@/components/atlas`. Module 1 uses `ProvenanceTag`
+  (manual/source/ai/reference) on audit/activity, and reserves `EpistemicBadge`, `ConfidenceMeter`,
+  `SeverityIndicator`, `CitationChip`/`EvidencePopover`, and `TraceabilityChain` for the
+  later-module placeholders (§5.8, §5.10, §9.6) so those hooks use the real vocabulary, not fakes.
+- **Project status:** do not use `StatusPill` (epistemic lifecycle) — add a project-status
+  presentation per the §5.2 note.
+- **Where shared UI lives:** for V1 the design system is **app-local** in
+  `apps/web/src/components/{ui,atlas,theme}` + `apps/web/src/styles`; `packages/ui` is only a
+  small class-name/token skeleton (and its current pill-shaped helpers contradict `DESIGN.md`).
+  Module 1 keeps UI app-local; extraction to `packages/ui` is deferred until a second consumer
+  exists.
+- **Empty/loading/error states:** compose from `skeleton`, `alert`, `card`, and the
+  `.bg-grid-whisper` utility (used sparingly for empty/hero surfaces).
 
 ### 9.1 App shell
 
@@ -325,6 +459,13 @@ Recommended Module 1 endpoints:
 - Clear organization context.
 - Empty state when no projects exist.
 - Access-denied state when a user lacks membership.
+
+> **Routing migration (current state).** `apps/web/src/router.tsx` mounts only `/` → the
+> design-system kitchen-sink route, and the app shell is a static "Design System"-badged header
+> with no auth or navigation. Module 1 must: introduce an unauthenticated `/login`, make `/` (or
+> `/projects`) the auth-gated workspace root behind a real shell, add project routes
+> (`/projects/:projectId` + placeholder tabs), and **relocate the design-system route** to
+> `/design-system` (internal/dev-only) rather than leaving it on `/`.
 
 ### 9.2 Project list
 
@@ -334,7 +475,9 @@ Recommended Module 1 endpoints:
 
 ### 9.3 Project create/edit
 
-- Form uses React Hook Form and Zod.
+- Form uses React Hook Form and Zod. **Note:** React Hook Form is not yet a dependency of
+  `apps/web`; adding it (with `@hookform/resolvers` for the shared Zod schemas) is net-new setup
+  in this module.
 - Form supports client project and internal product flows.
 - Required field validation is visible and accessible.
 - Saving states and optimistic feedback are clear.
@@ -366,13 +509,16 @@ Recommended Module 1 endpoints:
 
 ## 10. Implementation roadmap
 
-### Phase 0: Verify repository and architecture setup
+### Phase 0: Verify repository and architecture setup (largely already satisfied)
 
 **Depends on:** project repository setup.
 
+**Status:** The scaffold from `00-project-repository-setup.md` is complete. This phase is now a
+verification pass plus two small reconciliation cleanups, not build work.
+
 **Tasks**
 
-- Verify and consume the repository setup outputs from `00-project-repository-setup.md`; do not recreate or narrow the setup scope inside Module 1.
+- Verify and consume the repository setup outputs from `00-project-repository-setup.md`; do not recreate or narrow the setup scope inside Module 1. (Done — verify.)
 - Confirm pnpm workspace and Turborepo structure includes the full setup package set:
   - `apps/web`
   - `apps/api`
@@ -392,7 +538,14 @@ Recommended Module 1 endpoints:
 - Confirm TypeScript strict mode, Biome linting/formatting, VS Code Biome workspace settings, ESM-first tooling where practical, package boundaries, and secret hygiene are already in place.
 - Confirm Docker Compose profiles exist. Module 1 actively runs the core profile (`caddy`, `api`, `web`, `postgres`, `redis`); storage/scan/worker/AI profiles such as MinIO, ClamAV, and worker remain skeletons for Module 2/3 onward.
 - Confirm environment validation per app/package instead of one root `.env`.
-- Confirm OpenAPI generation and typed OpenAPI client generation gates exist, even if they no-op before Module 1 controllers are implemented.
+- Confirm OpenAPI generation and typed OpenAPI client generation gates exist. These already work
+  end-to-end for `GET /api/v1/health`; Module 1 extends the same pipeline rather than building it.
+- **Cleanup A — storage env (see §6 Configuration):** relax `apiEnvSchema` so `S3_*` are optional/
+  deferred to Module 2 so the API boots under the `core` profile and in CI/Testcontainers without
+  storage.
+- **Cleanup B — UI ownership (see §9.0):** record that the design system is app-local in
+  `apps/web`; leave `packages/ui` as a token/util skeleton (reconcile or remove its stale
+  pill-shaped helpers) and do not treat it as the Module 1 UI source.
 
 **Outputs**
 
@@ -405,31 +558,43 @@ Recommended Module 1 endpoints:
 - `pnpm install`, typecheck, Biome lint/format checks, and basic builds run through Turbo.
 - Apps do not import across workspace folders by relative paths.
 - Module 1 implementation uses only the active subset it needs, while AI/jobs/storage/doc-rendering packages remain exports-only skeletons.
+- The API boots under the `core` profile (and in CI) without requiring real storage credentials.
 
 ### Phase 1: Auth, tenancy, and database foundation
 
 **Depends on:** Phase 0.
 
+**Status:** Health endpoint, pino request logging, correlation/request IDs, `api/v1` prefix, and
+CORS already exist in `apps/api`. The real work here is turning the DB and auth **placeholders**
+into working implementations. Split into ordered sub-steps:
+
 **Tasks**
 
-- Configure Better Auth with PostgreSQL/Drizzle adapter.
-- Add organization and user schema.
-- Add Drizzle migrations and database client package.
-- Include initial PostgreSQL extension migrations for `pg_trgm` and `unaccent` to support V1 full-text/fuzzy search without pgvector.
-- Add request logging, correlation/request IDs, and API health endpoint.
-- Add base auth guards and organization context resolution.
+- **1a — Drizzle tooling + tenancy schema:** add `drizzle-orm` + `drizzle-kit` to `packages/db`
+  (currently absent), add `drizzle.config`, real `db:generate`/`db:migrate` scripts, and a real DB
+  client (replace `createDatabaseClientPlaceholder`). Define the real `organization` and `user`
+  `pgTable`s (plus the Better Auth `session`/`account`/`verification` tables) — `schema.ts` is
+  currently convention constants only. Keep the existing `pg_trgm`/`unaccent` extension migration.
+- **1b — Real Better Auth instance:** replace the placeholder config object in `packages/auth` with
+  an actual `betterAuth()` instance wired to the Drizzle adapter; mount its handler in NestJS under
+  `/api/auth` (replacing `auth-placeholder.controller.ts`, which returns 501); configure secure
+  cookies (prod), CSRF/origin checks, trusted origins, and optional Redis secondary storage.
+- **1c — Session + org context + guard:** add session-resolution middleware that populates request
+  context with the authenticated user and organization; replace the `ProjectAuthorizationGuard`
+  stub (`return true`) with real authentication, org-membership, project-role, and visibility checks.
+- **Web auth:** add the Better Auth web client, a `/login` flow, and route guarding (see Phase 4).
 
 **Outputs**
 
 - Authenticated API and web shell.
 - Organization-aware user context.
-- Initial migrations.
+- Initial migrations (extensions + tenancy + auth tables).
 
 **Acceptance criteria**
 
 - Authenticated requests resolve current user and organization.
-- Unauthenticated requests to protected routes are rejected.
-- Database migrations apply cleanly in local/test environments.
+- Unauthenticated requests to protected routes are rejected (guard no longer returns `true` unconditionally).
+- Database migrations apply cleanly in local/test environments via real Drizzle tooling.
 
 ### Phase 2: Project, client, membership, audit, and traceability schema
 
@@ -461,10 +626,13 @@ Recommended Module 1 endpoints:
 **Tasks**
 
 - Implement Module 1 REST endpoints.
+- Adopt `nestjs-zod` (`createZodDto`, `ZodValidationPipe`, `patchNestjsSwagger`) so shared
+  `@atlashq/validators` Zod schemas drive both validation and OpenAPI; register the validation
+  pipe globally in `main.ts` (see §8).
 - Add DTOs, validation, error responses, operation IDs, and OpenAPI generation.
-- Implement role policy checks for Admin, Project Owner, Architect/Tech Lead, Business Analyst/Coordinator, Developer, and QA.
+- Implement role policy checks for Admin, Project Owner, Architect/Tech Lead, Business Analyst/Coordinator, Developer, and QA — reusing the existing `@atlashq/auth` `rolePermissions`/`canProjectRole` matrix.
 - Implement client detail/update/archive or deactivate endpoints, with archived clients unavailable for new client projects.
-- Generate typed API client package and query hooks.
+- Regenerate the typed API client via the existing `packages/api-client` generator and add query hooks.
 
 **Outputs**
 
@@ -485,12 +653,18 @@ Recommended Module 1 endpoints:
 
 **Tasks**
 
-- Build authenticated app shell.
+- **Consume the existing design system (§9.0):** build all UI from `apps/web/DESIGN.md` tokens,
+  `@/components/ui/*` primitives, and `@/components/atlas` domain components; do not re-implement
+  tokens/theming/primitives.
+- **Routing migration:** introduce `/login`, an auth-gated shell with real navigation and org
+  context, project routes, and relocate the current design-system route off `/` to
+  `/design-system`. Add React Hook Form + `@hookform/resolvers` to `apps/web` (net-new deps).
+- Build authenticated app shell (replace the static "Design System" header).
 - Build project list with loading, empty, error, filtered, archived, and access-denied states.
 - Build create/edit project forms.
 - Build client selector/creation path required by client projects.
-- Build project dashboard and placeholder module cards.
-- Build membership management and audit/activity panel.
+- Build project dashboard and placeholder module cards (reserve atlas components for later-module hooks).
+- Build membership management and audit/activity panel (use `ProvenanceTag` for provenance).
 
 **Outputs**
 
@@ -527,6 +701,11 @@ Recommended Module 1 endpoints:
 
 ## 11. Testing and validation gates
 
+> **Tooling note.** Only Vitest is currently installed (API + web unit tests, package tests). The
+> integration/E2E tooling below — **Testcontainers, Supertest, Testing Library, MSW, Playwright**
+> — is net-new setup within Module 1, not pre-existing. Testcontainers-based tests also depend on
+> Phase 0 Cleanup A (optional storage env) so the API boots without S3.
+
 - **Schema/migration tests:** Drizzle migration check and rollback/forward strategy where supported.
 - **API unit tests:** project services, policy checks, audit helper, validation errors.
 - **API integration tests:** Supertest + Testcontainers against PostgreSQL/Redis for auth-protected project flows.
@@ -545,14 +724,31 @@ Recommended Module 1 endpoints:
 - Placeholder screens could confuse users if they imply unsupported AI or document processing behavior.
 - Role granularity may be too broad or too narrow; keep policy definitions explicit and test-covered.
 - Client Viewer / Approver can create scope creep; keep V1 limited/manual unless explicitly prioritized.
+- The placeholder→real leap is the highest-risk work: DB has no Drizzle installed, Better Auth is a
+  config object, and the authorization guard returns `true`. Under-scoping these (as single bullets)
+  risks a false sense of readiness — Phase 1 splits them deliberately.
+- Divergent placeholder shapes (`audit_event`, `ai_run`) and an unspecified Zod↔OpenAPI strategy can
+  cause schema/contract drift if not canonicalized before endpoints ship (§7.1, §8).
 
 ### Assumptions
 
-- Repository setup may not exist yet and is a prerequisite for implementation.
+- Repository scaffold (`00-project-repository-setup.md`) and the "Cartographer" design system are
+  already complete — see "Current implementation baseline". They are consumed, not rebuilt.
 - Better Auth email/password is sufficient for V1 authentication.
 - PostgreSQL full-text search is enough for project search in V1.
 - Internal teams are the primary users for V1; client portal behavior is deferred.
 - Module 1 will not run AI, but must store AI provenance foundations for later modules.
+
+### Decisions made in this revision
+
+- `audit_event` canonical shape (§7.1) supersedes the divergent code placeholders.
+- `ai_run` uses `review_status` (`pending`/`accepted`/`rejected`) + `run_status`, not `accepted_rejected` (§7.1).
+- OpenAPI/validation via `nestjs-zod` with a global validation pipe; shared Zod schemas are the single source of truth (§8).
+- Typed API client keeps the existing bespoke generator (`packages/api-client/scripts/generate.mjs`) + `openapi-fetch`, not `openapi-typescript` (§8.1).
+- `S3_*` storage env becomes optional/deferred until Module 2 so the API boots under `core`/CI (§6, Phase 0).
+- V1 design system stays app-local in `apps/web`; `packages/ui` extraction is deferred (§9.0).
+- Project status uses a dedicated presentation, not the epistemic `StatusPill` (§5.2).
+- Design-system route relocates off `/`; `/` becomes the auth-gated workspace root (§9.1).
 
 ### Decisions to confirm
 
@@ -580,3 +776,6 @@ Recommended Module 1 endpoints:
 - [ ] Testing and validation gates cover schema, API, frontend, E2E, contracts, and security.
 - [ ] Risks, assumptions, and decisions to confirm are documented.
 - [ ] Handoff to Module 2 Source Document Vault is explicit.
+- [ ] Plan is reconciled with the current codebase: completed scaffold + design system are marked as consumed (not rebuilt), and placeholder→real gaps (DB/Drizzle, Better Auth, authorization guard, routing) are scoped.
+- [ ] Module 1 UI is built from the "Cartographer" design system (`apps/web/DESIGN.md`) — tokens and `@/components/{ui,atlas}` reused, no primitives re-implemented, project status not rendered via the epistemic `StatusPill`.
+- [ ] Canonical `audit_event`/`ai_run` shapes, the `nestjs-zod` OpenAPI/validation strategy, and the optional storage-env decision are reflected in code.

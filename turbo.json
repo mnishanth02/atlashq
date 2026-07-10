@@ -6,6 +6,7 @@
     "pnpm-workspace.yaml",
     "tsconfig.base.json"
   ],
+  "globalPassThroughEnv": ["E2E_BASE_URL"],
   "tasks": {
     "transit": {
       "dependsOn": ["^transit"]

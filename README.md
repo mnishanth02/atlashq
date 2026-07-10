@@ -29,6 +29,13 @@ pnpm db:check
 pnpm docker:check
 ```
 
+Docker Compose dev (API + worker hot reload, Vite HMR via Caddy on
+http://localhost:8080):
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile core --profile worker --profile storage up
+```
+
 Additional conventions:
 
 - ADRs: `docs/architecture/adr/README.md`

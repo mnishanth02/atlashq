@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const composePath = join(repoRoot, "docker-compose.yml");
+const devComposePath = join(repoRoot, "docker-compose.dev.yml");
 const caddyPath = join(repoRoot, "infra", "caddy", "Caddyfile");
+const devCaddyPath = join(repoRoot, "infra", "caddy", "Caddyfile.dev");
 
 const requiredComposeSnippets = [
   "caddy:",
@@ -31,6 +33,23 @@ const requiredCaddySnippets = [
   "rewrite * /api/v1/health",
 ];
 
+const requiredDevComposeSnippets = [
+  'profiles: ["core", "worker", "storage", "ai"]',
+  "atlas-nm-web:/workspace/apps/web/node_modules",
+  "atlas-nm-api-client:/workspace/packages/api-client/node_modules",
+  "atlas-nm-validators:/workspace/packages/validators/node_modules",
+  'CHOKIDAR_USEPOLLING: "true"',
+  "Caddyfile.dev:/etc/caddy/Caddyfile.dev:ro",
+];
+
+const requiredDevCaddySnippets = [
+  "reverse_proxy web:4187",
+  "path /api/v1 /api/v1/*",
+  "path /api/auth /api/auth/*",
+  "path /health",
+  "rewrite * /api/v1/health",
+];
+
 function assertFileContains(path, snippets) {
   if (!existsSync(path)) {
     throw new Error(`Missing required infrastructure file: ${path}`);
@@ -46,36 +65,51 @@ function assertFileContains(path, snippets) {
 
 assertFileContains(composePath, requiredComposeSnippets);
 assertFileContains(caddyPath, requiredCaddySnippets);
+assertFileContains(devComposePath, requiredDevComposeSnippets);
+assertFileContains(devCaddyPath, requiredDevCaddySnippets);
 
-const docker = spawnSync(
-  "docker",
-  [
-    "compose",
-    "--profile",
-    "core",
-    "--profile",
-    "storage",
-    "--profile",
-    "scan",
-    "--profile",
-    "worker",
-    "--profile",
-    "ai",
-    "-f",
-    composePath,
-    "config",
-    "--quiet",
-  ],
-  { cwd: repoRoot, stdio: "inherit" },
-);
+function runComposeConfig(composeFiles) {
+  return spawnSync(
+    "docker",
+    [
+      "compose",
+      "--profile",
+      "core",
+      "--profile",
+      "storage",
+      "--profile",
+      "scan",
+      "--profile",
+      "worker",
+      "--profile",
+      "ai",
+      ...composeFiles.flatMap((composeFile) => ["-f", composeFile]),
+      "config",
+      "--quiet",
+    ],
+    { cwd: repoRoot, stdio: "inherit" },
+  );
+}
 
-if (docker.error?.code === "ENOENT") {
+const baseCompose = runComposeConfig([composePath]);
+
+if (baseCompose.error?.code === "ENOENT") {
   console.warn("Docker Compose CLI is not installed; completed static compose checks only.");
   process.exit(0);
 }
 
-if (docker.error) {
-  throw docker.error;
+if (baseCompose.error) {
+  throw baseCompose.error;
 }
 
-process.exit(docker.status ?? 1);
+if (baseCompose.status !== 0) {
+  process.exit(baseCompose.status ?? 1);
+}
+
+const devCompose = runComposeConfig([composePath, devComposePath]);
+
+if (devCompose.error) {
+  throw devCompose.error;
+}
+
+process.exit(devCompose.status ?? 1);

@@ -30,6 +30,9 @@
     }
   },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "quoteStyle": "double",
       "semicolons": "always",
@@ -45,5 +48,13 @@
     "parser": {
       "tailwindDirectives": true
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/api-client/src/generated/openapi.ts"],
+      "formatter": {
+        "enabled": false
+      }
+    }
+  ]
 }

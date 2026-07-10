@@ -2,5 +2,10 @@ packages:
   - "apps/*"
   - "packages/*"
 allowBuilds:
-  '@scarf/scarf': set this to true or false
-  msgpackr-extract: set this to true or false
+  "@scarf/scarf": false
+  cpu-features: true
+  esbuild: false
+  msgpackr-extract: false
+  msw: true
+  protobufjs: true
+  ssh2: true

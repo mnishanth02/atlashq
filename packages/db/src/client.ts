@@ -1,21 +1,57 @@
-import { drizzleSchemaPlaceholder, postgresExtensions } from "./schema.js";
+import { fileURLToPath } from "node:url";
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { Pool, type PoolConfig } from "pg";
+import { databaseSchema } from "./schema.js";
 
-export type DatabaseClientPlaceholder = {
-  kind: "drizzle-postgres-placeholder";
-  connection: "env:DATABASE_URL";
-  extensions: typeof postgresExtensions;
+export type Database = NodePgDatabase<typeof databaseSchema>;
+
+export type CreateDatabaseClientOptions = {
+  connectionString?: string;
+  pool?: Omit<PoolConfig, "connectionString">;
+};
+
+export type DatabaseClient = {
+  db: Database;
+  pool: Pool;
   close: () => Promise<void>;
 };
 
-export function createDatabaseClientPlaceholder(): DatabaseClientPlaceholder {
+export function createDatabaseClient(options: CreateDatabaseClientOptions = {}): DatabaseClient {
+  const connectionString = options.connectionString ?? process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is required to create a database client.");
+  }
+
+  const pool = new Pool({
+    ...options.pool,
+    connectionString,
+  });
+  const db = drizzle({ client: pool, schema: databaseSchema });
+  let closed = false;
+
   return {
-    kind: "drizzle-postgres-placeholder",
-    connection: "env:DATABASE_URL",
-    extensions: postgresExtensions,
+    db,
+    pool,
     async close() {
-      return Promise.resolve();
+      if (closed) {
+        return;
+      }
+
+      closed = true;
+      await pool.end();
     },
   };
 }
 
-export { drizzleSchemaPlaceholder };
+export async function close(client: Pick<DatabaseClient, "close">): Promise<void> {
+  await client.close();
+}
+
+export async function migrateDatabase(
+  client: Pick<DatabaseClient, "db">,
+  migrationsFolder = fileURLToPath(new URL("../migrations", import.meta.url)),
+): Promise<void> {
+  await migrate(client.db, { migrationsFolder });
+}

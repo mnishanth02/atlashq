@@ -9,12 +9,19 @@
     "lint": "turbo run lint //#repo:lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "test:api:integration": "pnpm --filter @atlashq/api test:integration",
+    "test:web:components": "pnpm --filter @atlashq/web test:components",
+    "test:e2e": "pnpm --filter @atlashq/api... build && playwright test",
+    "test:e2e:list": "playwright test --list --pass-with-no-tests",
+    "test:e2e:install": "playwright install chromium",
     "format": "turbo run format //#repo:format",
     "format:check": "turbo run format:check //#repo:format:check",
     "openapi": "node scripts/require-package-scripts.mjs openapi @atlashq/api @atlashq/api-client && turbo run openapi",
     "openapi:check": "node scripts/require-package-scripts.mjs openapi:check @atlashq/api && turbo run openapi:check",
     "api-client:check": "node scripts/require-package-scripts.mjs api-client:check @atlashq/api-client && turbo run api-client:check",
     "db:check": "node scripts/require-package-scripts.mjs db:check @atlashq/db && turbo run db:check",
+    "db:migrate:deploy": "pnpm --filter @atlashq/db... build && pnpm --filter @atlashq/db db:migrate:deploy",
+    "provision:admin": "pnpm --filter @atlashq/api... build && pnpm --filter @atlashq/api provision:admin",
     "docker:check": "node scripts/docker-check.mjs",
     "repo:lint": "biome check .",
     "repo:format": "biome check --write .",
@@ -25,7 +32,11 @@
     "pnpm": "11.10.0"
   },
   "devDependencies": {
+    "@atlashq/auth": "workspace:*",
+    "@atlashq/db": "workspace:*",
     "@biomejs/biome": "2.5.2",
+    "@playwright/test": "1.61.1",
+    "@testcontainers/postgresql": "12.0.4",
     "tsc-watch": "7.2.1",
     "turbo": "2.10.4",
     "typescript": "6.0.3"
@@ -33,6 +44,7 @@
   "pnpm": {
     "ignoredBuiltDependencies": [
       "@scarf/scarf",
+      "esbuild",
       "msgpackr-extract"
     ]
   }

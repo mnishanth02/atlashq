@@ -2,10 +2,9 @@ import "reflect-metadata";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { RequestMethod } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./modules/app.module.js";
+import { applyGlobalApiPrefix, buildOpenApiDocument } from "./swagger.js";
 
 type JsonValue =
   | null
@@ -40,29 +39,13 @@ function toComparableJson(value: unknown) {
 }
 
 export async function createOpenApiDocument() {
-  const app = await NestFactory.create(AppModule, { logger: false });
+  // `AppModule.forRoot()` defaults to a null runtime, so no database connection
+  // or auth secret is required to generate the contract.
+  const app = await NestFactory.create(AppModule.forRoot(), { logger: false });
 
   try {
-    app.setGlobalPrefix("api/v1", {
-      exclude: [
-        { path: "api/auth", method: RequestMethod.ALL },
-        { path: "api/auth/{*path}", method: RequestMethod.ALL },
-      ],
-    });
-
-    const config = new DocumentBuilder()
-      .setTitle("AtlasHQ API")
-      .setDescription("Generated placeholder OpenAPI contract for Phase 2.")
-      .setVersion("0.0.0")
-      .addServer("http://localhost:3000", "Local development")
-      .build();
-
-    const document = SwaggerModule.createDocument(app, config, {
-      operationIdFactory: (controllerKey, methodKey) => `${controllerKey}_${methodKey}`,
-    });
-    document.openapi = "3.1.0";
-
-    return document;
+    applyGlobalApiPrefix(app);
+    return buildOpenApiDocument(app);
   } finally {
     await app.close();
   }

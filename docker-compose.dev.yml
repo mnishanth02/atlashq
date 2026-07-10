@@ -1,68 +1,73 @@
 # =============================================================================
 # docker-compose.dev.yml
 # -----------------------------------------------------------------------------
-# Hot reload for the `api` and `worker` services. (The `web` app already has
-# Vite HMR built in.) Layer this file ON TOP of docker-compose.yml:
+# Hot reload for the `api`, `web`, and `worker` services. Layer this file ON
+# TOP of docker-compose.yml:
 #
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml \
 #     --profile core --profile worker --profile storage up
 #
+# Browse http://localhost:8080 through the dev Caddy reverse proxy: it keeps
+# the same origin/cookie behavior as production while forwarding web requests to
+# Vite HMR and `/api/*` requests to the API container.
+#
 # How it works
 # ------------
-# * Each app's `dev` script (see apps/api/package.json + apps/worker/package.json)
-#   runs `tsc-watch`, which recompiles on change and restarts the process only
-#   after a SUCCESSFUL compile. tsc-watch uses the real TypeScript compiler, so
-#   NestJS decorator metadata (`emitDecoratorMetadata`) is emitted correctly -
-#   unlike esbuild/swc-based runners (tsx) which would silently break type-based
-#   dependency injection.
+# * `api` and `worker` run their `dev` scripts (`tsc-watch`), which recompile on
+#   change and restart only after a successful TypeScript build. This preserves
+#   NestJS decorator metadata that esbuild/swc-based runners would drop.
+# * `web` runs the real Vite dev server (`npm --prefix apps/web run dev`) so HMR
+#   works through Caddy at http://localhost:8080.
 # * Application SOURCE is served from the repo bind mount (./ -> /workspace,
-#   defined in docker-compose.yml), so editing a .ts file on the host is seen
-#   inside the container and triggers the recompile + restart.
+#   defined in docker-compose.yml), so editing files on the host is reflected
+#   inside the containers immediately.
 #
 # Why the named `node_modules` volumes?
 # -------------------------------------
 # The repo bind mount also exposes the HOST's `node_modules`. On a Windows host
 # those are pnpm symlinks that resolve to Windows-only paths (/mnt/host/c/...)
-# and are unusable inside a Linux container - even `node dist/main.js` cannot
-# resolve `pino` or `@atlashq/*` through them. So we shadow every relevant
-# `node_modules` directory with a named volume and populate them with a
-# one-shot, Linux-native `pnpm install` (the `deps` service). These volumes are
-# completely separate from the host install; the two never interfere.
+# and are unusable inside Linux containers. So we shadow every relevant
+# workspace `node_modules` directory with a named volume and populate them with
+# a one-shot, Linux-native `pnpm install` (the `deps` service). These volumes
+# are completely separate from the host install; the two never interfere.
 #
 # Maintenance
 # -----------
-# The `deps` service runs a FILTERED install covering api + worker, their
-# workspace dependencies ({types, logger, config, auth, jobs}) and the root
-# project (which provides the `typescript` + `tsc-watch` dev tooling). If you
-# add a NEW workspace dependency to api or worker, add a matching
-# `atlas-nm-<pkg>` volume below (mounted at that package's node_modules) and
-# recreate the installer:
+# The `deps` service runs a FILTERED install covering api + web + worker, their
+# workspace dependencies ({api-client, validators, types, logger, config, auth,
+# db, jobs}) and the root project. If you add a NEW workspace dependency to one
+# of those apps, add a matching `atlas-nm-<pkg>` volume below (mounted at that
+# package's node_modules) and recreate the installer:
 #
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml \
-#     --profile core --profile worker up -d --force-recreate deps
+#     --profile core --profile worker --profile storage up -d --force-recreate deps
 # =============================================================================
 
 # Shared set of Linux-native node_modules volumes (shadow the Windows host
-# node_modules). Reused by the installer and both app services.
+# node_modules). Reused by the installer and all dev services.
 x-dev-node-modules: &dev-node-modules
   - pnpm-store:/pnpm-store
   - atlas-nm-root:/workspace/node_modules
   - atlas-nm-api:/workspace/apps/api/node_modules
+  - atlas-nm-web:/workspace/apps/web/node_modules
   - atlas-nm-worker:/workspace/apps/worker/node_modules
+  - atlas-nm-api-client:/workspace/packages/api-client/node_modules
   - atlas-nm-types:/workspace/packages/types/node_modules
+  - atlas-nm-validators:/workspace/packages/validators/node_modules
   - atlas-nm-logger:/workspace/packages/logger/node_modules
   - atlas-nm-config:/workspace/packages/config/node_modules
   - atlas-nm-auth:/workspace/packages/auth/node_modules
+  - atlas-nm-db:/workspace/packages/db/node_modules
   - atlas-nm-jobs:/workspace/packages/jobs/node_modules
 
 services:
   # One-shot installer: builds Linux-native node_modules into the shared
-  # volumes so `tsc-watch`, `tsc` and all runtime deps resolve inside the
-  # container. Runs to completion before api/worker start.
+  # volumes so `tsc-watch`, `vite`, `tsc`, and all runtime deps resolve inside
+  # the containers. Runs to completion before the app services start.
   deps:
     image: node:24.13.1-bookworm-slim
     working_dir: /workspace
-    profiles: ["core", "worker", "storage"]
+    profiles: ["core", "worker", "storage", "ai"]
     environment:
       COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
     volumes:
@@ -70,11 +75,15 @@ services:
       - pnpm-store:/pnpm-store
       - atlas-nm-root:/workspace/node_modules
       - atlas-nm-api:/workspace/apps/api/node_modules
+      - atlas-nm-web:/workspace/apps/web/node_modules
       - atlas-nm-worker:/workspace/apps/worker/node_modules
+      - atlas-nm-api-client:/workspace/packages/api-client/node_modules
       - atlas-nm-types:/workspace/packages/types/node_modules
+      - atlas-nm-validators:/workspace/packages/validators/node_modules
       - atlas-nm-logger:/workspace/packages/logger/node_modules
       - atlas-nm-config:/workspace/packages/config/node_modules
       - atlas-nm-auth:/workspace/packages/auth/node_modules
+      - atlas-nm-db:/workspace/packages/db/node_modules
       - atlas-nm-jobs:/workspace/packages/jobs/node_modules
     command:
       - sh
@@ -84,11 +93,17 @@ services:
         pnpm install --frozen-lockfile --ignore-scripts --store-dir=/pnpm-store \
           --filter "atlashq" \
           --filter "@atlashq/api..." \
-          --filter "@atlashq/worker..."
+          --filter "@atlashq/web..." \
+          --filter "@atlashq/worker..." \
+          --filter "@atlashq/api-client..." \
+          --filter "@atlashq/validators..." \
+          --filter "@atlashq/types..."
 
   api:
     depends_on:
       deps:
+        condition: service_completed_successfully
+      migrate:
         condition: service_completed_successfully
     # Docker Desktop on Windows/macOS does not forward inotify events across the
     # bind mount, so TypeScript's native file watcher never fires. Force polling
@@ -98,6 +113,55 @@ services:
       TSC_WATCHDIRECTORY: DynamicPriorityPolling
     volumes: *dev-node-modules
     command: ["npm", "--prefix", "apps/api", "run", "dev"]
+
+  web:
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+    environment:
+      # Docker Desktop on Windows/macOS also drops many file-watch events for
+      # the Vite dev server bind mount, so force polling for reliable HMR.
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "250"
+    volumes: *dev-node-modules
+    command: ["npm", "--prefix", "apps/web", "run", "dev"]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:4187/login').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  caddy:
+    command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.dev", "--adapter", "caddyfile"]
+    volumes:
+      - ./infra/caddy/Caddyfile.dev:/etc/caddy/Caddyfile.dev:ro
+
+  # One-shot runtime migration needs the Linux-native node_modules (pg,
+  # drizzle-orm) built by the `deps` installer, so shadow them here too.
+  migrate:
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    volumes: *dev-node-modules
+
+  # Opt-in initial-admin provisioning (profile: bootstrap) shares the same
+  # Linux-native node_modules volumes and waits for migrations to complete.
+  bootstrap:
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    volumes: *dev-node-modules
 
   worker:
     depends_on:
@@ -114,9 +178,13 @@ volumes:
   pnpm-store:
   atlas-nm-root:
   atlas-nm-api:
+  atlas-nm-web:
   atlas-nm-worker:
+  atlas-nm-api-client:
   atlas-nm-types:
+  atlas-nm-validators:
   atlas-nm-logger:
   atlas-nm-config:
   atlas-nm-auth:
+  atlas-nm-db:
   atlas-nm-jobs:

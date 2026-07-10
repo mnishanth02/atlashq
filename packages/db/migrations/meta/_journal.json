@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1783623225000,
+      "tag": "0000_enable_text_search_extensions",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783623392880,
+      "tag": "0001_database_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783624863062,
+      "tag": "0002_better_auth_rate_limit",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783629695908,
+      "tag": "0003_audit_event_correlation_id_text",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783629714303,
+      "tag": "0004_audit_event_append_only_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783678719000,
+      "tag": "0005_audit_event_truncate_guard",
+      "breakpoints": true
+    }
+  ]
+}

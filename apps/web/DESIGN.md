@@ -6,7 +6,7 @@ marks action and focus, and a dedicated semantic vocabulary (epistemic status + 
 keeps *evidence and risk* visually distinct from the brand.
 
 This document is the reference for the foundation. The living, interactive version of
-everything below renders at `/` (the design‑system route) — open it in both themes.
+everything below renders at `/design-system` (development only) — open it in both themes.
 
 ---
 
@@ -35,7 +35,7 @@ everything below renders at `/` (the design‑system route) — open it in both 
 | `src/components/atlas/*` | The signature **domain components** — the product's epistemic vocabulary. |
 | `src/components/theme/*` | `ThemeProvider`, `useTheme`, `ThemeToggle`. |
 | `index.html` | No‑FOUC bootstrap script that applies the stored theme before first paint. |
-| `src/routes/design-system-route.tsx` | Kitchen‑sink living documentation at `/`. |
+| `src/routes/design-system-route.tsx` | Kitchen‑sink living documentation at `/design-system` (development only). |
 
 Tech: React 19 · Vite (rolldown) · Tailwind CSS v4 (`@theme inline`) · shadcn/ui ·
 TanStack Router/Query/Table · Biome.

@@ -14,14 +14,30 @@ x-api-env: &api-env
   DATABASE_URL: postgresql://atlashq:atlashq-local-password@postgres:5432/atlashq
   REDIS_URL: redis://redis:6379
   AUTH_SECRET: local-compose-auth-secret-change-before-shared-use
-  AUTH_URL: http://localhost:8080/api/auth
+  AUTH_URL: http://localhost:8080
   WEB_ORIGIN: http://localhost:8080
+x-storage-env: &storage-env
   S3_ENDPOINT: http://minio:9000
   S3_ACCESS_KEY_ID: local-compose-minio-access
   S3_SECRET_ACCESS_KEY: local-compose-minio-secret
   S3_BUCKET: atlashq-local
 
 services:
+  # One-shot runtime migration: waits for Postgres, applies every committed
+  # Drizzle migration using the slim runtime (no drizzle-kit/dev tooling), then
+  # exits. `api`/`worker` gate on its successful completion so the schema is
+  # always current before they start.
+  migrate:
+    <<: *app-service
+    profiles: ["core", "worker", "ai"]
+    restart: "no"
+    command: ["node", "packages/db/scripts/migrate.mjs"]
+    environment:
+      <<: *api-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   caddy:
     image: caddy:2.10-alpine
     profiles: ["core"]
@@ -49,6 +65,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
       test:
         [
@@ -81,7 +99,7 @@ services:
     profiles: ["worker", "ai"]
     command: ["node", "apps/worker/dist/main.js"]
     environment:
-      <<: *api-env
+      <<: [*api-env, *storage-env]
       WORKER_CONCURRENCY: "2"
       OPENAI_API_KEY: replace-with-local-development-key
       ANTHROPIC_API_KEY: replace-with-local-development-key
@@ -90,12 +108,43 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "node", "apps/worker/dist/health-cli.js"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  # Explicit, opt-in initial-admin provisioning. NOT started by any normal
+  # profile — run it deliberately, once, with host-provided env values (activate
+  # the core profile so Postgres + migrations are available):
+  #
+  #   INITIAL_ADMIN_ORG_NAME=... INITIAL_ADMIN_NAME=... \
+  #   INITIAL_ADMIN_EMAIL=... INITIAL_ADMIN_PASSWORD=... \
+  #   docker compose --profile core --profile bootstrap run --rm bootstrap
+  #
+  # It runs the trusted, non-mounted provisioning CLI (public HTTP sign-up stays
+  # disabled). No real credentials are committed: the INITIAL_ADMIN_* values come
+  # only from the host environment, and the CLI fails explicitly if they are
+  # missing or unsafe.
+  bootstrap:
+    <<: *app-service
+    profiles: ["bootstrap"]
+    restart: "no"
+    command: ["node", "apps/api/dist/provisioning/initial-admin.cli.js"]
+    environment:
+      <<: *api-env
+      INITIAL_ADMIN_ORG_NAME: ${INITIAL_ADMIN_ORG_NAME:-}
+      INITIAL_ADMIN_NAME: ${INITIAL_ADMIN_NAME:-}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   postgres:
     image: postgres:17-alpine

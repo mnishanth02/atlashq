@@ -1,0 +1,17 @@
+export {
+  createDrizzleInitialAdminGateway,
+  type ExistingAdminUser,
+  type ExistingOrganization,
+  INITIAL_ADMIN_MAX_PASSWORD_LENGTH,
+  INITIAL_ADMIN_MIN_PASSWORD_LENGTH,
+  INITIAL_ADMIN_ROLE,
+  InitialAdminError,
+  type InitialAdminGateway,
+  type InitialAdminInput,
+  type InitialAdminLogger,
+  type InitialAdminPlan,
+  type InitialAdminResult,
+  initialAdminInputSchema,
+  provisionInitialAdmin,
+  resolveInitialAdminPlan,
+} from "./initial-admin.js";

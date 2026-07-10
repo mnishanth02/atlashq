@@ -1,23 +1,109 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { createRootRoute, createRoute, createRouter, RouterProvider } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  lazyRouteComponent,
+  RouterProvider,
+  redirect,
+} from "@tanstack/react-router";
 import { ThemeProvider } from "./components/theme/theme-provider";
 import { Toaster } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { AppShell } from "./routes/app-shell";
-import { DesignSystemRoute } from "./routes/design-system-route";
+import {
+  AuthenticatedErrorComponent,
+  authenticatedBeforeLoad,
+} from "./routes/auth/authenticated-layout";
+import { SessionLoadingState } from "./routes/auth/session-states";
+import { LoginRoute, loginBeforeLoad, loginSearchSchema } from "./routes/login/login-route";
+import { ProjectDetailRoute } from "./routes/projects/project-detail-route";
+import { ProjectsRoute } from "./routes/projects/projects-route";
+import { RootLayout } from "./routes/root-layout";
 import { queryClient } from "./state/query-client";
 
 const rootRoute = createRootRoute({
+  component: RootLayout,
+});
+
+const loginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/login",
+  validateSearch: loginSearchSchema,
+  beforeLoad: loginBeforeLoad,
+  component: LoginRoute,
+});
+
+/**
+ * Design System kitchen sink is a development-only reference for this repo's
+ * component/token conventions — it must not ship in production. Both the
+ * route's registration *and* its `lazyRouteComponent(() => import(...))` call
+ * live inside the `import.meta.env.DEV` branch below (not as a standalone
+ * top-level route), so Vite's static inlining of that check lets the
+ * production build's dead branch — including the dynamic `import()` — be
+ * eliminated before Rollup ever considers it for a chunk, keeping the
+ * kitchen sink's code out of the production bundle entirely.
+ */
+
+/**
+ * Pathless layout that gates every product route behind a session check
+ * (`authenticatedBeforeLoad`) and renders the authenticated product shell.
+ * `pendingComponent`/`errorComponent` give the session check explicit loading
+ * and error states instead of a blank screen or a silent redirect-on-error.
+ */
+const authenticatedLayoutRoute = createRoute({
+  id: "_authenticated",
+  getParentRoute: () => rootRoute,
+  beforeLoad: authenticatedBeforeLoad,
   component: AppShell,
+  pendingComponent: SessionLoadingState,
+  pendingMs: 300,
+  errorComponent: AuthenticatedErrorComponent,
 });
 
 const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => authenticatedLayoutRoute,
   path: "/",
-  component: DesignSystemRoute,
+  beforeLoad: () => {
+    throw redirect({ to: "/projects" });
+  },
 });
 
-const routeTree = rootRoute.addChildren([indexRoute]);
+/** Route-ready placeholder — see `routes/projects/projects-route.tsx`. */
+const projectsRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/projects",
+  component: ProjectsRoute,
+});
+
+/** Route-ready placeholder — see `routes/projects/project-detail-route.tsx`. */
+const projectDetailRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/projects/$projectId",
+  component: ProjectDetailRoute,
+});
+
+const authenticatedRoute = authenticatedLayoutRoute.addChildren([
+  indexRoute,
+  projectsRoute,
+  projectDetailRoute,
+]);
+
+const routeTree = import.meta.env.DEV
+  ? rootRoute.addChildren([
+      loginRoute,
+      authenticatedRoute,
+      createRoute({
+        getParentRoute: () => rootRoute,
+        path: "/design-system",
+        component: lazyRouteComponent(
+          () => import("./routes/design-system-route"),
+          "DesignSystemRoute",
+        ),
+      }),
+    ])
+  : rootRoute.addChildren([loginRoute, authenticatedRoute]);
+
 const router = createRouter({ routeTree });
 
 declare module "@tanstack/react-router" {
