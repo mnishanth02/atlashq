@@ -1,8 +1,11 @@
 import type { Server } from "node:http";
 import { type Auth, createAuth } from "@atlashq/auth";
+import type { SourceVaultEnv } from "@atlashq/config";
 import { createDatabaseClient, type Database, type DatabaseClient } from "@atlashq/db";
+import type { MinioObjectStorageClient } from "@atlashq/storage";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { createApiApp } from "../app.factory.js";
+import type { SourceDocumentQueue } from "../runtime/source-vault-runtime.js";
 
 /**
  * Test-only Better Auth secret. Never a real secret — an obvious, disposable
@@ -16,7 +19,7 @@ export const TEST_AUTH_URL = "http://localhost:3000";
 /** Web origin used for CORS and as a second trusted CSRF origin. */
 export const TEST_WEB_ORIGIN = "http://localhost:4187";
 
-/** Every table created by migrations 0000-0005, ordered for readable TRUNCATE. */
+/** Every table created by migrations 0000-0005 (Module 1) and Module 2, ordered for readable TRUNCATE. */
 const ALL_TABLES = [
   "organization",
   "user",
@@ -30,9 +33,25 @@ const ALL_TABLES = [
   "audit_event",
   "traceability_link",
   "ai_run",
+  "source_upload_session",
+  "source_upload_file",
+  "source_document",
+  "source_document_file",
+  "source_extraction",
+  "source_chunk",
+  "reference_artifact",
 ] as const;
 
 const AUDIT_EVENT_TRUNCATE_TRIGGER = "audit_event_no_truncate";
+
+/** Module 2 archive-only tables carry BEFORE DELETE/TRUNCATE triggers (migration 0007). */
+const SOURCE_VAULT_ARCHIVE_ONLY_TABLES = [
+  "source_document",
+  "source_document_file",
+  "source_extraction",
+  "source_chunk",
+  "reference_artifact",
+] as const;
 
 export type IntegrationHarness = {
   app: NestExpressApplication;
@@ -67,8 +86,15 @@ export type IntegrationHarness = {
  * separate, non-mounted `provisioningAuth` with `allowSignUp: true` is used by
  * the fixtures to create users directly, mirroring the trusted provisioning CLI.
  */
+export type SourceVaultOverride = {
+  storage?: MinioObjectStorageClient | null;
+  documentQueue?: SourceDocumentQueue | null;
+  sourceVault?: SourceVaultEnv | null;
+};
+
 export async function createIntegrationHarness(
   connectionString: string,
+  overrides: SourceVaultOverride = {},
 ): Promise<IntegrationHarness> {
   const client = createDatabaseClient({ connectionString });
   const authEnv = {
@@ -85,6 +111,9 @@ export async function createIntegrationHarness(
     db: client.db,
     webOrigin: TEST_WEB_ORIGIN,
     setupSwagger: false,
+    storage: overrides.storage ?? null,
+    documentQueue: overrides.documentQueue ?? null,
+    sourceVault: overrides.sourceVault ?? null,
   });
   await app.init();
 
@@ -106,7 +135,13 @@ export async function createIntegrationHarness(
         await connection.query(
           `ALTER TABLE "audit_event" DISABLE TRIGGER "${AUDIT_EVENT_TRUNCATE_TRIGGER}"`,
         );
+        for (const table of SOURCE_VAULT_ARCHIVE_ONLY_TABLES) {
+          await connection.query(`ALTER TABLE "${table}" DISABLE TRIGGER USER`);
+        }
         await connection.query(`TRUNCATE TABLE ${quoted} RESTART IDENTITY CASCADE`);
+        for (const table of SOURCE_VAULT_ARCHIVE_ONLY_TABLES) {
+          await connection.query(`ALTER TABLE "${table}" ENABLE TRIGGER USER`);
+        }
         await connection.query(
           `ALTER TABLE "audit_event" ENABLE TRIGGER "${AUDIT_EVENT_TRUNCATE_TRIGGER}"`,
         );

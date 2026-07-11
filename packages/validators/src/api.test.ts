@@ -29,6 +29,65 @@ describe("apiErrorSchema", () => {
     });
   });
 
+  it("accepts an optional metadata object inside a detail entry", () => {
+    const parsed = apiErrorSchema.parse({
+      statusCode: 409,
+      code: "SOURCE_DUPLICATE_CONFIRMATION_REQUIRED",
+      message: "Duplicate acknowledgement is required to persist this evidence.",
+      details: [
+        {
+          path: ["body", "duplicateAcknowledgement"],
+          code: "duplicate_confirmation_required",
+          message: "Duplicate acknowledgement is required to persist this evidence.",
+          metadata: {
+            matches: [
+              {
+                sourceId: "7b69cd3e-f52f-41ca-a57c-756d08727ffa",
+                title: "Existing evidence",
+                versionNumber: 1,
+                isArchived: false,
+                isSuperseded: false,
+                contributorId: "0c8ea111-b595-4eec-a7ec-a6f352ad29ef",
+                uploadedAt: "2026-01-01T00:00:00.000Z",
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(parsed.details?.[0]?.metadata).toEqual({
+      matches: [
+        {
+          sourceId: "7b69cd3e-f52f-41ca-a57c-756d08727ffa",
+          title: "Existing evidence",
+          versionNumber: 1,
+          isArchived: false,
+          isSuperseded: false,
+          contributorId: "0c8ea111-b595-4eec-a7ec-a6f352ad29ef",
+          uploadedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+  });
+
+  it("rejects unknown fields at the detail level while preserving strictness", () => {
+    expect(() =>
+      apiErrorSchema.parse({
+        statusCode: 409,
+        code: "SOURCE_DUPLICATE_CONFIRMATION_REQUIRED",
+        message: "Conflict.",
+        details: [
+          {
+            path: ["body"],
+            code: "duplicate_confirmation_required",
+            message: "Conflict.",
+            extra: true,
+          },
+        ],
+      }),
+    ).toThrow();
+  });
+
   it("rejects unknown fields and non-canonical codes", () => {
     expect(() =>
       apiErrorSchema.parse({

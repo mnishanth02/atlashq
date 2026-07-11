@@ -202,3 +202,182 @@ export function makeAuditList(
     },
   };
 }
+
+/* --------------------- Source Documents fixtures --------------------- */
+
+import type {
+  SourceChunkListResponse,
+  SourceDetailResponse,
+  SourceExtractionListResponse,
+  SourceListItem,
+  SourceListResponse,
+  SourceVaultCapabilitiesResponse,
+  SourceVersionListResponse,
+  UploadSessionResponse,
+} from "@/features/source-documents";
+
+export function makeSourceListItem(overrides: Partial<SourceListItem> = {}): SourceListItem {
+  return {
+    id: "source-1",
+    lineageId: "lineage-1",
+    versionNumber: 1,
+    supersedesId: null,
+    sourceType: "document",
+    documentFormat: "pdf",
+    title: "Initial requirements pack",
+    tags: ["requirements"],
+    processingStatus: "ready",
+    isArchived: false,
+    hasDuplicateAcknowledgement: false,
+    ipReviewStatus: null,
+    contentHash: "sha256:abcdef1234567890",
+    createdByActorId: "11111111-1111-4111-8111-111111111111",
+    createdAt: NOW,
+    ...overrides,
+  };
+}
+
+export function makeSourceList(
+  items: SourceListItem[] = [makeSourceListItem()],
+): SourceListResponse {
+  return {
+    items,
+    pageInfo: {
+      limit: 25,
+      nextCursor: null,
+      hasMore: false,
+      total: items.length,
+    },
+  };
+}
+
+export function makeSourceDetail(
+  overrides: Partial<SourceDetailResponse> = {},
+): SourceDetailResponse {
+  return {
+    id: "source-1",
+    lineageId: "lineage-1",
+    versionNumber: 1,
+    supersedesId: null,
+    sourceType: "document",
+    documentFormat: "pdf",
+    title: "Initial requirements pack",
+    tags: ["requirements"],
+    processingStatus: "ready",
+    isArchived: false,
+    hasDuplicateAcknowledgement: false,
+    ipReviewStatus: null,
+    contentHash: "sha256:abcdef1234567890",
+    createdByActorId: "11111111-1111-4111-8111-111111111111",
+    createdAt: NOW,
+    version: 1,
+    notes: null,
+    provenanceDate: null,
+    archivedByActorId: null,
+    archivedAt: null,
+    files: [
+      {
+        id: "file-1",
+        ordinal: 0,
+        role: "primary",
+        originalFileName: "requirements.pdf",
+        downloadFileName: "requirements.pdf",
+        format: "pdf",
+        declaredMimeType: "application/pdf",
+        byteSize: 12345,
+        sha256: "abcdef1234567890",
+        scanStatus: "clean",
+        scannedAt: NOW,
+      },
+    ],
+    ...overrides,
+  };
+}
+
+export function makeSourceVersionList(
+  items: SourceVersionListResponse["items"] = [],
+): SourceVersionListResponse {
+  return {
+    items,
+    pageInfo: {
+      limit: 25,
+      nextCursor: null,
+      hasMore: false,
+      total: items.length,
+    },
+  };
+}
+
+export function makeExtractionList(
+  items: SourceExtractionListResponse["items"] = [],
+): SourceExtractionListResponse {
+  return {
+    items,
+    pageInfo: {
+      limit: 25,
+      nextCursor: null,
+      hasMore: false,
+      total: items.length,
+    },
+  };
+}
+
+export function makeChunkList(
+  items: SourceChunkListResponse["items"] = [],
+): SourceChunkListResponse {
+  return {
+    items,
+    pageInfo: {
+      limit: 25,
+      nextCursor: null,
+      hasMore: false,
+      total: items.length,
+    },
+  };
+}
+
+export function makeUploadSession(
+  overrides: Partial<UploadSessionResponse> = {},
+): UploadSessionResponse {
+  return {
+    id: "upload-session-1",
+    organizationId: "org-1",
+    projectId: "project-1",
+    actorId: "11111111-1111-4111-8111-111111111111",
+    sourceType: "document",
+    status: "created",
+    title: "Initial requirements pack",
+    expiresAt: "2026-07-11T00:00:00.000Z",
+    confirmedAt: null,
+    createdSourceId: null,
+    duplicateMatches: [],
+    files: [
+      {
+        id: "session-file-1",
+        ordinal: 0,
+        role: "primary",
+        originalFileName: "requirements.pdf",
+        format: "pdf",
+        declaredMimeType: "application/pdf",
+        byteSize: 12345,
+        sha256: "abcdef1234567890",
+        signedUploadUrl: "https://storage.example/upload/requirements.pdf?sig=abc",
+        signedUploadUrlExpiresAt: "2026-07-10T00:15:00.000Z",
+      },
+    ],
+    ...overrides,
+  };
+}
+
+export function makeSourceVaultCapabilities(
+  overrides: Partial<SourceVaultCapabilitiesResponse> = {},
+): SourceVaultCapabilitiesResponse {
+  return {
+    writesEnabled: true,
+    singlePageCaptureEnabled: true,
+    ocrProcessingEnabled: false,
+    storageAvailable: true,
+    queueAvailable: true,
+    ...overrides,
+  };
+}

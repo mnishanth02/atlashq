@@ -121,6 +121,21 @@ export async function softDeleteUser(db: Database, userId: string): Promise<void
   await db.update(user).set({ softDeletedAt: new Date() }).where(eq(user.id, userId));
 }
 
+/**
+ * Merge one or more organization settings into the `settings` JSONB column. Used to toggle the
+ * `source_vault_writes_enabled` and `single_page_capture_enabled` feature flags in tests.
+ */
+export async function setOrganizationSettings(
+  db: Database,
+  organizationId: string,
+  settings: Record<string, unknown>,
+): Promise<void> {
+  await db
+    .update(organization)
+    .set({ settings: settings as never })
+    .where(eq(organization.id, organizationId));
+}
+
 // --- Real Better Auth flows: trusted provisioning + cookie-preserving sign-in ---
 
 export type SignUpResult = { email: string; password: string; user: CreatedUser };

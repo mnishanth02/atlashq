@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArchiveIcon,
   CircleAlertIcon,
@@ -641,6 +641,17 @@ function ProjectHeaderActions({
 
 export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
   const [activeTab, setActiveTab] = useState<WorkspaceTabKey>("overview");
+  const navigate = useNavigate();
+  const selectTab = (next: WorkspaceTabKey) => {
+    if (next === "source-documents") {
+      void navigate({
+        to: "/projects/$projectId/source-documents",
+        params: { projectId },
+      });
+      return;
+    }
+    setActiveTab(next);
+  };
   const projectQuery = useProjectQuery(projectId);
   const dashboardQuery = useProjectDashboardQuery(projectId);
   const currentUserQuery = useCurrentUserQuery();
@@ -857,10 +868,10 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
         onRetry={() => {
           void dashboardQuery.refetch();
         }}
-        onSelectTab={setActiveTab}
+        onSelectTab={selectTab}
       />
 
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WorkspaceTabKey)}>
+      <Tabs value={activeTab} onValueChange={(value) => selectTab(value as WorkspaceTabKey)}>
         <div className="overflow-x-auto pb-1">
           <TabsList variant="line" className="min-w-max">
             {PROJECT_WORKSPACE_TABS.map((tab) => (

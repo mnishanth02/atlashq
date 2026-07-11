@@ -33,8 +33,11 @@ Docker Compose dev (API + worker hot reload, Vite HMR via Caddy on
 http://localhost:8080):
 
 ```powershell
-docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile core --profile worker --profile storage up
+docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile core --profile worker --profile storage --profile scan up
 ```
+
+Module 2 local runs need the `scan` profile as well; `docs\setup\repository-setup.md`
+lists the full profile matrix plus bootstrap commands.
 
 Additional conventions:
 

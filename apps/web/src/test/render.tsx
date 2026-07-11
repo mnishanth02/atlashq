@@ -54,11 +54,15 @@ export function renderWithProviders(
       ? "/login"
       : initialPathname === "/projects"
         ? "/projects"
-        : initialPathname.startsWith("/projects/")
-          ? "/projects/$projectId"
-          : initialPathname === "/design-system"
-            ? "/design-system"
-            : "/";
+        : initialPathname.match(/^\/projects\/[^/]+\/source-documents\/[^/]+$/)
+          ? "/projects/$projectId/source-documents/$sourceId"
+          : initialPathname.match(/^\/projects\/[^/]+\/source-documents$/)
+            ? "/projects/$projectId/source-documents"
+            : initialPathname.startsWith("/projects/")
+              ? "/projects/$projectId"
+              : initialPathname === "/design-system"
+                ? "/design-system"
+                : "/";
   const rootRoute = createRootRoute({
     component: () => (
       <ThemeProvider defaultTheme="light">
@@ -97,6 +101,17 @@ export function renderWithProviders(
     path: "/projects/$projectId",
     component: componentFor("/projects/$projectId"),
   });
+  const sourceDocumentsRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/projects/$projectId/source-documents",
+    validateSearch: (search: Record<string, unknown>) => search,
+    component: componentFor("/projects/$projectId/source-documents"),
+  });
+  const sourceDetailRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/projects/$projectId/source-documents/$sourceId",
+    component: componentFor("/projects/$projectId/source-documents/$sourceId"),
+  });
   const designSystemRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/design-system",
@@ -107,6 +122,8 @@ export function renderWithProviders(
     loginRoute,
     projectsRoute,
     projectDetailRoute,
+    sourceDocumentsRoute,
+    sourceDetailRoute,
     designSystemRoute,
   ]);
   const history = createMemoryHistory({ initialEntries: [initialEntry] });

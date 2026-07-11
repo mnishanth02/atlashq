@@ -86,6 +86,9 @@ describe("audit_event append-only guard", () => {
 
     await expectAppendOnlyFailure(client, `UPDATE audit_event SET action = 'tampered'`, "UPDATE");
     await expectAppendOnlyFailure(client, `DELETE FROM audit_event`, "DELETE");
-    await expectAppendOnlyFailure(client, `TRUNCATE TABLE audit_event`, "TRUNCATE");
+    // Module 2's reference_artifact.audit_event_id FK now references audit_event, so a bare
+    // TRUNCATE is rejected by Postgres itself (0A000) before any trigger runs; CASCADE clears
+    // that structural restriction so the append-only guard trigger is what actually fires.
+    await expectAppendOnlyFailure(client, `TRUNCATE TABLE audit_event CASCADE`, "TRUNCATE");
   }, 120_000);
 });

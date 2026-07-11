@@ -17,6 +17,8 @@ describe("rolePermissions matrix", () => {
       "project:admin",
       "requirements:review",
       "architecture:review",
+      "sources:read",
+      "sources:write",
     ]);
   });
 
@@ -24,11 +26,31 @@ describe("rolePermissions matrix", () => {
     expect(rolePermissions[projectRoles.clientViewerApprover]).toEqual([]);
   });
 
-  it("scopes developer to read/write only", () => {
+  it("scopes developer to read/write plus source-read only", () => {
     expect(canProjectRole(projectRoles.developer, "project:read")).toBe(true);
     expect(canProjectRole(projectRoles.developer, "project:write")).toBe(true);
     expect(canProjectRole(projectRoles.developer, "project:admin")).toBe(false);
     expect(canProjectRole(projectRoles.developer, "architecture:review")).toBe(false);
+    expect(canProjectRole(projectRoles.developer, "sources:read")).toBe(true);
+    expect(canProjectRole(projectRoles.developer, "sources:write")).toBe(false);
+  });
+
+  it.each([
+    projectRoles.architectTechLead,
+    projectRoles.businessAnalystCoordinator,
+  ])("grants %s both sources:read and sources:write (module-02 §7)", (role) => {
+    expect(canProjectRole(role, "sources:read")).toBe(true);
+    expect(canProjectRole(role, "sources:write")).toBe(true);
+  });
+
+  it("keeps QA source-read only, same as developer", () => {
+    expect(canProjectRole(projectRoles.qa, "sources:read")).toBe(true);
+    expect(canProjectRole(projectRoles.qa, "sources:write")).toBe(false);
+  });
+
+  it("keeps the client viewer / approver out of the source vault entirely", () => {
+    expect(canProjectRole(projectRoles.clientViewerApprover, "sources:read")).toBe(false);
+    expect(canProjectRole(projectRoles.clientViewerApprover, "sources:write")).toBe(false);
   });
 
   it("exposes canAccessProject as a thin wrapper over the matrix", () => {
@@ -46,11 +68,13 @@ describe("rolePermissions matrix", () => {
     ).toBe(true);
   });
 
-  it("treats every non-read permission as a mutation", () => {
+  it("treats every non-read permission as a mutation, except sources:read", () => {
     expect(isMutationPermission("project:read")).toBe(false);
+    expect(isMutationPermission("sources:read")).toBe(false);
     expect(isMutationPermission("project:write")).toBe(true);
     expect(isMutationPermission("project:admin")).toBe(true);
     expect(isMutationPermission("requirements:review")).toBe(true);
+    expect(isMutationPermission("sources:write")).toBe(true);
   });
 });
 
@@ -183,6 +207,48 @@ describe("evaluateProjectAccess (deny-by-default)", () => {
       }),
     );
     expect(decision).toEqual({ allowed: true, reason: "project_membership" });
+  });
+
+  it.each([
+    projectRoles.developer,
+    projectRoles.qa,
+  ])("allows %s to read sources on an archived project via membership, same as project:read", (role) => {
+    const decision = evaluateProjectAccess(
+      input({
+        permission: "sources:read",
+        project: { organizationId: "org-1", status: "archived", softDeletedAt: null },
+        membership: { role, status: "active", softDeletedAt: null },
+      }),
+    );
+    expect(decision).toEqual({ allowed: true, reason: "project_membership" });
+  });
+
+  it.each([
+    projectRoles.architectTechLead,
+    projectRoles.businessAnalystCoordinator,
+    projectRoles.developer,
+    projectRoles.qa,
+  ])("freezes sources:write on an archived project for %s, same as project:write", (role) => {
+    const decision = evaluateProjectAccess(
+      input({
+        permission: "sources:write",
+        project: { organizationId: "org-1", status: "archived", softDeletedAt: null },
+        membership: { role, status: "active", softDeletedAt: null },
+      }),
+    );
+    expect(decision).toEqual({ allowed: false, reason: "project_archived_mutation" });
+  });
+
+  it("allows an organization admin to bypass the archived sources:write freeze", () => {
+    const decision = evaluateProjectAccess(
+      input({
+        actor: { organizationId: "org-1", organizationRole: organizationRoles.admin },
+        permission: "sources:write",
+        project: { organizationId: "org-1", status: "archived", softDeletedAt: null },
+        membership: { role: projectRoles.developer, status: "active", softDeletedAt: null },
+      }),
+    );
+    expect(decision).toEqual({ allowed: true, reason: "organization_admin" });
   });
 
   it("allows an org admin to mutate an archived project in the same org", () => {

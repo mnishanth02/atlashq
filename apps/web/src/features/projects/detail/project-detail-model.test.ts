@@ -227,7 +227,7 @@ describe("buildDashboardCardViewModels", () => {
 
 describe("workspace placeholder metadata", () => {
   it("defines placeholders only for later-module tabs", () => {
-    expect(PROJECT_PLACEHOLDER_TABS).toHaveLength(5);
+    expect(PROJECT_PLACEHOLDER_TABS).toHaveLength(4);
     expect(getPlaceholderTabDefinition("questions-risks")).toEqual(
       expect.objectContaining({
         heading: "Questions and risks tracking is planned for V1",
@@ -235,6 +235,7 @@ describe("workspace placeholder metadata", () => {
       }),
     );
     expect(getPlaceholderTabDefinition("overview")).toBeUndefined();
+    expect(getPlaceholderTabDefinition("source-documents")).toBeUndefined();
   });
 });
 

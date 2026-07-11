@@ -1,10 +1,13 @@
 import { type Auth, betterAuthExpressWildcardPath, createAuthNodeHandler } from "@atlashq/auth";
+import type { SourceVaultEnv } from "@atlashq/config";
 import type { Database } from "@atlashq/db";
+import type { MinioObjectStorageClient } from "@atlashq/storage";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import express, { type Express } from "express";
 import { AppModule } from "./modules/app.module.js";
 import { createPinoRequestLogger } from "./observability/request-logger.js";
+import type { SourceDocumentQueue } from "./runtime/source-vault-runtime.js";
 import { applyGlobalApiPrefix, buildOpenApiDocument, setupSwaggerUi } from "./swagger.js";
 
 /**
@@ -18,6 +21,12 @@ export type CreateApiAppOptions = {
   webOrigin: string;
   /** Build and mount the Swagger UI. Defaults to `true` to match production. */
   setupSwagger?: boolean;
+  /** Optional MinIO-compatible storage client for the Source Vault feature. */
+  storage?: MinioObjectStorageClient | null;
+  /** Optional document-processing queue for the Source Vault feature. */
+  documentQueue?: SourceDocumentQueue | null;
+  /** Optional validated Source Vault env for upload/download URL contracts. */
+  sourceVault?: SourceVaultEnv | null;
 };
 
 /**
@@ -32,13 +41,22 @@ export type CreateApiAppOptions = {
  * `app.listen()` and the integration harness calls `app.init()`.
  */
 export async function createApiApp(options: CreateApiAppOptions): Promise<NestExpressApplication> {
-  const { auth, db, webOrigin, setupSwagger = true } = options;
+  const { auth, db, webOrigin, setupSwagger = true, storage, documentQueue, sourceVault } = options;
 
   // Disable Nest's body parser so Better Auth receives the raw request body.
-  const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot({ auth, db }), {
-    bodyParser: false,
-    bufferLogs: true,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule.forRoot({
+      auth,
+      db,
+      storage: storage ?? null,
+      documentQueue: documentQueue ?? null,
+      sourceVault: sourceVault ?? null,
+    }),
+    {
+      bodyParser: false,
+      bufferLogs: true,
+    },
+  );
 
   // CORS and request logging must run *before* the auth handler so auth
   // responses are logged and carry CORS headers.

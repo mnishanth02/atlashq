@@ -30,7 +30,7 @@ describe("integration: audit append-only and transactional atomicity", () => {
       /append-only/,
     );
 
-    await expect(harness.client.pool.query("TRUNCATE TABLE audit_event")).rejects.toThrow(
+    await expect(harness.client.pool.query("TRUNCATE TABLE audit_event CASCADE")).rejects.toThrow(
       /append-only/,
     );
 

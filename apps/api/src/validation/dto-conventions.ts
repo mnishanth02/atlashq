@@ -58,6 +58,24 @@ export const apiErrorCodes = {
   conflict: "CONFLICT",
   httpError: "HTTP_ERROR",
   internalServerError: "INTERNAL_SERVER_ERROR",
+  // Module 2: Source Document Vault stable error codes (module-02 §11).
+  sourceDuplicateConfirmationRequired: "SOURCE_DUPLICATE_CONFIRMATION_REQUIRED",
+  sourceUploadSessionExpired: "SOURCE_UPLOAD_SESSION_EXPIRED",
+  sourceUploadSessionAlreadyConfirmed: "SOURCE_UPLOAD_SESSION_ALREADY_CONFIRMED",
+  sourceFileTooLarge: "SOURCE_FILE_TOO_LARGE",
+  sourceUploadSizeMismatch: "SOURCE_UPLOAD_SIZE_MISMATCH",
+  sourceMimeMismatch: "SOURCE_MIME_MISMATCH",
+  sourceHashMismatch: "SOURCE_HASH_MISMATCH",
+  sourceInfected: "SOURCE_INFECTED",
+  sourceNotReady: "SOURCE_NOT_READY",
+  sourceSuperseded: "SOURCE_SUPERSEDED",
+  sourceArchived: "SOURCE_ARCHIVED",
+  sourceReferenceAttestationRequired: "SOURCE_REFERENCE_ATTESTATION_REQUIRED",
+  sourceReferenceRestricted: "SOURCE_REFERENCE_RESTRICTED",
+  sourceCaptureDisabled: "SOURCE_CAPTURE_DISABLED",
+  sourceCaptureUrlBlocked: "SOURCE_CAPTURE_URL_BLOCKED",
+  sourceProcessingNotRetryable: "SOURCE_PROCESSING_NOT_RETRYABLE",
+  sourceStorageUnavailable: "SOURCE_STORAGE_UNAVAILABLE",
 } as const;
 
 export type ApiErrorCode = (typeof apiErrorCodes)[keyof typeof apiErrorCodes];

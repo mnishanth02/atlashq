@@ -15,7 +15,12 @@ import { ZodSerializerInterceptor } from "nestjs-zod";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { applyGlobalApiPrefix } from "../swagger.js";
-import { createStrictZodValidationPipe, createZodDto, ZodResponse } from "./dto-conventions.js";
+import {
+  apiErrorCodes,
+  createStrictZodValidationPipe,
+  createZodDto,
+  ZodResponse,
+} from "./dto-conventions.js";
 
 const responseSchema = z
   .object({
@@ -123,5 +128,39 @@ describe("nestjs-zod DTO conventions", () => {
 
     const invalidResponse = await fetch(`${baseUrl}/api/v1/validation-contracts/not-a-uuid`);
     expect(invalidResponse.status).toBe(400);
+  });
+});
+
+describe("module 2 source vault API error codes", () => {
+  it("registers all stable SOURCE_* codes from the plan without altering existing codes", () => {
+    expect(apiErrorCodes.sourceDuplicateConfirmationRequired).toBe(
+      "SOURCE_DUPLICATE_CONFIRMATION_REQUIRED",
+    );
+    expect(apiErrorCodes.sourceUploadSessionExpired).toBe("SOURCE_UPLOAD_SESSION_EXPIRED");
+    expect(apiErrorCodes.sourceUploadSessionAlreadyConfirmed).toBe(
+      "SOURCE_UPLOAD_SESSION_ALREADY_CONFIRMED",
+    );
+    expect(apiErrorCodes.sourceFileTooLarge).toBe("SOURCE_FILE_TOO_LARGE");
+    expect(apiErrorCodes.sourceUploadSizeMismatch).toBe("SOURCE_UPLOAD_SIZE_MISMATCH");
+    expect(apiErrorCodes.sourceMimeMismatch).toBe("SOURCE_MIME_MISMATCH");
+    expect(apiErrorCodes.sourceHashMismatch).toBe("SOURCE_HASH_MISMATCH");
+    expect(apiErrorCodes.sourceInfected).toBe("SOURCE_INFECTED");
+    expect(apiErrorCodes.sourceNotReady).toBe("SOURCE_NOT_READY");
+    expect(apiErrorCodes.sourceSuperseded).toBe("SOURCE_SUPERSEDED");
+    expect(apiErrorCodes.sourceArchived).toBe("SOURCE_ARCHIVED");
+    expect(apiErrorCodes.sourceReferenceAttestationRequired).toBe(
+      "SOURCE_REFERENCE_ATTESTATION_REQUIRED",
+    );
+    expect(apiErrorCodes.sourceReferenceRestricted).toBe("SOURCE_REFERENCE_RESTRICTED");
+    expect(apiErrorCodes.sourceCaptureDisabled).toBe("SOURCE_CAPTURE_DISABLED");
+    expect(apiErrorCodes.sourceCaptureUrlBlocked).toBe("SOURCE_CAPTURE_URL_BLOCKED");
+    expect(apiErrorCodes.sourceProcessingNotRetryable).toBe("SOURCE_PROCESSING_NOT_RETRYABLE");
+    expect(apiErrorCodes.sourceStorageUnavailable).toBe("SOURCE_STORAGE_UNAVAILABLE");
+    expect(apiErrorCodes.validationFailed).toBe("VALIDATION_ERROR");
+  });
+
+  it("keeps every error code value unique", () => {
+    const values = Object.values(apiErrorCodes);
+    expect(new Set(values).size).toBe(values.length);
   });
 });

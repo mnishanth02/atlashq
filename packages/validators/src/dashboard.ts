@@ -2,9 +2,15 @@ import { z } from "zod";
 
 /**
  * Dashboard sections must show zeros/"not started"/setup prompts until later modules populate
- * real counts (module-01 §5.4) — they must not imply real analysis has run.
+ * real counts (module-01 §5.4) — they must not imply real analysis has run. `ready` is used by
+ * later modules (module-02: source vault) to indicate a live counter with real data.
  */
-export const dashboardCounterStateValues = ["zero", "not_started", "setup_required"] as const;
+export const dashboardCounterStateValues = [
+  "zero",
+  "not_started",
+  "setup_required",
+  "ready",
+] as const;
 export const dashboardCounterStateSchema = z.enum(dashboardCounterStateValues);
 
 export const dashboardSummarySectionSchema = z

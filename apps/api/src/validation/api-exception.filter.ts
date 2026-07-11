@@ -1,5 +1,9 @@
 import { correlationIdHeader } from "@atlashq/logger";
-import type { ApiErrorDetail, ApiErrorResponse } from "@atlashq/validators";
+import {
+  type ApiErrorDetail,
+  type ApiErrorResponse,
+  apiErrorDetailSchema,
+} from "@atlashq/validators";
 import {
   type ArgumentsHost,
   Catch,
@@ -9,7 +13,7 @@ import {
 } from "@nestjs/common";
 import type { Request, Response } from "express";
 import { ZodValidationException } from "nestjs-zod";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 import { apiErrorCodes } from "./dto-conventions.js";
 
 type ErrorRequest = Request & {
@@ -89,6 +93,14 @@ function normalizePath(path: unknown): Array<string | number> {
   return normalized.length > 0 ? normalized : ["request"];
 }
 
+function normalizeHttpExceptionDetails(body: HttpExceptionBody): ApiErrorDetail[] | undefined {
+  if (!Array.isArray(body.details) || body.details.length === 0) {
+    return undefined;
+  }
+  const parsed = z.array(apiErrorDetailSchema).min(1).safeParse(body.details);
+  return parsed.success ? parsed.data : undefined;
+}
+
 function normalizeZodDetails(error: unknown): ApiErrorDetail[] | undefined {
   if (!error || typeof error !== "object" || !("issues" in error)) {
     return undefined;
@@ -147,10 +159,18 @@ export class ApiExceptionFilter implements ExceptionFilter {
 
     if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
       request.log?.error({ err: exception, correlationId }, "Unhandled API request error");
+      const httpBody = isHttpException ? getHttpExceptionBody(exception) : {};
+      const explicit5xxCode =
+        typeof httpBody.code === "string" && /^[A-Z0-9_]+$/.test(httpBody.code)
+          ? httpBody.code
+          : undefined;
+      const preserveExplicit = isHttpException && explicit5xxCode !== undefined;
       response.status(statusCode).json({
         statusCode,
-        code: apiErrorCodes.internalServerError,
-        message: "Internal server error.",
+        code: preserveExplicit ? (explicit5xxCode as string) : apiErrorCodes.internalServerError,
+        message: preserveExplicit
+          ? getMessage(httpBody, exception as HttpException)
+          : "Internal server error.",
         ...(correlationId ? { correlationId } : {}),
       } satisfies ApiErrorResponse);
       return;
@@ -161,7 +181,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
       ? normalizeZodDetails(
           exception instanceof ZodValidationException ? exception.getZodError() : exception,
         )
-      : undefined;
+      : normalizeHttpExceptionDetails(exceptionBody);
     const explicitCode =
       typeof exceptionBody.code === "string" && /^[A-Z0-9_]+$/.test(exceptionBody.code)
         ? exceptionBody.code

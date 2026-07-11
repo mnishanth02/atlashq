@@ -5,11 +5,16 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createAuth } from "@atlashq/auth";
 import { createDatabaseClient, type DatabaseClient, migrateDatabase } from "@atlashq/db";
-import type { FullConfig } from "@playwright/test";
+import { createMinioStorageClient } from "@atlashq/storage";
+import { chromium, type FullConfig } from "@playwright/test";
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+import { GenericContainer, type StartedTestContainer, Wait } from "testcontainers";
 import {
   E2E_API_URL,
   E2E_BASE_URL,
+  E2E_MEMBER_EMAIL,
+  E2E_MEMBER_NAME,
+  E2E_MEMBER_PASSWORD,
   E2E_ORGANIZATION_NAME,
   E2E_USER_EMAIL,
   E2E_USER_NAME,
@@ -19,8 +24,18 @@ import {
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const RUNTIME_DIR = join(ROOT, "tests", "e2e", ".runtime");
 const POSTGRES_IMAGE = "postgres:17-alpine";
+const REDIS_IMAGE = "redis:8-alpine";
+const MINIO_IMAGE = "minio/minio:RELEASE.2025-09-07T16-13-09Z";
+const CLAMAV_IMAGE = "clamav/clamav:1.5.3-debian13-slim";
 const AUTH_SECRET = "atlashq-e2e-only-auth-secret-0123456789abcdef";
 const IS_WINDOWS = process.platform === "win32";
+
+// Dedicated credentials/bucket for this suite only -- distinct from docker-compose's
+// `atlashq-local` bucket and the worker integration suite's `atlashq-worker-integration`
+// bucket, so none of the disposable Testcontainers-managed stacks can collide.
+const MINIO_ACCESS_KEY_ID = "e2e-playwright-minio-access";
+const MINIO_SECRET_ACCESS_KEY = "e2e-playwright-minio-secret";
+const MINIO_BUCKET = "atlashq-e2e-playwright";
 
 type StartedProcess = {
   name: string;
@@ -32,6 +47,9 @@ type StartedProcess = {
 
 const startedProcesses: StartedProcess[] = [];
 let container: StartedPostgreSqlContainer | undefined;
+let redisContainer: StartedTestContainer | undefined;
+let minioContainer: StartedTestContainer | undefined;
+let clamavContainer: StartedTestContainer | undefined;
 let databaseClient: DatabaseClient | undefined;
 let cleanupStarted = false;
 
@@ -125,6 +143,61 @@ async function waitForHttp(
 
   const log = await readLogTail(process.logPath);
   throw new Error(`Timed out waiting for ${url}: ${lastError}\n${log}`);
+}
+
+/**
+ * The worker has no HTTP server, so readiness is polled by repeatedly spawning its one-shot
+ * `health-cli.js` (module-02 §9, §10) -- the same script `pnpm --filter @atlashq/worker health`
+ * runs -- against the shared database/redis/storage/clamav until it reports `status: "ok"`.
+ */
+async function waitForWorkerReady(
+  env: NodeJS.ProcessEnv,
+  workerProcess: StartedProcess,
+): Promise<void> {
+  const deadline = Date.now() + 60_000;
+  let lastError = "No health check attempted.";
+
+  while (Date.now() < deadline) {
+    if (workerProcess.child.exitCode !== null) {
+      const log = await readLogTail(workerProcess.logPath);
+      throw new Error(
+        `${workerProcess.name} exited early (${workerProcess.child.exitCode}).\n${log}`,
+      );
+    }
+
+    const result = await new Promise<{ code: number | null; output: string }>((resolve) => {
+      const child = spawn(
+        process.execPath,
+        [join(ROOT, "apps", "worker", "dist", "health-cli.js")],
+        {
+          cwd: ROOT,
+          env,
+          shell: false,
+          windowsHide: true,
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
+      let output = "";
+      child.stdout?.on("data", (chunk) => {
+        output += String(chunk);
+      });
+      child.stderr?.on("data", (chunk) => {
+        output += String(chunk);
+      });
+      child.once("exit", (code) => resolve({ code, output }));
+      child.once("error", (error) => resolve({ code: -1, output: String(error) }));
+    });
+
+    if (result.code === 0) {
+      return;
+    }
+    lastError = result.output.trim() || `health-cli exited with code ${result.code}`;
+
+    await delay(500);
+  }
+
+  const log = await readLogTail(workerProcess.logPath);
+  throw new Error(`Timed out waiting for worker readiness: ${lastError}\n${log}`);
 }
 
 function isMissingProcessError(error: unknown): error is NodeJS.ErrnoException {
@@ -258,6 +331,20 @@ async function cleanup(): Promise<void> {
     container = undefined;
   }
 
+  const containerStopResults = await Promise.allSettled([
+    redisContainer?.stop(),
+    minioContainer?.stop(),
+    clamavContainer?.stop(),
+  ]);
+  for (const result of containerStopResults) {
+    if (result.status === "rejected") {
+      cleanupErrors.push(result.reason);
+    }
+  }
+  redisContainer = undefined;
+  minioContainer = undefined;
+  clamavContainer = undefined;
+
   try {
     await fs.rm(RUNTIME_DIR, { recursive: true, force: true });
   } catch (error) {
@@ -269,12 +356,12 @@ async function cleanup(): Promise<void> {
   }
 }
 
-async function provisionAdmin(organizationId: string): Promise<void> {
+async function provisionUsers(organizationId: string): Promise<void> {
   if (!databaseClient) {
     throw new Error("E2E database client was not initialized.");
   }
 
-  // Provision the admin directly through a trusted, NON-mounted Better Auth
+  // Provision both users directly through a trusted, NON-mounted Better Auth
   // instance with public sign-up explicitly enabled. This mirrors the initial-
   // admin provisioning CLI and never uses public HTTP sign-up (which the mounted
   // E2E API rejects, exactly as in production). The browser login flow under
@@ -299,6 +386,18 @@ async function provisionAdmin(organizationId: string): Promise<void> {
     },
   });
 
+  // A second, non-admin organization member for the Source Vault permission-boundary coverage
+  // (module-02 §7): stays at the default organization role and is added to a project with a
+  // non-admin project role by the spec itself, through the real UI membership flow.
+  await provisioningAuth.api.signUpEmail({
+    body: {
+      email: E2E_MEMBER_EMAIL,
+      password: E2E_MEMBER_PASSWORD,
+      name: E2E_MEMBER_NAME,
+      organizationId,
+    },
+  });
+
   const result = await databaseClient.pool.query(
     `UPDATE "user"
      SET organization_role = 'admin', updated_at = now()
@@ -312,41 +411,109 @@ async function provisionAdmin(organizationId: string): Promise<void> {
   }
 }
 
+/**
+ * Vite's dev server optimizes dependencies lazily: the *first* time the browser's module graph
+ * discovers a dependency the initial esbuild scan missed (routing is TanStack Router's file-based
+ * lazy-loaded route tree here), Vite silently forces a full page reload once the new pre-bundle is
+ * ready. Any fetch in flight at that exact moment (e.g. Better Auth's session check) is aborted
+ * with a generic "Failed to fetch", which showed up as flaky, unrelated-looking spec failures.
+ * Running one throwaway navigation through both the unauthenticated and authenticated route
+ * trees here lets that one-time forced reload happen during setup instead of during a real test.
+ */
+async function warmUpWebDevServer(): Promise<void> {
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage();
+    await page.goto(`${E2E_BASE_URL}/login`, { waitUntil: "networkidle" });
+    await page.getByLabel("Email", { exact: true }).fill(E2E_USER_EMAIL);
+    await page.getByLabel("Password", { exact: true }).fill(E2E_USER_PASSWORD);
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await page.waitForURL(/\/projects$/, { waitUntil: "networkidle" });
+  } finally {
+    await browser.close();
+  }
+}
+
 export default async function globalSetup(_config: FullConfig): Promise<() => Promise<void>> {
   try {
     await fs.rm(RUNTIME_DIR, { recursive: true, force: true });
     await fs.mkdir(RUNTIME_DIR, { recursive: true });
     await Promise.all([assertPortAvailable(3000), assertPortAvailable(4187)]);
 
-    container = await new PostgreSqlContainer(POSTGRES_IMAGE).withDatabase("atlashq_e2e").start();
+    [container, redisContainer, minioContainer, clamavContainer] = await Promise.all([
+      new PostgreSqlContainer(POSTGRES_IMAGE).withDatabase("atlashq_e2e").start(),
+      new GenericContainer(REDIS_IMAGE)
+        .withExposedPorts(6379)
+        .withWaitStrategy(Wait.forLogMessage(/Ready to accept connections/u))
+        .start(),
+      new GenericContainer(MINIO_IMAGE)
+        .withCommand(["server", "/data"])
+        .withEnvironment({
+          MINIO_ROOT_USER: MINIO_ACCESS_KEY_ID,
+          MINIO_ROOT_PASSWORD: MINIO_SECRET_ACCESS_KEY,
+          // Lets the browser PUT directly to MinIO's presigned upload URLs (module-02 §9.1):
+          // `mc cors set` cannot be used here because this exact pinned `mc` release requires an
+          // XML CORS document (the shared docker-compose bootstrap script writes JSON, and its
+          // bundled bucket-versioning check also depends on a `grep` binary this `mc` image
+          // doesn't ship) -- the server-level env var configures the same behavior directly and
+          // is independent of both issues.
+          MINIO_API_CORS_ALLOW_ORIGIN: E2E_BASE_URL,
+        })
+        .withExposedPorts(9000)
+        .withWaitStrategy(Wait.forHttp("/minio/health/live", 9000))
+        .start(),
+      new GenericContainer(CLAMAV_IMAGE)
+        .withExposedPorts(3310)
+        // ClamAV needs real time to load its bundled signature database before clamd's socket is
+        // ready; this exact log line is what docker-compose's own healthcheck effectively waits on.
+        .withWaitStrategy(Wait.forLogMessage(/socket found, clamd started\.?/u))
+        .withStartupTimeout(180_000)
+        .start(),
+    ]);
+
     databaseClient = createDatabaseClient({ connectionString: container.getConnectionUri() });
     await migrateDatabase(databaseClient);
 
     const organizationResult = await databaseClient.pool.query<{ id: string }>(
-      `INSERT INTO organization (name) VALUES ($1) RETURNING id`,
-      [E2E_ORGANIZATION_NAME],
+      `INSERT INTO organization (name, settings) VALUES ($1, $2::jsonb) RETURNING id`,
+      [E2E_ORGANIZATION_NAME, JSON.stringify({ source_vault_writes_enabled: true })],
     );
     const organizationId = organizationResult.rows[0]?.id;
     if (!organizationId) {
       throw new Error("Failed to seed the E2E organization.");
     }
 
-    const environmentWithoutS3 = { ...process.env };
-    delete environmentWithoutS3.S3_ENDPOINT;
-    delete environmentWithoutS3.S3_ACCESS_KEY_ID;
-    delete environmentWithoutS3.S3_SECRET_ACCESS_KEY;
-    delete environmentWithoutS3.S3_BUCKET;
+    const redisUrl = `redis://${redisContainer.getHost()}:${redisContainer.getMappedPort(6379)}`;
+    const s3Endpoint = `http://${minioContainer.getHost()}:${minioContainer.getMappedPort(9000)}`;
+    const clamavHost = clamavContainer.getHost();
+    const clamavPort = String(clamavContainer.getMappedPort(3310));
+
+    const storage = createMinioStorageClient({
+      endpoint: s3Endpoint,
+      accessKeyId: MINIO_ACCESS_KEY_ID,
+      secretAccessKey: MINIO_SECRET_ACCESS_KEY,
+      bucket: MINIO_BUCKET,
+    });
+    await storage.bootstrapBucket();
+
+    const storageEnv = {
+      S3_ENDPOINT: s3Endpoint,
+      S3_ACCESS_KEY_ID: MINIO_ACCESS_KEY_ID,
+      S3_SECRET_ACCESS_KEY: MINIO_SECRET_ACCESS_KEY,
+      S3_BUCKET: MINIO_BUCKET,
+    };
 
     const apiProcess = startProcess(
       "api",
       process.execPath,
       [join(ROOT, "apps", "api", "dist", "main.js")],
       {
-        ...environmentWithoutS3,
+        ...process.env,
+        ...storageEnv,
         NODE_ENV: "test",
         PORT: "3000",
         DATABASE_URL: container.getConnectionUri(),
-        REDIS_URL: "redis://127.0.0.1:6399/15",
+        REDIS_URL: redisUrl,
         AUTH_SECRET,
         AUTH_URL: E2E_BASE_URL,
         WEB_ORIGIN: E2E_BASE_URL,
@@ -392,7 +559,26 @@ export default async function globalSetup(_config: FullConfig): Promise<() => Pr
       },
     );
 
-    await provisionAdmin(organizationId);
+    const workerEnv = {
+      ...process.env,
+      ...storageEnv,
+      NODE_ENV: "test",
+      DATABASE_URL: container.getConnectionUri(),
+      REDIS_URL: redisUrl,
+      CLAMAV_HOST: clamavHost,
+      CLAMAV_PORT: clamavPort,
+      LOG_LEVEL: "info",
+    };
+    const workerProcess = startProcess(
+      "worker",
+      process.execPath,
+      [join(ROOT, "apps", "worker", "dist", "main.js")],
+      workerEnv,
+    );
+    await waitForWorkerReady(workerEnv, workerProcess);
+
+    await provisionUsers(organizationId);
+    await warmUpWebDevServer();
 
     return cleanup;
   } catch (error) {

@@ -19,6 +19,7 @@ import { SessionLoadingState } from "./routes/auth/session-states";
 import { LoginRoute, loginBeforeLoad, loginSearchSchema } from "./routes/login/login-route";
 import { ProjectDetailRoute } from "./routes/projects/project-detail-route";
 import { ProjectsRoute } from "./routes/projects/projects-route";
+import { sourceDocumentsSearchSchema } from "./routes/projects/source-documents-search";
 import { RootLayout } from "./routes/root-layout";
 import { queryClient } from "./state/query-client";
 
@@ -83,10 +84,36 @@ const projectDetailRoute = createRoute({
   component: ProjectDetailRoute,
 });
 
+/**
+ * Module 2 Source Document Vault — list surface. `validateSearch` gives filter
+ * state a stable route-search shape so deep links preserve search/type/status.
+ */
+const sourceDocumentsRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/projects/$projectId/source-documents",
+  validateSearch: sourceDocumentsSearchSchema,
+  component: lazyRouteComponent(
+    () => import("./routes/projects/source-documents-route"),
+    "SourceDocumentsRoute",
+  ),
+});
+
+/** Module 2 Source Document Vault — detail surface for one source lineage head. */
+const sourceDetailRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/projects/$projectId/source-documents/$sourceId",
+  component: lazyRouteComponent(
+    () => import("./routes/projects/source-detail-route"),
+    "SourceDetailRoute",
+  ),
+});
+
 const authenticatedRoute = authenticatedLayoutRoute.addChildren([
   indexRoute,
   projectsRoute,
   projectDetailRoute,
+  sourceDocumentsRoute,
+  sourceDetailRoute,
 ]);
 
 const routeTree = import.meta.env.DEV

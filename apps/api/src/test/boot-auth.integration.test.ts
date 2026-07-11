@@ -24,7 +24,16 @@ describe("integration: boot, migrations and authentication", () => {
 
     const health = await agent.get(`${API_PREFIX}/health`);
     expect(health.status).toBe(200);
-    expect(health.body).toEqual({ status: "ok", service: "api", version: "0.0.0" });
+    expect(health.body).toEqual({
+      status: "ok",
+      service: "api",
+      version: "0.0.0",
+      mode: "core-only",
+      checks: [
+        { name: "storage", ok: false, required: false, detail: "not configured" },
+        { name: "queue", ok: false, required: false, detail: "not configured" },
+      ],
+    });
 
     // Migration 0000 (text-search extensions).
     const extensions = await harness.client.pool.query<{ extname: string }>(

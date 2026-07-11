@@ -12,6 +12,9 @@ import {
   DATABASE_CLIENT,
   NULL_RUNTIME,
   PROJECT_ACCESS_QUERIES,
+  SOURCE_DOCUMENT_QUEUE,
+  SOURCE_STORAGE,
+  SOURCE_VAULT_CONFIG,
 } from "./runtime.js";
 import { RuntimeModule } from "./runtime.module.js";
 
@@ -26,6 +29,9 @@ class FeatureService {
     @Inject(DATABASE_CLIENT) readonly db: Database | null,
     @Inject(PROJECT_ACCESS_QUERIES) readonly projectAccessQueries: unknown,
     @Inject(AUTH_DIRECTORY) readonly authDirectory: unknown,
+    @Inject(SOURCE_STORAGE) readonly storage: unknown,
+    @Inject(SOURCE_DOCUMENT_QUEUE) readonly queue: unknown,
+    @Inject(SOURCE_VAULT_CONFIG) readonly sourceVault: unknown,
   ) {}
 }
 
@@ -48,7 +54,16 @@ describe("RuntimeModule", () => {
 
     expect(app.get(AUTH_INSTANCE)).toBeNull();
     expect(app.get(DATABASE_CLIENT)).toBeNull();
-    expect(NULL_RUNTIME).toEqual({ auth: null, db: null });
+    expect(app.get(SOURCE_STORAGE)).toBeNull();
+    expect(app.get(SOURCE_DOCUMENT_QUEUE)).toBeNull();
+    expect(app.get(SOURCE_VAULT_CONFIG)).toBeNull();
+    expect(NULL_RUNTIME).toEqual({
+      auth: null,
+      db: null,
+      storage: null,
+      documentQueue: null,
+      sourceVault: null,
+    });
   });
 
   it("provides Drizzle-backed PROJECT_ACCESS_QUERIES/AUTH_DIRECTORY even with a null database", async () => {
@@ -72,18 +87,29 @@ describe("RuntimeModule", () => {
     expect(feature.db).toBeNull();
     expect(feature.projectAccessQueries).toBeInstanceOf(DrizzleProjectAccessQueries);
     expect(feature.authDirectory).toBeInstanceOf(DrizzleAuthDirectory);
+    expect(feature.storage).toBeNull();
+    expect(feature.queue).toBeNull();
+    expect(feature.sourceVault).toBeNull();
   });
 
-  it("passes through a supplied non-null runtime's auth/db instances", async () => {
+  it("passes through a supplied non-null runtime's auth/db/source-vault instances", async () => {
     const auth = { marker: "fake-auth" } as unknown as Auth;
     const db = { marker: "fake-db" } as unknown as Database;
+    const storage = { marker: "fake-storage" } as unknown as never;
+    const documentQueue = { marker: "fake-queue" } as unknown as never;
+    const sourceVault = { marker: "fake-source-vault" } as unknown as never;
 
-    @Module({ imports: [RuntimeModule.forRoot({ auth, db })] })
+    @Module({
+      imports: [RuntimeModule.forRoot({ auth, db, storage, documentQueue, sourceVault })],
+    })
     class RootModule {}
 
     app = await NestFactory.createApplicationContext(RootModule, { logger: false });
 
     expect(app.get(AUTH_INSTANCE)).toBe(auth);
     expect(app.get(DATABASE_CLIENT)).toBe(db);
+    expect(app.get(SOURCE_STORAGE)).toBe(storage);
+    expect(app.get(SOURCE_DOCUMENT_QUEUE)).toBe(documentQueue);
+    expect(app.get(SOURCE_VAULT_CONFIG)).toBe(sourceVault);
   });
 });

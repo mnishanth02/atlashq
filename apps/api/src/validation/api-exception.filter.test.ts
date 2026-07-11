@@ -59,6 +59,43 @@ class ErrorContractsController {
     throw z.object({ clientId: z.string().uuid() }).parse({ clientId: null });
   }
 
+  @Get("explicit-with-details")
+  explicitWithDetails(): never {
+    throw new ConflictException({
+      code: "SOURCE_DUPLICATE_CONFIRMATION_REQUIRED",
+      message: "Duplicate acknowledgement is required to persist this evidence.",
+      details: [
+        {
+          path: ["body", "duplicateAcknowledgement"],
+          code: "duplicate_confirmation_required",
+          message: "Duplicate acknowledgement is required to persist this evidence.",
+          metadata: {
+            matches: [
+              {
+                sourceId: "7b69cd3e-f52f-41ca-a57c-756d08727ffa",
+                title: "Existing evidence",
+                versionNumber: 1,
+                isArchived: false,
+                isSuperseded: false,
+                contributorId: "0c8ea111-b595-4eec-a7ec-a6f352ad29ef",
+                uploadedAt: "2026-01-01T00:00:00.000Z",
+              },
+            ],
+          },
+        },
+      ],
+    });
+  }
+
+  @Get("explicit-with-invalid-details")
+  explicitWithInvalidDetails(): never {
+    throw new ConflictException({
+      code: "SOURCE_DUPLICATE_CONFIRMATION_REQUIRED",
+      message: "Duplicate acknowledgement is required.",
+      details: [{ nope: true }],
+    });
+  }
+
   @Get("failure")
   failure(): never {
     throw new Error("database password leaked");
@@ -145,6 +182,35 @@ describe("ApiExceptionFilter", () => {
       code: "TEAPOT",
       message: "Short and stout.",
     });
+  });
+
+  it("passes through HttpException details with structured metadata", async () => {
+    const response = await fetch(`${baseUrl}/explicit-with-details`);
+    const body = apiErrorSchema.parse(await response.json());
+
+    expect(response.status).toBe(409);
+    expect(body).toMatchObject({
+      statusCode: 409,
+      code: "SOURCE_DUPLICATE_CONFIRMATION_REQUIRED",
+    });
+    expect(body.details).toHaveLength(1);
+    expect(body.details?.[0]).toMatchObject({
+      path: ["body", "duplicateAcknowledgement"],
+      code: "duplicate_confirmation_required",
+    });
+    const matches = (body.details?.[0]?.metadata as { matches?: unknown } | undefined)?.matches;
+    expect(Array.isArray(matches)).toBe(true);
+    expect((matches as Array<{ sourceId: string }>)[0]?.sourceId).toBe(
+      "7b69cd3e-f52f-41ca-a57c-756d08727ffa",
+    );
+  });
+
+  it("drops malformed HttpException details rather than leaking them", async () => {
+    const response = await fetch(`${baseUrl}/explicit-with-invalid-details`);
+    const body = apiErrorSchema.parse(await response.json());
+
+    expect(response.status).toBe(409);
+    expect(body.details).toBeUndefined();
   });
 
   it("does not leak internal exception messages", async () => {

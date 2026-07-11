@@ -98,6 +98,7 @@ const DASHBOARD_STATE_LABELS = {
   zero: "Zero recorded",
   not_started: "Not started",
   setup_required: "Setup required",
+  ready: "Ready",
 } as const satisfies Record<ProjectDashboardResponse["cards"][DashboardCardKey]["state"], string>;
 
 const DASHBOARD_CARD_META: Record<DashboardCardKey, DashboardCardMeta> = {
@@ -141,7 +142,7 @@ const DASHBOARD_CARD_META: Record<DashboardCardKey, DashboardCardMeta> = {
 
 export const PROJECT_WORKSPACE_TABS: WorkspaceTabDefinition[] = [
   { key: "overview", label: "Overview", kind: "live" },
-  { key: "source-documents", label: "Source Documents", kind: "placeholder" },
+  { key: "source-documents", label: "Source Documents", kind: "live" },
   { key: "requirements", label: "Requirements", kind: "placeholder" },
   { key: "questions-risks", label: "Questions & Risks", kind: "placeholder" },
   { key: "architecture", label: "Architecture", kind: "placeholder" },
@@ -151,17 +152,6 @@ export const PROJECT_WORKSPACE_TABS: WorkspaceTabDefinition[] = [
 ];
 
 export const PROJECT_PLACEHOLDER_TABS: WorkspacePlaceholderDefinition[] = [
-  {
-    key: "source-documents",
-    label: "Source Documents",
-    kind: "placeholder",
-    heading: "Source document intake is planned for V1",
-    description:
-      "This section will host source document intake, provenance anchors, and evidence-aware intake workflows.",
-    upcomingModule:
-      "Upcoming V1 module: source document registration, storage references, and traceable evidence links.",
-    dashboardCardKeys: ["sourceDocuments"],
-  },
   {
     key: "requirements",
     label: "Requirements",

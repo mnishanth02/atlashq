@@ -7,20 +7,38 @@
     "build": "tsc -p tsconfig.build.json",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run",
+    "test": "vitest run --project unit",
+    "test:integration": "vitest run --project integration --passWithNoTests",
     "start": "node dist/main.js",
     "dev": "tsc-watch --noClear -p tsconfig.build.json --onSuccess \"node --enable-source-maps dist/main.js\"",
     "health": "node dist/health-cli.js"
   },
   "dependencies": {
+    "@atlashq/config": "workspace:*",
+    "@atlashq/db": "workspace:*",
     "@atlashq/jobs": "workspace:*",
     "@atlashq/logger": "workspace:*",
+    "@atlashq/storage": "workspace:*",
+    "@atlashq/types": "workspace:*",
     "bullmq": "5.79.3",
+    "drizzle-orm": "0.45.2",
+    "file-type": "21.1.0",
+    "ioredis": "5.9.0",
+    "mammoth": "1.11.0",
+    "officeparser": "5.2.1",
+    "pdfjs-dist": "5.4.394",
     "pino": "10.3.1",
+    "playwright-core": "1.61.1",
+    "sharp": "0.34.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@testcontainers/postgresql": "12.0.4",
     "@types/node": "24.13.2",
+    "jszip": "3.10.1",
+    "pdf-lib": "1.17.1",
+    "testcontainers": "12.0.4",
     "vitest": "4.1.10"
   }
 }

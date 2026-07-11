@@ -91,6 +91,36 @@ jobs:
       - name: Run API integration suite
         run: pnpm test:api:integration
 
+  worker-integration:
+    name: Worker integration (Testcontainers)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build worker runtime dependencies
+        run: pnpm --filter @atlashq/worker... build
+
+      - name: Run worker integration suite
+        run: pnpm test:worker:integration
+
   web-components:
     name: Web components
     runs-on: ubuntu-latest
@@ -122,7 +152,7 @@ jobs:
         run: pnpm test:web:components
 
   e2e-chromium:
-    name: Chromium E2E
+    name: Chromium E2E (incl. Source Vault)
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -145,13 +175,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build API and web runtime dependencies
+      - name: Build API, web, and worker runtime dependencies
         run: |
           pnpm --filter @atlashq/api... build
           pnpm --filter @atlashq/web... build
+          pnpm --filter @atlashq/worker... build
 
       - name: Install Chromium and Linux browser dependencies
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run Chromium E2E suite
         run: pnpm exec playwright test
+
+      - name: Upload Playwright traces and process logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-chromium-artifacts
+          path: |
+            test-results/playwright
+            tests/e2e/.runtime
+          if-no-files-found: ignore
+          retention-days: 7

@@ -101,6 +101,13 @@ const requiredTables = [
   "audit_event",
   "traceability_link",
   "ai_run",
+  "source_upload_session",
+  "source_upload_file",
+  "source_document",
+  "source_document_file",
+  "source_extraction",
+  "source_chunk",
+  "reference_artifact",
 ];
 
 for (const tableName of requiredTables) {
@@ -219,6 +226,133 @@ const requiredColumns = {
     "created_at",
     "updated_at",
   ],
+  source_upload_session: [
+    "organization_id",
+    "project_id",
+    "actor_id",
+    "intake_mode",
+    "metadata_draft",
+    "supersedes_id",
+    "expected_content_hash",
+    "duplicate_match_ids",
+    "duplicate_acknowledged_at",
+    "duplicate_acknowledged_by",
+    "status",
+    "expires_at",
+    "confirmed_at",
+    "created_source_id",
+    "idempotency_key",
+    "created_at",
+    "updated_at",
+  ],
+  source_upload_file: [
+    "upload_session_id",
+    "ordinal",
+    "role",
+    "original_file_name",
+    "normalized_file_name",
+    "declared_mime_type",
+    "extension",
+    "expected_byte_size",
+    "expected_sha256",
+    "object_key",
+    "upload_status",
+    "object_store_metadata",
+    "created_at",
+    "updated_at",
+  ],
+  source_document: [
+    "organization_id",
+    "project_id",
+    "lineage_id",
+    "version_number",
+    "supersedes_id",
+    "source_type",
+    "document_format",
+    "title",
+    "notes",
+    "tags",
+    "provenance_date",
+    "content_hash",
+    "duplicate_acknowledged_match_ids",
+    "duplicate_acknowledged_at",
+    "duplicate_acknowledged_by",
+    "processing_status",
+    "ai_processing_status",
+    "created_at",
+    "created_by",
+    "updated_at",
+    "updated_by",
+    "archived_at",
+    "archived_by",
+    "version",
+  ],
+  source_document_file: [
+    "source_document_id",
+    "ordinal",
+    "role",
+    "original_file_name",
+    "download_file_name",
+    "format",
+    "declared_mime_type",
+    "byte_size",
+    "sha256",
+    "object_key",
+    "object_version_id",
+    "scan_status",
+    "scan_result",
+    "scan_signature_version",
+    "scanned_at",
+    "created_at",
+  ],
+  source_extraction: [
+    "source_document_id",
+    "extraction_version",
+    "status",
+    "parser_manifest",
+    "chunker_version",
+    "extracted_text_hash",
+    "preview_object_key",
+    "preview_object_version_id",
+    "started_at",
+    "completed_at",
+    "failure_code",
+    "failure_detail",
+    "created_at",
+  ],
+  source_chunk: [
+    "organization_id",
+    "project_id",
+    "source_document_id",
+    "source_extraction_id",
+    "sequence",
+    "content",
+    "character_count",
+    "content_hash",
+    "locator",
+    "created_at",
+  ],
+  reference_artifact: [
+    "source_document_id",
+    "organization_id",
+    "project_id",
+    "reference_kind",
+    "capture_method",
+    "access_type",
+    "intended_use",
+    "source_url",
+    "ip_review_status",
+    "ip_review_reason",
+    "ip_reviewed_by",
+    "ip_reviewed_at",
+    "attestation_text",
+    "attestation_version",
+    "attested_by",
+    "attested_at",
+    "audit_event_id",
+    "captured_at",
+    "created_at",
+  ],
 };
 
 for (const [tableName, columnNames] of Object.entries(requiredColumns)) {
@@ -239,6 +373,16 @@ assert(
     "arbitrary non-empty external correlation IDs, not only UUIDs.",
 );
 
+// source_chunk is fully append-only (module-02 §8.6): it never carries a soft-delete, archive, or
+// optimistic-version column the way mutable-metadata tables do.
+const sourceChunkColumns = snapshot.tables["public.source_chunk"].columns;
+for (const disallowedColumn of ["updated_at", "updated_by", "soft_deleted_at", "version"]) {
+  assert(
+    !sourceChunkColumns[disallowedColumn],
+    `source_chunk must remain append-only: unexpected column ${disallowedColumn}`,
+  );
+}
+
 const requiredConstraints = [
   "project_client_type_check",
   "project_status_check",
@@ -248,6 +392,21 @@ const requiredConstraints = [
   "ai_run_status_check",
   "ai_run_review_status_check",
   "audit_event_correlation_id_check",
+  "source_upload_session_status_check",
+  "source_upload_session_expected_content_hash_check",
+  "source_upload_file_expected_sha256_check",
+  "source_document_source_type_check",
+  "source_document_document_format_presence_check",
+  "source_document_processing_status_check",
+  "source_document_ai_processing_status_check",
+  "source_document_content_hash_check",
+  "source_document_file_sha256_check",
+  "source_document_file_scan_status_check",
+  "source_extraction_status_check",
+  "source_chunk_content_hash_check",
+  "reference_artifact_reference_kind_check",
+  "reference_artifact_ip_review_status_check",
+  "reference_artifact_capture_source_url_check",
 ];
 
 for (const constraintName of requiredConstraints) {
@@ -278,6 +437,22 @@ const requiredIndexes = [
   "traceability_link_from_idx",
   "traceability_link_to_idx",
   "ai_run_project_status_idx",
+  "source_upload_session_organization_project_status_idx",
+  "source_upload_session_expires_at_idx",
+  "source_upload_session_idempotency_key_uidx",
+  "source_upload_file_session_ordinal_uidx",
+  "source_upload_file_object_key_uidx",
+  "source_document_lineage_version_uidx",
+  "source_document_supersedes_id_uidx",
+  "source_document_project_status_idx",
+  "source_document_project_content_hash_idx",
+  "source_document_title_trgm_idx",
+  "source_document_file_document_ordinal_uidx",
+  "source_document_file_object_key_uidx",
+  "source_extraction_document_version_uidx",
+  "source_chunk_extraction_sequence_uidx",
+  "reference_artifact_source_document_id_uidx",
+  "reference_artifact_project_ip_review_status_idx",
 ];
 
 for (const indexName of requiredIndexes) {
@@ -322,6 +497,134 @@ assert(
 assert(
   !/before\s+insert\s+on\s+"audit_event"/iu.test(migrations),
   "audit_event append-only guard must not block INSERT.",
+);
+
+// Module 2 Source Document Vault: source_document, source_document_file, source_extraction,
+// source_chunk, and reference_artifact are archive-only (module-02 §8). Every one of them must
+// reject DELETE and TRUNCATE outright, while source_upload_session/source_upload_file remain
+// deletable for expiry cleanup and must NOT gain delete/truncate guards.
+assert(
+  /create\s+or\s+replace\s+function\s+source_vault_prevent_delete/iu.test(migrations),
+  "Missing shared source-vault archive-only trigger function migration.",
+);
+
+const sourceVaultArchiveOnlyTables = [
+  "source_document",
+  "source_document_file",
+  "source_extraction",
+  "source_chunk",
+  "reference_artifact",
+];
+
+for (const tableName of sourceVaultArchiveOnlyTables) {
+  assert(
+    new RegExp(
+      `drop\\s+trigger\\s+if\\s+exists\\s+${tableName}_no_delete[\\s\\S]*?` +
+        `create\\s+trigger\\s+${tableName}_no_delete\\s*\\n?before\\s+delete\\s+on\\s+"${tableName}"`,
+      "iu",
+    ).test(migrations),
+    `Missing archive-only DELETE guard trigger for ${tableName}.`,
+  );
+  assert(
+    new RegExp(
+      `drop\\s+trigger\\s+if\\s+exists\\s+${tableName}_no_truncate[\\s\\S]*?` +
+        `create\\s+trigger\\s+${tableName}_no_truncate\\s*\\n?before\\s+truncate\\s+on\\s+"${tableName}"`,
+      "iu",
+    ).test(migrations),
+    `Missing archive-only TRUNCATE guard trigger for ${tableName}.`,
+  );
+}
+
+for (const tableName of ["source_upload_session", "source_upload_file"]) {
+  assert(
+    !new RegExp(`before\\s+delete\\s+on\\s+"${tableName}"`, "iu").test(migrations),
+    `${tableName} must remain deletable for expiry cleanup and must not gain a delete guard.`,
+  );
+}
+
+// Partial-mutation guards: source_document, source_document_file, source_extraction, and
+// reference_artifact allow specific lifecycle/processing/metadata/review columns to change, while
+// source_chunk blocks UPDATE entirely (module-02 §8.3-§8.7).
+assert(
+  /create\s+or\s+replace\s+function\s+source_document_guard_update/iu.test(migrations),
+  "Missing source_document immutable-column UPDATE guard function.",
+);
+assert(
+  /create\s+or\s+replace\s+function\s+source_document_file_guard_update/iu.test(migrations),
+  "Missing source_document_file immutable-column UPDATE guard function.",
+);
+assert(
+  /create\s+or\s+replace\s+function\s+source_extraction_guard_update/iu.test(migrations),
+  "Missing source_extraction terminal-state UPDATE guard function.",
+);
+assert(
+  /create\s+or\s+replace\s+function\s+reference_artifact_guard_update/iu.test(migrations),
+  "Missing reference_artifact attestation-immutability UPDATE guard function.",
+);
+assert(
+  /create\s+trigger\s+source_chunk_no_update\s*\n?before\s+update\s+on\s+"source_chunk"/iu.test(
+    migrations,
+  ),
+  "source_chunk must reject every UPDATE (fully append-only).",
+);
+
+// Lineage/version-ancestry guard: source_document root rows must self-anchor (supersedes_id
+// null, version_number 1, lineage_id = id) and replacement rows must inherit
+// organization_id/project_id/lineage_id from their predecessor and advance version_number by
+// exactly one (module-02 §8.3). Enforced at INSERT since these columns are already immutable on
+// UPDATE via source_document_guard_update.
+assert(
+  /create\s+or\s+replace\s+function\s+source_document_lineage_guard/iu.test(migrations),
+  "Missing source_document lineage/version ancestry guard function.",
+);
+assert(
+  /create\s+trigger\s+source_document_lineage_guard\s*\n?before\s+insert\s+on\s+"source_document"/iu.test(
+    migrations,
+  ),
+  "Missing source_document lineage/version ancestry BEFORE INSERT trigger.",
+);
+
+// Cross-tenant scope-consistency guards for denormalized organization/project/actor relations
+// most exposed to corruption (module-02 §8.1, §8.3, §8.6, §8.7).
+assert(
+  /create\s+or\s+replace\s+function\s+source_document_scope_guard/iu.test(migrations),
+  "Missing source_document organization/project/creator scope guard function.",
+);
+assert(
+  /create\s+trigger\s+source_document_scope_guard\s*\n?before\s+insert\s+on\s+"source_document"/iu.test(
+    migrations,
+  ),
+  "Missing source_document scope guard BEFORE INSERT trigger.",
+);
+assert(
+  /create\s+or\s+replace\s+function\s+source_upload_session_scope_guard/iu.test(migrations),
+  "Missing source_upload_session organization/project/actor scope guard function.",
+);
+assert(
+  /create\s+trigger\s+source_upload_session_scope_guard\s*\n?before\s+insert\s+or\s+update\s+on\s+"source_upload_session"/iu.test(
+    migrations,
+  ),
+  "Missing source_upload_session scope guard BEFORE INSERT OR UPDATE trigger.",
+);
+assert(
+  /create\s+or\s+replace\s+function\s+reference_artifact_scope_guard/iu.test(migrations),
+  "Missing reference_artifact organization/project/source_type/actor scope guard function.",
+);
+assert(
+  /create\s+trigger\s+reference_artifact_scope_guard\s*\n?before\s+insert\s+or\s+update\s+on\s+"reference_artifact"/iu.test(
+    migrations,
+  ),
+  "Missing reference_artifact scope guard BEFORE INSERT OR UPDATE trigger.",
+);
+assert(
+  /create\s+or\s+replace\s+function\s+source_chunk_scope_guard/iu.test(migrations),
+  "Missing source_chunk organization/project/extraction-chain scope guard function.",
+);
+assert(
+  /create\s+trigger\s+source_chunk_scope_guard\s*\n?before\s+insert\s+on\s+"source_chunk"/iu.test(
+    migrations,
+  ),
+  "Missing source_chunk scope guard BEFORE INSERT trigger.",
 );
 
 console.log(

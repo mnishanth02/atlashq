@@ -16,6 +16,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
 } from "@nestjs/common";
 import type { AuditRecordInput } from "../../audit/audit-input.js";
 import type { AuditRequestContext } from "../../audit/audit-request-context.js";
@@ -24,6 +25,8 @@ import type { AuditTransaction } from "../../audit/audit-transaction.js";
 import { AuditWriter } from "../../audit/audit-writer.js";
 import type { RequestSessionContext } from "../../auth/session-context.js";
 import { DATABASE_CLIENT } from "../../runtime/runtime.js";
+// biome-ignore lint/style/useImportType: Nest needs the runtime class for constructor injection metadata.
+import { SourceDocumentsService } from "../source-documents/source-documents.service.js";
 import type {
   AuditEventListResponse,
   MembershipListResponse,
@@ -83,6 +86,7 @@ export class ProjectsService {
     @Inject(DATABASE_CLIENT) private readonly db: Database | null,
     @Inject(PROJECTS_REPOSITORY) private readonly repository: ProjectsRepository,
     private readonly auditWriter: AuditWriter,
+    @Optional() private readonly sourceDocuments?: SourceDocumentsService,
   ) {}
 
   private requireDb(): Database {
@@ -936,7 +940,14 @@ export class ProjectsService {
       throw new NotFoundException("Project not found.");
     }
 
-    return buildProjectDashboard(toProjectResponse(detail));
+    // Wire the live source-document counts into the dashboard card. When the source-documents
+    // service isn't provided (e.g., tests that construct ProjectsService directly), the card
+    // falls back to the module-01 not-started placeholder.
+    const sourceCounts = this.sourceDocuments
+      ? await this.sourceDocuments.getSourceCounts(session, projectId)
+      : undefined;
+
+    return buildProjectDashboard(toProjectResponse(detail), sourceCounts);
   }
 
   async listAuditEvents(

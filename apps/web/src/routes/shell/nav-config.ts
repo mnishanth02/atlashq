@@ -38,4 +38,6 @@ export const SECONDARY_NAV_ITEMS: NavItem[] = [
 export const ROUTE_BREADCRUMB_LABELS: Record<string, string> = {
   "/projects": "Projects",
   "/projects/$projectId": "Project",
+  "/projects/$projectId/source-documents": "Source documents",
+  "/projects/$projectId/source-documents/$sourceId": "Source document",
 };

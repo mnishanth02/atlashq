@@ -22,7 +22,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@atlashq/types": "workspace:*"
+    "@atlashq/types": "workspace:*",
+    "minio": "8.0.7"
   },
   "devDependencies": {
     "@types/node": "24.13.2",

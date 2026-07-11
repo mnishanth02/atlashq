@@ -19,6 +19,13 @@ export const apiErrorDetailSchema = z
     path: z.array(z.union([z.string().trim().min(1), z.number().int().min(0)])).min(1),
     message: z.string().trim().min(1),
     code: z.string().trim().min(1),
+    /**
+     * Optional structured metadata that clients can render inline (e.g. duplicate matches for a
+     * confirmation dialog). Keys are opaque to the transport layer; producers should document
+     * per-code metadata contracts. MUST NOT contain signed URLs, session tokens, or other
+     * sensitive material — the envelope crosses trust boundaries.
+     */
+    metadata: z.record(z.string(), z.unknown()).optional(),
   })
   .strict();
 

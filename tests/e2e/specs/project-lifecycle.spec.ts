@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/base";
 import {
+  E2E_MEMBER_NAME,
   E2E_ORGANIZATION_NAME,
   E2E_PROJECT_NAME,
   E2E_USER_EMAIL,
@@ -79,8 +80,12 @@ test("organization admin completes the project lifecycle through the UI", async 
     page.getByText("Updated through an optimistic-concurrency project edit.", { exact: true }),
   ).toBeVisible();
 
-  await expect(page.getByText("Not started", { exact: true })).toHaveCount(5);
-  await expect(page.getByText("Zero recorded", { exact: true })).toHaveCount(1);
+  // The Source Vault feature flag is enabled for the E2E organization (module-02 coverage), so
+  // the "Source documents" readiness card reports "Zero recorded" (an actionable, feature-enabled
+  // empty state) rather than "Not started" (the feature-disabled placeholder) -- one fewer "Not
+  // started" card and one more "Zero recorded" card than when the flag is off.
+  await expect(page.getByText("Not started", { exact: true })).toHaveCount(4);
+  await expect(page.getByText("Zero recorded", { exact: true })).toHaveCount(2);
   await expect(page.getByText("0 recorded", { exact: true })).toHaveCount(6);
   await expect(page.getByText("Readiness cards stay honest.", { exact: true })).toBeVisible();
   await expect(page.locator("body")).not.toContainText(/AI analysis/i);
@@ -90,11 +95,11 @@ test("organization admin completes the project lifecycle through the UI", async 
   await expect(ownerMembership).toContainText("Project Owner");
   await expect(ownerMembership).toContainText("Active");
 
-  // The membership picker is directory-backed (not a raw UUID input): the only
-  // organization user is already the project owner, so the picker should report
-  // no available members rather than fabricating an entry.
+  // The membership picker is directory-backed (not a raw UUID input): the E2E organization also
+  // provisions a second (non-admin) user for Source Vault permission-boundary coverage, so that
+  // user -- not yet a member of this project -- should surface as a selectable option here.
   await page.getByRole("combobox", { name: "Member", exact: true }).click();
-  await expect(page.getByText("No members available.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("option", { name: E2E_MEMBER_NAME, exact: false })).toBeVisible();
   await page.keyboard.press("Escape");
 
   await page.getByRole("tab", { name: "Activity", exact: true }).click();

@@ -18,6 +18,7 @@ import {
   project,
   projectMembership,
   session,
+  sourceChunk,
   traceabilityLink,
   user,
   verification,
@@ -32,7 +33,14 @@ const expectedTableNames = [
   "project",
   "project_membership",
   "rate_limit",
+  "reference_artifact",
   "session",
+  "source_chunk",
+  "source_document",
+  "source_document_file",
+  "source_extraction",
+  "source_upload_file",
+  "source_upload_session",
   "traceability_link",
   "user",
   "verification",
@@ -171,6 +179,14 @@ describe("database schema", () => {
 
   it("keeps audit events append-only at the schema shape", () => {
     const columns = getTableConfig(auditEvent).columns.map((column) => column.name);
+
+    expect(columns).not.toEqual(
+      expect.arrayContaining(["updated_at", "updated_by", "soft_deleted_at", "version"]),
+    );
+  });
+
+  it("keeps source chunks append-only at the schema shape", () => {
+    const columns = getTableConfig(sourceChunk).columns.map((column) => column.name);
 
     expect(columns).not.toEqual(
       expect.arrayContaining(["updated_at", "updated_by", "soft_deleted_at", "version"]),

@@ -8,6 +8,9 @@ import {
   DATABASE_CLIENT,
   NULL_RUNTIME,
   PROJECT_ACCESS_QUERIES,
+  SOURCE_DOCUMENT_QUEUE,
+  SOURCE_STORAGE,
+  SOURCE_VAULT_CONFIG,
 } from "./runtime.js";
 
 /**
@@ -15,8 +18,9 @@ import {
  * default {@link NULL_RUNTIME} for offline OpenAPI generation) and imported by
  * `AppModule.forRoot`. Marked `@Global()` so every independently authored
  * feature module can inject `AUTH_INSTANCE`, `DATABASE_CLIENT`,
- * `PROJECT_ACCESS_QUERIES`, or `AUTH_DIRECTORY` directly, without adding this
- * module to its own `imports` and without touching `AppModule` internals.
+ * `PROJECT_ACCESS_QUERIES`, `AUTH_DIRECTORY`, `SOURCE_STORAGE`,
+ * `SOURCE_DOCUMENT_QUEUE`, or `SOURCE_VAULT_CONFIG` directly, without adding
+ * this module to its own `imports` and without touching `AppModule` internals.
  */
 @Global()
 @Module({})
@@ -36,8 +40,19 @@ export class RuntimeModule {
           provide: AUTH_DIRECTORY,
           useFactory: () => new DrizzleAuthDirectory(runtime.db),
         },
+        { provide: SOURCE_STORAGE, useValue: runtime.storage ?? null },
+        { provide: SOURCE_DOCUMENT_QUEUE, useValue: runtime.documentQueue ?? null },
+        { provide: SOURCE_VAULT_CONFIG, useValue: runtime.sourceVault ?? null },
       ],
-      exports: [AUTH_INSTANCE, DATABASE_CLIENT, PROJECT_ACCESS_QUERIES, AUTH_DIRECTORY],
+      exports: [
+        AUTH_INSTANCE,
+        DATABASE_CLIENT,
+        PROJECT_ACCESS_QUERIES,
+        AUTH_DIRECTORY,
+        SOURCE_STORAGE,
+        SOURCE_DOCUMENT_QUEUE,
+        SOURCE_VAULT_CONFIG,
+      ],
     };
   }
 }

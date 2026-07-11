@@ -282,21 +282,36 @@ function zeroSection(label: string) {
 }
 
 /**
- * Build the Module 1 dashboard: a real project summary plus honest zero-state cards. Every card
- * reports zero / not-started so nothing implies later-module analysis has already run.
+ * Build the Module 1 dashboard: a real project summary plus honest zero-state cards. Every
+ * other card reports zero / not-started so nothing implies later-module analysis has already
+ * run. The optional `sourceCounts` argument lets module-02 (Source Vault) surface real counts
+ * without breaking the placeholder contract for the remaining cards.
  */
-export function buildProjectDashboard(project: ProjectResponse): ProjectDashboardResponse {
+export function buildProjectDashboard(
+  project: ProjectResponse,
+  sourceCounts?: { total: number; ready: number; quarantined: number; failed: number },
+): ProjectDashboardResponse {
+  const sourceDocumentsCard =
+    sourceCounts && sourceCounts.total > 0
+      ? { state: "ready" as const, count: sourceCounts.total, label: "Source documents" }
+      : sourceCounts
+        ? { state: "zero" as const, count: 0, label: "Source documents" }
+        : notStartedSection("Source documents");
+  const nextActions =
+    sourceCounts && sourceCounts.total > 0
+      ? ["Review or add source documents."]
+      : ["Prepare for source document intake."];
   return projectDashboardResponseSchema.parse({
     project,
     cards: {
-      sourceDocuments: notStartedSection("Source documents"),
+      sourceDocuments: sourceDocumentsCard,
       requirements: notStartedSection("Requirements"),
       openQuestions: notStartedSection("Open questions"),
       risksAndDeliveryItems: zeroSection("Risks & delivery items"),
       architectureReview: notStartedSection("Architecture review"),
       baselineAndHandoff: notStartedSection("Baseline & handoff"),
     },
-    nextActions: ["Prepare for source document intake."],
+    nextActions,
   });
 }
 

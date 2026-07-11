@@ -15,6 +15,10 @@ const CLIENTS = `${API_PREFIX}/clients`;
 const PROJECTS = `${API_PREFIX}/projects`;
 const ORGANIZATION_USERS = `${API_PREFIX}/organizations/current/users`;
 
+function project(projectId: string): string {
+  return `${PROJECTS}/${projectId}`;
+}
+
 type JsonBody = Record<string, unknown>;
 
 function send(
@@ -198,4 +202,215 @@ export async function findAuditEvents(db: Database, filter: AuditFilter): Promis
 export async function auditActionsForProject(db: Database, projectId: string): Promise<string[]> {
   const rows = await findAuditEvents(db, { projectId });
   return rows.map((row) => row.action);
+}
+
+// --- Source Documents (Module 2) ---
+
+export function createUploadSession(
+  agent: TestAgent,
+  projectId: string,
+  body: JsonBody,
+  correlationId?: string,
+) {
+  return send(
+    agent,
+    "post",
+    `${project(projectId)}/source-document-upload-sessions`,
+    body,
+    correlationId,
+  );
+}
+
+export function getUploadSession(agent: TestAgent, projectId: string, sessionId: string) {
+  return get(agent, `${project(projectId)}/source-document-upload-sessions/${sessionId}`);
+}
+
+export function confirmUploadSession(
+  agent: TestAgent,
+  projectId: string,
+  sessionId: string,
+  body: JsonBody = {},
+  correlationId?: string,
+) {
+  return send(
+    agent,
+    "post",
+    `${project(projectId)}/source-document-upload-sessions/${sessionId}/confirm`,
+    body,
+    correlationId,
+  );
+}
+
+export function cancelUploadSession(
+  agent: TestAgent,
+  projectId: string,
+  sessionId: string,
+  body: JsonBody = {},
+) {
+  return send(
+    agent,
+    "post",
+    `${project(projectId)}/source-document-upload-sessions/${sessionId}/cancel`,
+    body,
+  );
+}
+
+export function listSources(agent: TestAgent, projectId: string, query = "") {
+  return get(agent, `${project(projectId)}/source-documents${query}`);
+}
+
+export function getSourceVaultCapabilities(agent: TestAgent, projectId: string) {
+  return get(agent, `${project(projectId)}/source-vault/capabilities`);
+}
+
+export function getSource(agent: TestAgent, projectId: string, sourceId: string) {
+  return get(agent, `${project(projectId)}/source-documents/${sourceId}`);
+}
+
+export function listExtractions(agent: TestAgent, projectId: string, sourceId: string) {
+  return get(agent, `${project(projectId)}/source-documents/${sourceId}/extractions`);
+}
+
+export function createManualSource(
+  agent: TestAgent,
+  projectId: string,
+  body: JsonBody,
+  correlationId?: string,
+) {
+  return send(agent, "post", `${project(projectId)}/source-documents/manual`, body, correlationId);
+}
+
+export function createReferenceSource(
+  agent: TestAgent,
+  projectId: string,
+  body: JsonBody,
+  correlationId?: string,
+) {
+  return send(
+    agent,
+    "post",
+    `${project(projectId)}/source-documents/references`,
+    body,
+    correlationId,
+  );
+}
+
+export function patchSourceMetadata(
+  agent: TestAgent,
+  projectId: string,
+  sourceId: string,
+  body: JsonBody,
+) {
+  return send(agent, "patch", `${project(projectId)}/source-documents/${sourceId}/metadata`, body);
+}
+
+export function archiveSource(
+  agent: TestAgent,
+  projectId: string,
+  sourceId: string,
+  body: JsonBody = {},
+) {
+  return send(agent, "post", `${project(projectId)}/source-documents/${sourceId}/archive`, body);
+}
+
+export function restoreSource(
+  agent: TestAgent,
+  projectId: string,
+  sourceId: string,
+  body: JsonBody = {},
+) {
+  return send(agent, "post", `${project(projectId)}/source-documents/${sourceId}/restore`, body);
+}
+
+export function createVersionUploadSession(
+  agent: TestAgent,
+  projectId: string,
+  sourceId: string,
+  body: JsonBody,
+) {
+  return send(
+    agent,
+    "post",
+    `${project(projectId)}/source-documents/${sourceId}/versions/upload-session`,
+    body,
+  );
+}
+
+export function createVersionManualSource(
+  agent: TestAgent,
+  projectId: string,
+  sourceId: string,
+  body: JsonBody,
+) {
+  return send(
+    agent,
+    "post",
+    `${project(projectId)}/source-documents/${sourceId}/versions/manual`,
+    body,
+  );
+}
+
+export function getSourceDownloadUrl(
+  agent: TestAgent,
+  projectId: string,
+  sourceId: string,
+  fileId: string,
+) {
+  return get(
+    agent,
+    `${project(projectId)}/source-documents/${sourceId}/files/${fileId}/download-url`,
+  );
+}
+
+export function getSourcePreviewUrl(
+  agent: TestAgent,
+  projectId: string,
+  sourceId: string,
+  fileId: string,
+) {
+  return get(
+    agent,
+    `${project(projectId)}/source-documents/${sourceId}/files/${fileId}/preview-url`,
+  );
+}
+
+export function requestReferenceCapture(
+  agent: TestAgent,
+  projectId: string,
+  sourceId: string,
+  body: JsonBody,
+) {
+  return send(
+    agent,
+    "post",
+    `${project(projectId)}/source-documents/${sourceId}/reference-capture`,
+    body,
+  );
+}
+
+export function updateReferenceIpReview(
+  agent: TestAgent,
+  projectId: string,
+  sourceId: string,
+  body: JsonBody,
+) {
+  return send(agent, "post", `${project(projectId)}/source-documents/${sourceId}/ip-review`, body);
+}
+
+export function retrySourceProcessing(
+  agent: TestAgent,
+  projectId: string,
+  sourceId: string,
+  body: JsonBody,
+) {
+  return send(
+    agent,
+    "post",
+    `${project(projectId)}/source-documents/${sourceId}/retry-processing`,
+    body,
+  );
+}
+
+export function getProjectDashboard(agent: TestAgent, projectId: string) {
+  return get(agent, `${project(projectId)}/dashboard`);
 }

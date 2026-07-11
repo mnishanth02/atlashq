@@ -47,8 +47,16 @@ export type ProjectPermission =
   | "project:write"
   | "project:admin"
   | "requirements:review"
-  | "architecture:review";
+  | "architecture:review"
+  | "sources:read"
+  | "sources:write";
 
+// `sources:read`/`sources:write` are Module 2 Source Document Vault permissions (module-02 §7).
+// They are intentionally distinct from `project:read`/`project:write` so Developer/QA can read
+// project data yet remain read-only for source evidence, and so Client Viewer / Approver (which
+// has no project mutation rights) stays fully excluded from the vault. IP-review clearance reuses
+// `project:admin` rather than introducing a third permission because its grantees (Admin, Project
+// Owner) already match module-02's IP-review authorization rule exactly.
 export const rolePermissions = {
   [projectRoles.admin]: [
     "project:read",
@@ -56,6 +64,8 @@ export const rolePermissions = {
     "project:admin",
     "requirements:review",
     "architecture:review",
+    "sources:read",
+    "sources:write",
   ],
   [projectRoles.projectOwner]: [
     "project:read",
@@ -63,15 +73,25 @@ export const rolePermissions = {
     "project:admin",
     "requirements:review",
     "architecture:review",
+    "sources:read",
+    "sources:write",
   ],
-  [projectRoles.architectTechLead]: ["project:read", "project:write", "architecture:review"],
+  [projectRoles.architectTechLead]: [
+    "project:read",
+    "project:write",
+    "architecture:review",
+    "sources:read",
+    "sources:write",
+  ],
   [projectRoles.businessAnalystCoordinator]: [
     "project:read",
     "project:write",
     "requirements:review",
+    "sources:read",
+    "sources:write",
   ],
-  [projectRoles.developer]: ["project:read", "project:write"],
-  [projectRoles.qa]: ["project:read", "requirements:review"],
+  [projectRoles.developer]: ["project:read", "project:write", "sources:read"],
+  [projectRoles.qa]: ["project:read", "requirements:review", "sources:read"],
   [projectRoles.clientViewerApprover]: [],
 } as const satisfies Record<ProjectRole, readonly ProjectPermission[]>;
 
@@ -83,8 +103,9 @@ export function projectRolesForPermission(permission: ProjectPermission): Projec
   return projectRoleValues.filter((role) => canProjectRole(role, permission));
 }
 
+/** `project:read` and `sources:read` are the only non-mutating permissions (module-02 §7). */
 export function isMutationPermission(permission: ProjectPermission): boolean {
-  return permission !== "project:read";
+  return permission !== "project:read" && permission !== "sources:read";
 }
 
 // ---------------------------------------------------------------------------
@@ -231,4 +252,157 @@ export const aiReviewStatusValues = ["pending", "accepted", "rejected"] as const
 export type AiReviewStatus = (typeof aiReviewStatusValues)[number];
 export function isAiReviewStatus(value: string): value is AiReviewStatus {
   return aiReviewStatusValues.includes(value as AiReviewStatus);
+}
+
+// ---------------------------------------------------------------------------
+// Module 2: Source Document Vault controlled values (module-02 §6, §8)
+// ---------------------------------------------------------------------------
+
+/** The three explicit source intake modes exposed on the Source Documents route (module-02 §6.1). */
+export const sourceIntakeModeValues = ["file_upload", "manual_text", "reference_artifact"] as const;
+export type SourceIntakeMode = (typeof sourceIntakeModeValues)[number];
+export function isSourceIntakeMode(value: string): value is SourceIntakeMode {
+  return sourceIntakeModeValues.includes(value as SourceIntakeMode);
+}
+
+/** `source_document.source_type` (module-02 §8.3). */
+export const sourceTypeValues = ["document", "reference", "manual"] as const;
+export type SourceType = (typeof sourceTypeValues)[number];
+export function isSourceType(value: string): value is SourceType {
+  return sourceTypeValues.includes(value as SourceType);
+}
+
+/**
+ * V1 supported document formats (module-02 §3). Legacy `.doc`, `.xls`, and `.ppt` are explicitly
+ * deferred and intentionally excluded.
+ */
+export const sourceDocumentFormatValues = [
+  "pdf",
+  "docx",
+  "txt",
+  "md",
+  "xlsx",
+  "csv",
+  "pptx",
+  "png",
+  "jpg",
+  "jpeg",
+  "webp",
+] as const;
+export type SourceDocumentFormat = (typeof sourceDocumentFormatValues)[number];
+export function isSourceDocumentFormat(value: string): value is SourceDocumentFormat {
+  return sourceDocumentFormatValues.includes(value as SourceDocumentFormat);
+}
+
+/** `source_upload_session.status` (module-02 §8.1). */
+export const uploadSessionStatusValues = [
+  "created",
+  "uploading",
+  "uploaded",
+  "confirmed",
+  "canceled",
+  "expired",
+] as const;
+export type UploadSessionStatus = (typeof uploadSessionStatusValues)[number];
+export function isUploadSessionStatus(value: string): value is UploadSessionStatus {
+  return uploadSessionStatusValues.includes(value as UploadSessionStatus);
+}
+
+/** `source_upload_file.role` / `source_document_file.role` (module-02 §8.2, §8.4). */
+export const uploadFileRoleValues = ["primary", "attachment", "snapshot"] as const;
+export type UploadFileRole = (typeof uploadFileRoleValues)[number];
+export function isUploadFileRole(value: string): value is UploadFileRole {
+  return uploadFileRoleValues.includes(value as UploadFileRole);
+}
+
+/** `source_document` processing state machine, including terminal alternatives (module-02 §6.9). */
+export const sourceProcessingStatusValues = [
+  "verification_pending",
+  "scan_pending",
+  "scanning",
+  "extraction_pending",
+  "extracting",
+  "ready",
+  "quarantined",
+  "failed",
+] as const;
+export type SourceProcessingStatus = (typeof sourceProcessingStatusValues)[number];
+export function isSourceProcessingStatus(value: string): value is SourceProcessingStatus {
+  return sourceProcessingStatusValues.includes(value as SourceProcessingStatus);
+}
+
+/**
+ * `source_document_file.scan_status` (module-02 §8.4, §9.3). Application-created manual/reference
+ * manifest objects are `not_required` because malware scanning only applies to user-uploaded bytes
+ * (module-02 §6.4).
+ */
+export const sourceFileScanStatusValues = [
+  "not_required",
+  "pending",
+  "clean",
+  "infected",
+  "failed",
+] as const;
+export type SourceFileScanStatus = (typeof sourceFileScanStatusValues)[number];
+export function isSourceFileScanStatus(value: string): value is SourceFileScanStatus {
+  return sourceFileScanStatusValues.includes(value as SourceFileScanStatus);
+}
+
+/** `source_extraction.status` (module-02 §8.5). */
+export const sourceExtractionStatusValues = ["pending", "running", "succeeded", "failed"] as const;
+export type SourceExtractionStatus = (typeof sourceExtractionStatusValues)[number];
+export function isSourceExtractionStatus(value: string): value is SourceExtractionStatus {
+  return sourceExtractionStatusValues.includes(value as SourceExtractionStatus);
+}
+
+/** `reference_artifact.reference_kind` (module-02 §6.7). */
+export const referenceKindValues = [
+  "url",
+  "screenshot_set",
+  "uploaded_export",
+  "article",
+  "app_store_listing",
+] as const;
+export type ReferenceKind = (typeof referenceKindValues)[number];
+export function isReferenceKind(value: string): value is ReferenceKind {
+  return referenceKindValues.includes(value as ReferenceKind);
+}
+
+/** `reference_artifact.capture_method` (module-02 §6.7). */
+export const referenceCaptureMethodValues = [
+  "manual_paste",
+  "user_uploaded_screenshot",
+  "on_demand_single_page_capture",
+] as const;
+export type ReferenceCaptureMethod = (typeof referenceCaptureMethodValues)[number];
+export function isReferenceCaptureMethod(value: string): value is ReferenceCaptureMethod {
+  return referenceCaptureMethodValues.includes(value as ReferenceCaptureMethod);
+}
+
+/** `reference_artifact.access_type` (module-02 §6.7). */
+export const referenceAccessTypeValues = ["public", "client_owned", "permissioned"] as const;
+export type ReferenceAccessType = (typeof referenceAccessTypeValues)[number];
+export function isReferenceAccessType(value: string): value is ReferenceAccessType {
+  return referenceAccessTypeValues.includes(value as ReferenceAccessType);
+}
+
+/** `reference_artifact.intended_use` (module-02 §6.7). */
+export const referenceIntendedUseValues = [
+  "inspiration",
+  "feature_parity",
+  "differentiation_baseline",
+] as const;
+export type ReferenceIntendedUse = (typeof referenceIntendedUseValues)[number];
+export function isReferenceIntendedUse(value: string): value is ReferenceIntendedUse {
+  return referenceIntendedUseValues.includes(value as ReferenceIntendedUse);
+}
+
+/**
+ * `reference_artifact.ip_review_status` (module-02 §6.7). Every new reference version starts
+ * `not_reviewed`; clearance never carries forward across versions.
+ */
+export const ipReviewStatusValues = ["not_reviewed", "cleared", "restricted"] as const;
+export type IpReviewStatus = (typeof ipReviewStatusValues)[number];
+export function isIpReviewStatus(value: string): value is IpReviewStatus {
+  return ipReviewStatusValues.includes(value as IpReviewStatus);
 }

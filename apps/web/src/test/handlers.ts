@@ -9,6 +9,16 @@ import type {
   ProjectMembershipListResponse,
   ProjectResponse,
 } from "@/features/api";
+import type {
+  SourceChunkListResponse,
+  SourceDetailResponse,
+  SourceExtractionListResponse,
+  SourceListResponse,
+  SourceSignedUrlResponse,
+  SourceVaultCapabilitiesResponse,
+  SourceVersionListResponse,
+  UploadSessionResponse,
+} from "@/features/source-documents";
 
 const api = (path: string) => `*/api/v1${path}`;
 
@@ -38,6 +48,56 @@ export const atlasHandlers = {
     http.get(api(`/projects/${projectId}/memberships`), () => HttpResponse.json(body)),
   activity: (projectId: string, body: ProjectAuditEventListResponse) =>
     http.get(api(`/projects/${projectId}/audit-events`), () => HttpResponse.json(body)),
+  sources: (projectId: string, body: SourceListResponse) =>
+    http.get(api(`/projects/${projectId}/source-documents`), () => HttpResponse.json(body)),
+  sourceVaultCapabilities: (projectId: string, body: SourceVaultCapabilitiesResponse) =>
+    http.get(api(`/projects/${projectId}/source-vault/capabilities`), () =>
+      HttpResponse.json(body),
+    ),
+  source: (projectId: string, sourceId: string, body: SourceDetailResponse) =>
+    http.get(api(`/projects/${projectId}/source-documents/${sourceId}`), () =>
+      HttpResponse.json(body),
+    ),
+  sourceVersions: (projectId: string, sourceId: string, body: SourceVersionListResponse) =>
+    http.get(api(`/projects/${projectId}/source-documents/${sourceId}/versions`), () =>
+      HttpResponse.json(body),
+    ),
+  sourceExtractions: (projectId: string, sourceId: string, body: SourceExtractionListResponse) =>
+    http.get(api(`/projects/${projectId}/source-documents/${sourceId}/extractions`), () =>
+      HttpResponse.json(body),
+    ),
+  sourceChunks: (projectId: string, sourceId: string, body: SourceChunkListResponse) =>
+    http.get(api(`/projects/${projectId}/source-documents/${sourceId}/chunks`), () =>
+      HttpResponse.json(body),
+    ),
+  sourceSignedUrl: (
+    projectId: string,
+    sourceId: string,
+    fileId: string,
+    purpose: "preview" | "download",
+    body: SourceSignedUrlResponse,
+  ) =>
+    http.get(
+      api(`/projects/${projectId}/source-documents/${sourceId}/files/${fileId}/${purpose}-url`),
+      () => HttpResponse.json(body),
+    ),
+  createUploadSession: (projectId: string, body: UploadSessionResponse) =>
+    http.post(api(`/projects/${projectId}/source-document-upload-sessions`), () =>
+      HttpResponse.json(body, { status: 201 }),
+    ),
+  confirmUploadSession: (projectId: string, sessionId: string, body: SourceDetailResponse) =>
+    http.post(
+      api(`/projects/${projectId}/source-document-upload-sessions/${sessionId}/confirm`),
+      () => HttpResponse.json(body),
+    ),
+  createManualSource: (projectId: string, body: SourceDetailResponse) =>
+    http.post(api(`/projects/${projectId}/source-documents/manual`), () =>
+      HttpResponse.json(body, { status: 201 }),
+    ),
+  createReferenceSource: (projectId: string, body: SourceDetailResponse) =>
+    http.post(api(`/projects/${projectId}/source-documents/references`), () =>
+      HttpResponse.json(body, { status: 201 }),
+    ),
 };
 
 export function apiError(

@@ -8,4 +8,5 @@ allowBuilds:
   msgpackr-extract: false
   msw: true
   protobufjs: true
+  sharp: true
   ssh2: true

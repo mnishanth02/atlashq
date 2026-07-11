@@ -25,7 +25,17 @@ export function AppBreadcrumbs() {
     return null;
   }
 
-  const showProjectsAncestor = current.fullPath === "/projects/$projectId";
+  const showProjectsAncestor =
+    current.fullPath === "/projects/$projectId" ||
+    current.fullPath === "/projects/$projectId/source-documents" ||
+    current.fullPath === "/projects/$projectId/source-documents/$sourceId";
+  const showProjectAncestor =
+    current.fullPath === "/projects/$projectId/source-documents" ||
+    current.fullPath === "/projects/$projectId/source-documents/$sourceId";
+  const showSourceListAncestor =
+    current.fullPath === "/projects/$projectId/source-documents/$sourceId";
+  const projectParams = (current.params as { projectId?: string }) ?? {};
+  const projectId = projectParams.projectId;
 
   return (
     <Breadcrumb>
@@ -35,6 +45,30 @@ export function AppBreadcrumbs() {
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link to="/projects">Projects</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+          </>
+        ) : null}
+        {showProjectAncestor && projectId ? (
+          <>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/projects/$projectId" params={{ projectId }}>
+                  Project
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+          </>
+        ) : null}
+        {showSourceListAncestor && projectId ? (
+          <>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/projects/$projectId/source-documents" params={{ projectId }}>
+                  Source documents
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

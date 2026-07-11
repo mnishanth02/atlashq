@@ -22,3 +22,6 @@ accepted plan changes the repository standard.
 Keep changes scoped to the active implementation plan. Do not commit real
 secrets, generated local environment files, nested lockfiles, or feature
 scaffolding outside the approved module boundary.
+
+For Module 2 work, bring up `core`, `worker`, `storage`, and `scan` together.
+Use the `bootstrap` profile only when provisioning the first admin.

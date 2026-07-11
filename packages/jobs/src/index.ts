@@ -20,10 +20,77 @@ export const baseJobPayloadSchema = z.object({
   submittedAt: z.string().datetime({ offset: true }),
 });
 
-export const documentProcessingJobPayloadSchema = baseJobPayloadSchema.extend({
-  documentId: z.string().trim().min(1).optional(),
-  objectKey: z.string().trim().min(1).optional(),
+// ---------------------------------------------------------------------------
+// Module 2: Source Document Vault document-processing job kinds (module-02 §10)
+// ---------------------------------------------------------------------------
+
+const requiredIdSchema = z.string().trim().min(1);
+const sha256HexSchema = z
+  .string()
+  .trim()
+  .regex(/^[0-9a-f]{64}$/i, "must be a lowercase hex SHA-256 hash");
+
+/**
+ * Fields every Module 2 document-processing job carries in addition to the generic base payload:
+ * organization/project scoping is mandatory (unlike the optional base `projectId`) so the worker
+ * can re-derive authorization/audit context without a DB round trip before the state check.
+ */
+const sourceJobBaseSchema = baseJobPayloadSchema.extend({
+  organizationId: requiredIdSchema,
+  projectId: requiredIdSchema,
 });
+
+/** Verifies declared size/hash and streams the object through ClamAV before scan-gated states unlock. */
+export const verifyAndScanJobPayloadSchema = sourceJobBaseSchema.extend({
+  kind: z.literal("verify-and-scan"),
+  sourceDocumentId: requiredIdSchema,
+  sourceDocumentFileId: requiredIdSchema,
+  objectKey: requiredIdSchema,
+  expectedSha256: sha256HexSchema,
+});
+
+/** Runs the deterministic parser/chunker against a pre-created (queued) extraction version row. */
+export const extractJobPayloadSchema = sourceJobBaseSchema.extend({
+  kind: z.literal("extract"),
+  sourceDocumentId: requiredIdSchema,
+  sourceExtractionId: requiredIdSchema,
+});
+
+/** Renders a safe preview object for a completed extraction version. */
+export const generatePreviewJobPayloadSchema = sourceJobBaseSchema.extend({
+  kind: z.literal("generate-preview"),
+  sourceDocumentId: requiredIdSchema,
+  sourceExtractionId: requiredIdSchema,
+});
+
+/** Captures a one-page reference artifact (screenshot/export) for a `reference` source document. */
+export const captureReferenceJobPayloadSchema = sourceJobBaseSchema.extend({
+  kind: z.literal("capture-reference"),
+  sourceDocumentId: requiredIdSchema,
+  actorId: requiredIdSchema,
+  captureUrl: z.url(),
+});
+
+/** Expires an unconfirmed upload session and releases its provisional objects/rows. */
+export const expireUploadSessionJobPayloadSchema = sourceJobBaseSchema.extend({
+  kind: z.literal("expire-upload-session"),
+  uploadSessionId: requiredIdSchema,
+});
+
+export const documentProcessingJobPayloadSchema = z.discriminatedUnion("kind", [
+  verifyAndScanJobPayloadSchema,
+  extractJobPayloadSchema,
+  generatePreviewJobPayloadSchema,
+  captureReferenceJobPayloadSchema,
+  expireUploadSessionJobPayloadSchema,
+]);
+
+export type DocumentProcessingJobKind = z.infer<typeof documentProcessingJobPayloadSchema>["kind"];
+export type DocumentProcessingJobPayload = z.infer<typeof documentProcessingJobPayloadSchema>;
+
+export function parseDocumentProcessingJobPayload(payload: unknown): DocumentProcessingJobPayload {
+  return documentProcessingJobPayloadSchema.parse(payload);
+}
 
 export const aiAnalysisJobPayloadSchema = baseJobPayloadSchema.extend({
   aiRunId: z.string().trim().min(1).optional(),
