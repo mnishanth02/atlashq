@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { coverageCategoryKeyValues as sharedCoverageCategoryKeyValues } from "@atlashq/types";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import {
@@ -13,6 +14,7 @@ import {
   createDatabaseClient,
   type Database,
   type DatabaseClient,
+  coverageCategoryKeyValues as databaseCoverageCategoryKeyValues,
   databaseSchema,
   organization,
   project,
@@ -28,12 +30,26 @@ const expectedTableNames = [
   "account",
   "ai_run",
   "audit_event",
+  "citation",
   "client",
+  "coverage_matrix_entry",
+  "delivery_item",
   "organization",
+  "organization_ai_provider_policy",
   "project",
   "project_membership",
   "rate_limit",
   "reference_artifact",
+  "requirement",
+  "requirement_analysis_batch",
+  "requirement_analysis_batch_chunk",
+  "requirement_analysis_run",
+  "requirement_analysis_snapshot",
+  "requirement_analysis_snapshot_chunk",
+  "requirement_analysis_snapshot_file",
+  "requirement_analysis_snapshot_source",
+  "requirement_analysis_stage",
+  "requirement_analysis_stage_dependency",
   "session",
   "source_chunk",
   "source_document",
@@ -47,6 +63,10 @@ const expectedTableNames = [
 ];
 
 describe("database schema", () => {
+  it("keeps fixed coverage keys aligned with the shared API contract", () => {
+    expect(databaseCoverageCategoryKeyValues).toEqual(sharedCoverageCategoryKeyValues);
+  });
+
   it("exports the complete Module 1 and Better Auth table set", () => {
     const tableNames = Object.values(databaseSchema)
       .map((table) => getTableConfig(table).name)

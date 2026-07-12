@@ -381,3 +381,602 @@ export function makeSourceVaultCapabilities(
     ...overrides,
   };
 }
+
+/* --------------------- Requirement Analysis fixtures --------------------- */
+
+import type {
+  AnalysisBatchListResponse,
+  AnalysisBatchSummary,
+  AnalysisRunDetailResponse,
+  AnalysisRunListResponse,
+  AnalysisRunSummary,
+  AnalysisStageListResponse,
+  AnalysisStageSummary,
+  CitationEvidenceResponse,
+  CitationListItem,
+  CitationListResponse,
+  CoverageEntry,
+  CoverageListResponse,
+  DeliveryItemDetailResponse,
+  DeliveryItemListItem,
+  DeliveryItemListResponse,
+  EligibleSourcePreviewItem,
+  EligibleSourcePreviewResponse,
+  ProviderPolicyListResponse,
+  ProviderPolicySummary,
+  RequirementAnalysisCapabilitiesResponse,
+  RequirementDetailResponse,
+  RequirementListItem,
+  RequirementListResponse,
+  TraceabilityLink,
+  TraceabilityListResponse,
+} from "@/features/requirement-analysis/requirement-analysis-api";
+
+export function makeRequirementAnalysisCapabilities(
+  overrides: Partial<RequirementAnalysisCapabilitiesResponse> = {},
+): RequirementAnalysisCapabilitiesResponse {
+  return {
+    readsEnabled: true,
+    analysisEnabled: true,
+    queueAvailable: true,
+    approvedProviderPolicyAvailable: true,
+    referenceFeatureExtractionEnabled: true,
+    safeDisabled: false,
+    safeDisabledReason: null,
+    ...overrides,
+  };
+}
+
+export function makeProviderPolicySummary(
+  overrides: Partial<ProviderPolicySummary> = {},
+): ProviderPolicySummary {
+  return {
+    id: "policy-1",
+    organizationId: "org-1",
+    version: 1,
+    policyName: "OpenAI production policy",
+    provider: "openai",
+    modelAlias: "gpt-5-analysis",
+    resolvedModelId: "gpt-5-analysis-2026-01",
+    dataRetentionMode: "zero_retention",
+    status: "approved",
+    approvedForRequirementAnalysis: true,
+    approvedBy: "11111111-1111-4111-8111-111111111111",
+    approvedAt: NOW,
+    approvalNote: "Approved for production requirement analysis.",
+    providerTermsSnapshotHash: "sha256:terms",
+    maxUsdPerRun: 5,
+    maxInputTokensPerRun: 200_000,
+    maxOutputTokensPerRun: 20_000,
+    maxWallClockSeconds: 900,
+    createdAt: NOW,
+    updatedAt: NOW,
+    ...overrides,
+  };
+}
+
+export function makeProviderPolicyListResponse(
+  items: ProviderPolicyListResponse["items"] = [makeProviderPolicySummary()],
+): ProviderPolicyListResponse {
+  return {
+    items,
+    pageInfo: { limit: 25, nextCursor: null, hasMore: false, total: items.length },
+  };
+}
+
+export function makeEligibleSourcePreviewItem(
+  overrides: Partial<EligibleSourcePreviewItem> = {},
+): EligibleSourcePreviewItem {
+  return {
+    sourceDocumentId: "source-1",
+    sourceLineageId: "lineage-1",
+    sourceVersionNumber: 1,
+    sourceType: "document",
+    documentFormat: "pdf",
+    title: "Initial requirements pack",
+    contentHash: "sha256:abcdef1234567890",
+    sourceExtractionId: "extraction-1",
+    sourceExtractionVersion: 1,
+    chunkerVersion: "v1",
+    chunkCount: 42,
+    totalCharacterCount: 128_000,
+    referenceIpReviewStatus: null,
+    included: true,
+    exclusionReason: null,
+    ...overrides,
+  };
+}
+
+export function makeEligibleSourcePreviewResponse(
+  sources: EligibleSourcePreviewItem[] = [makeEligibleSourcePreviewItem()],
+): EligibleSourcePreviewResponse {
+  const includedCount = sources.filter((source) => source.included).length;
+  return {
+    sources,
+    includedCount,
+    excludedCount: sources.length - includedCount,
+    generatedAt: NOW,
+  };
+}
+
+export function makeAnalysisRunSummary(
+  overrides: Partial<AnalysisRunSummary> = {},
+): AnalysisRunSummary {
+  return {
+    id: "run-1",
+    organizationId: "org-1",
+    projectId: "project-1",
+    requestedBy: "11111111-1111-4111-8111-111111111111",
+    mode: "fresh",
+    status: "completed",
+    sourceSnapshotId: "snapshot-1",
+    replayOfRunId: null,
+    reprocessOfRunId: null,
+    retryOfRunId: null,
+    warningCodes: [],
+    failureCode: null,
+    failureDetail: null,
+    failureRetryable: false,
+    failedStageId: null,
+    cancelRequestedAt: null,
+    cancelRequestedBy: null,
+    cancelReason: null,
+    startedAt: NOW,
+    completedAt: NOW,
+    createdAt: NOW,
+    updatedAt: NOW,
+    correlationId: "corr-run-1",
+    providerPolicy: {
+      providerPolicyId: "policy-1",
+      provider: "openai",
+      modelAlias: "gpt-5-analysis",
+      resolvedModelId: "gpt-5-analysis-2026-01",
+      dataRetentionMode: "zero_retention",
+    },
+    provenance: {
+      promptBundleVersion: "2026.07.1",
+      promptBundleHash: "sha256:prompt",
+      schemaBundleVersion: "2026.07.1",
+      schemaBundleHash: "sha256:schema",
+      pipelineVersion: "2026.07.1",
+      pipelineHash: "sha256:pipeline",
+      modelPolicyHash: "sha256:policy",
+    },
+    budgets: {
+      maxUsd: 5,
+      maxInputTokens: 200_000,
+      maxOutputTokens: 20_000,
+      maxWallClockSeconds: 900,
+    },
+    usage: {
+      inputTokensUsed: 42_000,
+      outputTokensUsed: 6_500,
+      costUsd: 1.24,
+    },
+    artifactCounts: {
+      requirements: 12,
+      citations: 30,
+      coverageEntries: 18,
+      deliveryItems: 6,
+    },
+    ...overrides,
+  };
+}
+
+export function makeAnalysisRunListResponse(
+  items: AnalysisRunSummary[] = [makeAnalysisRunSummary()],
+): AnalysisRunListResponse {
+  return {
+    items,
+    pageInfo: { limit: 25, nextCursor: null, hasMore: false, total: items.length },
+  };
+}
+
+export function makeAnalysisRunDetailResponse(
+  overrides: Partial<AnalysisRunDetailResponse> = {},
+): AnalysisRunDetailResponse {
+  const summary = makeAnalysisRunSummary();
+  return {
+    ...summary,
+    snapshot: {
+      id: "snapshot-1",
+      snapshotHash: "sha256:snapshot",
+      sourceCount: 3,
+      chunkCount: 126,
+      totalCharacterCount: 384_000,
+      eligibilityRulesVersion: "2026.07.1",
+      createdAt: NOW,
+    },
+    readNotices: [],
+    ...overrides,
+  };
+}
+
+export function makeAnalysisStageSummary(
+  overrides: Partial<AnalysisStageSummary> = {},
+): AnalysisStageSummary {
+  return {
+    id: "stage-1",
+    runId: "run-1",
+    organizationId: "org-1",
+    projectId: "project-1",
+    kind: "freeze_snapshot",
+    status: "completed",
+    attemptNumber: 1,
+    idempotencyKey: "idem-1",
+    inputHash: "sha256:input",
+    outputHash: "sha256:output",
+    startedAt: NOW,
+    completedAt: NOW,
+    retryAfter: null,
+    failureCode: null,
+    failureDetail: null,
+    createdAt: NOW,
+    updatedAt: NOW,
+    ...overrides,
+  };
+}
+
+export function makeAnalysisStageListResponse(
+  items: AnalysisStageSummary[] = [makeAnalysisStageSummary()],
+): AnalysisStageListResponse {
+  return {
+    items,
+    pageInfo: { limit: 25, nextCursor: null, hasMore: false, total: items.length },
+  };
+}
+
+export function makeAnalysisBatchSummary(
+  overrides: Partial<AnalysisBatchSummary> = {},
+): AnalysisBatchSummary {
+  return {
+    id: "batch-1",
+    stageId: "stage-1",
+    runId: "run-1",
+    organizationId: "org-1",
+    projectId: "project-1",
+    batchOrder: 1,
+    sourceChunkStartSequence: 0,
+    sourceChunkEndSequence: 20,
+    inputTokenEstimate: 8_000,
+    maxOutputTokens: 4_000,
+    status: "completed",
+    attemptNumber: 1,
+    aiRunId: "ai-run-1",
+    repairOfBatchId: null,
+    shapeOnlyRepairUsed: false,
+    cacheKey: null,
+    cacheHitOfBatchId: null,
+    failureCode: null,
+    failureDetail: null,
+    createdAt: NOW,
+    updatedAt: NOW,
+    ...overrides,
+  };
+}
+
+export function makeAnalysisBatchListResponse(
+  items: AnalysisBatchSummary[] = [makeAnalysisBatchSummary()],
+): AnalysisBatchListResponse {
+  return {
+    items,
+    pageInfo: { limit: 25, nextCursor: null, hasMore: false, total: items.length },
+  };
+}
+
+export function makeRequirementListItem(
+  overrides: Partial<RequirementListItem> = {},
+): RequirementListItem {
+  return {
+    id: "requirement-1",
+    organizationId: "org-1",
+    projectId: "project-1",
+    analysisRunId: "run-1",
+    stableKey: "req-stable-1",
+    title: "Users can reset their password",
+    description: "The system must allow users to reset a forgotten password via email.",
+    requirementType: "functional",
+    priority: "must_have",
+    epistemicStatus: "confirmed",
+    confidenceBand: "high",
+    confidenceReasonCodes: ["verified_exact_citation"],
+    inferenceBasis: null,
+    origin: "source",
+    lifecycleState: "ai_suggested",
+    dedupeGroupKey: null,
+    parentRequirementId: null,
+    sourceSummary: "Requirements pack, section 3.2",
+    createdByAiRunId: "run-1",
+    createdAt: NOW,
+    updatedAt: NOW,
+    ...overrides,
+  };
+}
+
+export function makeRequirementListResponse(
+  items: RequirementListItem[] = [makeRequirementListItem()],
+): RequirementListResponse {
+  return {
+    items,
+    pageInfo: { limit: 25, nextCursor: null, hasMore: false, total: items.length },
+  };
+}
+
+export function makeRequirementDetailResponse(
+  overrides: Partial<RequirementDetailResponse> = {},
+): RequirementDetailResponse {
+  return { ...makeRequirementListItem(), ...overrides };
+}
+
+type DeliveryItemOfType<Type extends DeliveryItemListItem["itemType"]> = Extract<
+  DeliveryItemListItem,
+  { itemType: Type }
+>;
+
+function deliveryItemBase(): Pick<
+  DeliveryItemListItem,
+  | "id"
+  | "organizationId"
+  | "projectId"
+  | "analysisRunId"
+  | "epistemicStatus"
+  | "confidenceBand"
+  | "confidenceReasonCodes"
+  | "severity"
+  | "priority"
+  | "status"
+  | "visibility"
+  | "sourceRequirementId"
+  | "createdByAiRunId"
+  | "createdAt"
+  | "updatedAt"
+> {
+  return {
+    id: "delivery-item-1",
+    organizationId: "org-1",
+    projectId: "project-1",
+    analysisRunId: "run-1",
+    epistemicStatus: "unknown",
+    confidenceBand: null,
+    confidenceReasonCodes: [],
+    severity: "medium",
+    priority: "medium",
+    status: "open",
+    visibility: "internal",
+    sourceRequirementId: null,
+    createdByAiRunId: "run-1",
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+}
+
+export function makeQuestionDeliveryItem(
+  overrides: Partial<DeliveryItemOfType<"question">> = {},
+): DeliveryItemOfType<"question"> {
+  return {
+    ...deliveryItemBase(),
+    title: "What SSO provider should be used?",
+    description: "The source material references SSO without naming a provider.",
+    itemType: "question",
+    attributes: {
+      questionText: "Which SSO provider (Okta, Azure AD, etc.) should be integrated?",
+      whyItMatters: "Determines the identity integration effort and timeline.",
+      suggestedResponseFormat: "Short answer",
+      impactIfUnanswered: "Integration work cannot be scoped.",
+      linkedCoverageEntryIds: [],
+      linkedRequirementIds: [],
+      linkedConflictDeliveryItemIds: [],
+    },
+    ...overrides,
+  };
+}
+
+export function makeRiskDeliveryItem(
+  overrides: Partial<DeliveryItemOfType<"risk">> = {},
+): DeliveryItemOfType<"risk"> {
+  return {
+    ...deliveryItemBase(),
+    id: "delivery-item-2",
+    title: "Vendor SLA may not cover peak load",
+    description: "No source evidence describes SLA coverage during seasonal peaks.",
+    itemType: "risk",
+    attributes: {
+      category: "vendor_reliability",
+      probabilityBand: "medium",
+      impactBand: "high",
+      mitigationPrompt: "Confirm SLA terms with the vendor before go-live.",
+      trigger: "Seasonal peak traffic exceeding contracted capacity.",
+    },
+    ...overrides,
+  };
+}
+
+export function makeAssumptionDeliveryItem(
+  overrides: Partial<DeliveryItemOfType<"assumption">> = {},
+): DeliveryItemOfType<"assumption"> {
+  return {
+    ...deliveryItemBase(),
+    id: "delivery-item-3",
+    title: "Assumed single-region deployment",
+    description: "The source material implies a single-region deployment without confirming it.",
+    itemType: "assumption",
+    attributes: {
+      inferenceBasis: "No multi-region requirements were mentioned in the source material.",
+      validationNeeded: true,
+      validationMethod: "Confirm with the infrastructure owner.",
+    },
+    ...overrides,
+  };
+}
+
+export function makeDependencyDeliveryItem(
+  overrides: Partial<DeliveryItemOfType<"dependency">> = {},
+): DeliveryItemOfType<"dependency"> {
+  return {
+    ...deliveryItemBase(),
+    id: "delivery-item-4",
+    title: "Depends on identity platform migration",
+    description: "Requirement delivery depends on an in-flight identity platform migration.",
+    itemType: "dependency",
+    attributes: {
+      dependencyName: "Identity platform migration",
+      dependencyDirection: "internal",
+      blockedArea: "Authentication & identity",
+      riskIfDelayed: "Login features cannot be delivered on schedule.",
+    },
+    ...overrides,
+  };
+}
+
+export function makeBlockerDeliveryItem(
+  overrides: Partial<DeliveryItemOfType<"blocker">> = {},
+): DeliveryItemOfType<"blocker"> {
+  return {
+    ...deliveryItemBase(),
+    id: "delivery-item-5",
+    title: "Conflicting statements about password policy",
+    description: "Two source documents disagree on the minimum password length.",
+    itemType: "blocker",
+    attributes: {
+      subtype: "conflict",
+      contradictionSummary: "Section 3.2 requires 12 characters; appendix A requires 8.",
+      conflictingCitationIds: ["citation-1", "citation-2"],
+      suggestedResolutionQuestion: "Which password length policy should be authoritative?",
+    },
+    ...overrides,
+  };
+}
+
+export function makeScopeChangeCandidateDeliveryItem(
+  overrides: Partial<DeliveryItemOfType<"scope_change_candidate">> = {},
+): DeliveryItemOfType<"scope_change_candidate"> {
+  return {
+    ...deliveryItemBase(),
+    id: "delivery-item-6",
+    title: "New reporting export format requested",
+    description: "The source material references a CSV export not in the original scope.",
+    itemType: "scope_change_candidate",
+    attributes: {
+      classification: "scope_creep",
+      changeSource: "Requirements pack, appendix C",
+      baselineImpactHypothesis: "Adds a new export pipeline not covered by the current baseline.",
+      approvalNeeded: true,
+    },
+    ...overrides,
+  };
+}
+
+export function makeDeliveryItemListResponse(
+  items: DeliveryItemListItem[] = [makeQuestionDeliveryItem()],
+): DeliveryItemListResponse {
+  return {
+    items,
+    pageInfo: { limit: 25, nextCursor: null, hasMore: false, total: items.length },
+  };
+}
+
+export function makeDeliveryItemDetailResponse(
+  overrides: Partial<DeliveryItemOfType<"question">> = {},
+): DeliveryItemDetailResponse {
+  return { ...makeQuestionDeliveryItem(), ...overrides };
+}
+
+export function makeCoverageEntry(overrides: Partial<CoverageEntry> = {}): CoverageEntry {
+  return {
+    id: "coverage-1",
+    organizationId: "org-1",
+    projectId: "project-1",
+    analysisRunId: "run-1",
+    categoryKey: "auth_identity",
+    categoryLabel: "Authentication & identity",
+    categoryOrder: 1,
+    status: "addressed",
+    rationale: "Login and password reset are described in section 3.",
+    evidenceState: "verified_citation",
+    questionDeliveryItemId: null,
+    createdByAiRunId: "run-1",
+    createdAt: NOW,
+    ...overrides,
+  };
+}
+
+export function makeCoverageListResponse(
+  items: CoverageEntry[] = [makeCoverageEntry()],
+): CoverageListResponse {
+  return { items };
+}
+
+export function makeCitationListItem(overrides: Partial<CitationListItem> = {}): CitationListItem {
+  return {
+    id: "citation-1",
+    organizationId: "org-1",
+    projectId: "project-1",
+    analysisRunId: "run-1",
+    requirementId: "requirement-1",
+    coverageMatrixEntryId: null,
+    deliveryItemId: null,
+    sourceDocumentId: "source-1",
+    sourceVersionNumber: 1,
+    sourceContentHash: "sha256:content",
+    sourceExtractionId: "extraction-1",
+    sourceExtractionVersion: 1,
+    sourceChunkId: "chunk-1",
+    sourceChunkSequence: 4,
+    chunkContentHash: "sha256:chunk",
+    locator: { page: 3 },
+    quoteTextOriginal: "Users must be able to reset a forgotten password via email.",
+    quoteTextNormalized: "users must be able to reset a forgotten password via email",
+    quoteHash: "sha256:quote",
+    matchStartOffset: 120,
+    matchEndOffset: 178,
+    normalizationMode: "whitespace_lowercase",
+    verificationStatus: "verified_exact",
+    createdByAiRunId: "run-1",
+    createdAt: NOW,
+    ...overrides,
+  };
+}
+
+export function makeCitationListResponse(
+  items: CitationListItem[] = [makeCitationListItem()],
+): CitationListResponse {
+  return {
+    items,
+    pageInfo: { limit: 25, nextCursor: null, hasMore: false, total: items.length },
+  };
+}
+
+export function makeCitationEvidenceResponse(
+  overrides: Partial<CitationEvidenceResponse> = {},
+): CitationEvidenceResponse {
+  return {
+    ...makeCitationListItem(),
+    sourceTitle: "Initial requirements pack",
+    sourceVersionLabel: "v1",
+    ...overrides,
+  };
+}
+
+export function makeTraceabilityLink(overrides: Partial<TraceabilityLink> = {}): TraceabilityLink {
+  return {
+    id: "trace-1",
+    organizationId: "org-1",
+    fromType: "requirement",
+    fromId: "requirement-1",
+    toType: "citation",
+    toId: "citation-1",
+    relation: "supported_by",
+    createdBy: null,
+    createdAt: NOW,
+    ...overrides,
+  };
+}
+
+export function makeTraceabilityListResponse(
+  items: TraceabilityLink[] = [makeTraceabilityLink()],
+): TraceabilityListResponse {
+  return {
+    items,
+    pageInfo: { limit: 25, nextCursor: null, hasMore: false, total: items.length },
+  };
+}

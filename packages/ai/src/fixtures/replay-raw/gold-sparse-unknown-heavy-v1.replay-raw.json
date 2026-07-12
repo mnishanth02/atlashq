@@ -1,0 +1,89 @@
+{
+  "fixtureId": "gold-sparse-unknown-heavy-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "responses": [
+    {
+      "output": {
+        "requirements": [
+          {
+            "key": "req_customer_portal",
+            "organizationId": "org_sparse",
+            "projectId": "proj_discovery",
+            "requirementType": "functional",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          },
+          {
+            "key": "req_auth_method",
+            "organizationId": "org_sparse",
+            "projectId": "proj_discovery",
+            "requirementType": "security",
+            "priority": "must_have",
+            "epistemicStatus": "unknown",
+            "persisted": true
+          },
+          {
+            "key": "req_reporting_dimensions",
+            "organizationId": "org_sparse",
+            "projectId": "proj_discovery",
+            "requirementType": "functional",
+            "priority": "should_have",
+            "epistemicStatus": "unknown",
+            "persisted": true
+          }
+        ],
+        "citations": [
+          {
+            "requirementKey": "req_customer_portal",
+            "organizationId": "org_sparse",
+            "projectId": "proj_discovery",
+            "snapshotId": "snap_sparse_01",
+            "sourceDocumentId": "doc_sparse_notes",
+            "sourceChunkId": "chunk_sparse_scope",
+            "quote": "The team needs a customer portal this quarter.",
+            "verificationStatus": "verified_exact"
+          }
+        ],
+        "coverage": [
+          {
+            "categoryKey": "auth_identity",
+            "status": "absent"
+          },
+          {
+            "categoryKey": "reporting_analytics",
+            "status": "partial"
+          },
+          {
+            "categoryKey": "security_compliance",
+            "status": "absent"
+          },
+          {
+            "categoryKey": "data_model_entities",
+            "status": "absent"
+          }
+        ],
+        "conflicts": [],
+        "questions": [
+          {
+            "questionKey": "q_auth_method",
+            "linkedRequirementKeys": ["req_auth_method"],
+            "linkedCoverageCategoryKeys": ["auth_identity", "security_compliance"]
+          },
+          {
+            "questionKey": "q_reporting_dimensions",
+            "linkedRequirementKeys": ["req_reporting_dimensions"],
+            "linkedCoverageCategoryKeys": ["reporting_analytics"]
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 620,
+        "outputTokens": 340
+      }
+    }
+  ]
+}

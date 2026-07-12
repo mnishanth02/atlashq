@@ -1,0 +1,100 @@
+{
+  "fixtureId": "gold-security-compliance-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "responses": [
+    {
+      "output": {
+        "requirements": [
+          {
+            "key": "req_audit_retention_365d",
+            "organizationId": "org_security",
+            "projectId": "proj_controls",
+            "requirementType": "security",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          },
+          {
+            "key": "req_encrypt_pii",
+            "organizationId": "org_security",
+            "projectId": "proj_controls",
+            "requirementType": "security",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          },
+          {
+            "key": "req_soc2_evidence_quarterly",
+            "organizationId": "org_security",
+            "projectId": "proj_controls",
+            "requirementType": "compliance",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          }
+        ],
+        "citations": [
+          {
+            "requirementKey": "req_audit_retention_365d",
+            "organizationId": "org_security",
+            "projectId": "proj_controls",
+            "snapshotId": "snap_security_01",
+            "sourceDocumentId": "doc_security_spec",
+            "sourceChunkId": "chunk_security_retention",
+            "quote": "Audit logs must be retained for 365 days.",
+            "verificationStatus": "verified_exact"
+          },
+          {
+            "requirementKey": "req_encrypt_pii",
+            "organizationId": "org_security",
+            "projectId": "proj_controls",
+            "snapshotId": "snap_security_01",
+            "sourceDocumentId": "doc_security_spec",
+            "sourceChunkId": "chunk_security_encryption",
+            "quote": "All PII fields must be encrypted at rest and in transit.",
+            "verificationStatus": "verified_exact"
+          },
+          {
+            "requirementKey": "req_soc2_evidence_quarterly",
+            "organizationId": "org_security",
+            "projectId": "proj_controls",
+            "snapshotId": "snap_security_01",
+            "sourceDocumentId": "doc_security_spec",
+            "sourceChunkId": "chunk_security_soc2",
+            "quote": "SOC2 Type II evidence package is required each quarter.",
+            "verificationStatus": "verified_exact"
+          }
+        ],
+        "coverage": [
+          {
+            "categoryKey": "security_compliance",
+            "status": "addressed"
+          },
+          {
+            "categoryKey": "audit_logging",
+            "status": "addressed"
+          },
+          {
+            "categoryKey": "backup_disaster_recovery",
+            "status": "absent"
+          }
+        ],
+        "conflicts": [],
+        "questions": [
+          {
+            "questionKey": "q_backup_rto_rpo",
+            "linkedRequirementKeys": [],
+            "linkedCoverageCategoryKeys": ["backup_disaster_recovery"]
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 840,
+        "outputTokens": 410
+      }
+    }
+  ]
+}

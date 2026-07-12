@@ -1,0 +1,69 @@
+{
+  "id": "adv-fabricated-quote-negation-v1",
+  "kind": "adversarial",
+  "tags": ["fabricated_quote_negation", "abstention", "citation_guard"],
+  "humanLabel": {
+    "title": "Fabricated quote with negation flip",
+    "scenario": "Model quote injects unsupported negation",
+    "notes": "Hand-labeled adversarial fixture for deterministic citation rejection.",
+    "ownedBy": "product-ba+architect"
+  },
+  "input": {
+    "context": {
+      "organizationId": "org_secure",
+      "projectId": "proj_quote_guard",
+      "snapshotId": "snap_adv_quote_01",
+      "referenceFeatureExtractionEnabled": false
+    },
+    "budget": {
+      "maxUsdPerRun": 3,
+      "maxInputTokensPerRun": 300000,
+      "maxOutputTokensPerRun": 30000,
+      "maxWallClockMs": 1800000
+    },
+    "evidenceBlocks": [
+      {
+        "blockId": "adv_quote_block_1",
+        "organizationId": "org_secure",
+        "projectId": "proj_quote_guard",
+        "snapshotId": "snap_adv_quote_01",
+        "sourceDocumentId": "doc_quote_guard",
+        "sourceChunkId": "chunk_quote_guard",
+        "chunkContentHash": "hash_quote_guard",
+        "origin": "source",
+        "text": "Data is encrypted at rest."
+      }
+    ]
+  },
+  "labels": {
+    "requirements": [
+      {
+        "key": "claim_data_not_encrypted",
+        "requirementType": "security",
+        "priority": "must_have",
+        "epistemicStatus": "unknown"
+      }
+    ],
+    "confirmedCitations": [],
+    "coverage": [
+      {
+        "categoryKey": "security_compliance",
+        "status": "absent"
+      }
+    ],
+    "conflicts": [],
+    "questions": [
+      {
+        "questionKey": "q_confirm_encryption",
+        "linkedRequirementKeys": ["claim_data_not_encrypted"],
+        "linkedCoverageCategoryKeys": ["security_compliance"]
+      }
+    ],
+    "unsupportedClaimKeys": ["claim_data_not_encrypted"]
+  },
+  "runtime": {
+    "stageKind": "confirmed_extraction",
+    "promptAssetKind": "confirmed_extraction",
+    "expectedErrorCode": null
+  }
+}

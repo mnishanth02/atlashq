@@ -13,6 +13,7 @@ import { SessionResolutionMiddleware } from "../auth/session.middleware.js";
 import { ClientsModule } from "../features/clients/clients.module.js";
 import { OrganizationUsersModule } from "../features/organization-users/organization-users.module.js";
 import { ProjectsModule } from "../features/projects/projects.module.js";
+import { RequirementAnalysisModule } from "../features/requirement-analysis/requirement-analysis.module.js";
 import { SourceDocumentsModule } from "../features/source-documents/source-documents.module.js";
 import { type ApiRuntime, NULL_RUNTIME } from "../runtime/runtime.js";
 import { RuntimeModule } from "../runtime/runtime.module.js";
@@ -48,6 +49,7 @@ export class AppModule implements NestModule {
         ProjectsModule,
         OrganizationUsersModule,
         SourceDocumentsModule,
+        RequirementAnalysisModule,
       ],
       controllers: [HealthController, MeController, OrganizationController],
       providers: [

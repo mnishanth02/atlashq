@@ -58,11 +58,15 @@ export function renderWithProviders(
           ? "/projects/$projectId/source-documents/$sourceId"
           : initialPathname.match(/^\/projects\/[^/]+\/source-documents$/)
             ? "/projects/$projectId/source-documents"
-            : initialPathname.startsWith("/projects/")
-              ? "/projects/$projectId"
-              : initialPathname === "/design-system"
-                ? "/design-system"
-                : "/";
+            : initialPathname.match(/^\/projects\/[^/]+\/requirement-analysis\/[^/]+$/)
+              ? "/projects/$projectId/requirement-analysis/$runId"
+              : initialPathname.match(/^\/projects\/[^/]+\/requirement-analysis$/)
+                ? "/projects/$projectId/requirement-analysis"
+                : initialPathname.startsWith("/projects/")
+                  ? "/projects/$projectId"
+                  : initialPathname === "/design-system"
+                    ? "/design-system"
+                    : "/";
   const rootRoute = createRootRoute({
     component: () => (
       <ThemeProvider defaultTheme="light">
@@ -112,6 +116,18 @@ export function renderWithProviders(
     path: "/projects/$projectId/source-documents/$sourceId",
     component: componentFor("/projects/$projectId/source-documents/$sourceId"),
   });
+  const requirementAnalysisRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/projects/$projectId/requirement-analysis",
+    validateSearch: (search: Record<string, unknown>) => search,
+    component: componentFor("/projects/$projectId/requirement-analysis"),
+  });
+  const requirementAnalysisDetailRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/projects/$projectId/requirement-analysis/$runId",
+    validateSearch: (search: Record<string, unknown>) => search,
+    component: componentFor("/projects/$projectId/requirement-analysis/$runId"),
+  });
   const designSystemRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/design-system",
@@ -124,6 +140,8 @@ export function renderWithProviders(
     projectDetailRoute,
     sourceDocumentsRoute,
     sourceDetailRoute,
+    requirementAnalysisRoute,
+    requirementAnalysisDetailRoute,
     designSystemRoute,
   ]);
   const history = createMemoryHistory({ initialEntries: [initialEntry] });

@@ -14,9 +14,14 @@ import { API_PREFIX, type TestAgent } from "./fixtures.js";
 const CLIENTS = `${API_PREFIX}/clients`;
 const PROJECTS = `${API_PREFIX}/projects`;
 const ORGANIZATION_USERS = `${API_PREFIX}/organizations/current/users`;
+const ORGANIZATION_AI_PROVIDER_POLICIES = `${API_PREFIX}/organizations/current/ai-provider-policies`;
 
 function project(projectId: string): string {
   return `${PROJECTS}/${projectId}`;
+}
+
+function requirementAnalysis(projectId: string): string {
+  return `${project(projectId)}/requirement-analysis`;
 }
 
 type JsonBody = Record<string, unknown>;
@@ -153,6 +158,46 @@ export function removeMembership(
 
 export function listOrganizationUsers(agent: TestAgent, query = "") {
   return get(agent, `${ORGANIZATION_USERS}${query}`);
+}
+
+// --- Organization AI provider policies (Module 3) ---
+
+export function listAiProviderPolicies(agent: TestAgent, query = "") {
+  return get(agent, `${ORGANIZATION_AI_PROVIDER_POLICIES}${query}`);
+}
+
+export function createAiProviderPolicy(agent: TestAgent, body: JsonBody, correlationId?: string) {
+  return send(agent, "post", ORGANIZATION_AI_PROVIDER_POLICIES, body, correlationId);
+}
+
+export function approveAiProviderPolicy(
+  agent: TestAgent,
+  policyId: string,
+  body: JsonBody,
+  correlationId?: string,
+) {
+  return send(
+    agent,
+    "post",
+    `${ORGANIZATION_AI_PROVIDER_POLICIES}/${policyId}/approve`,
+    body,
+    correlationId,
+  );
+}
+
+export function deactivateAiProviderPolicy(
+  agent: TestAgent,
+  policyId: string,
+  body: JsonBody,
+  correlationId?: string,
+) {
+  return send(
+    agent,
+    "post",
+    `${ORGANIZATION_AI_PROVIDER_POLICIES}/${policyId}/deactivate`,
+    body,
+    correlationId,
+  );
 }
 
 // --- Audit ---
@@ -413,4 +458,196 @@ export function retrySourceProcessing(
 
 export function getProjectDashboard(agent: TestAgent, projectId: string) {
   return get(agent, `${project(projectId)}/dashboard`);
+}
+
+// --- Requirement analysis (Module 3) ---
+
+export function getRequirementAnalysisCapabilities(agent: TestAgent, projectId: string) {
+  return get(agent, `${requirementAnalysis(projectId)}/capabilities`);
+}
+
+export function listRequirementAnalysisProviderPolicies(
+  agent: TestAgent,
+  projectId: string,
+  query = "",
+) {
+  return get(agent, `${requirementAnalysis(projectId)}/provider-policies${query}`);
+}
+
+export function previewRequirementAnalysisEligibleSources(agent: TestAgent, projectId: string) {
+  return get(agent, `${requirementAnalysis(projectId)}/eligible-sources`);
+}
+
+export function createRequirementAnalysisRun(
+  agent: TestAgent,
+  projectId: string,
+  body: JsonBody,
+  correlationId?: string,
+) {
+  return send(agent, "post", `${requirementAnalysis(projectId)}/runs`, body, correlationId);
+}
+
+export function listRequirementAnalysisRuns(agent: TestAgent, projectId: string, query = "") {
+  return get(agent, `${requirementAnalysis(projectId)}/runs${query}`);
+}
+
+export function getRequirementAnalysisRun(agent: TestAgent, projectId: string, runId: string) {
+  return get(agent, `${requirementAnalysis(projectId)}/runs/${runId}`);
+}
+
+export function cancelRequirementAnalysisRun(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  body: JsonBody = {},
+  correlationId?: string,
+) {
+  return send(
+    agent,
+    "post",
+    `${requirementAnalysis(projectId)}/runs/${runId}/cancel`,
+    body,
+    correlationId,
+  );
+}
+
+export function retryRequirementAnalysisRun(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  body: JsonBody = {},
+  correlationId?: string,
+) {
+  return send(
+    agent,
+    "post",
+    `${requirementAnalysis(projectId)}/runs/${runId}/retry`,
+    body,
+    correlationId,
+  );
+}
+
+export function replayRequirementAnalysisRun(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  body: JsonBody = {},
+  correlationId?: string,
+) {
+  return send(
+    agent,
+    "post",
+    `${requirementAnalysis(projectId)}/runs/${runId}/replay`,
+    body,
+    correlationId,
+  );
+}
+
+export function reprocessRequirementAnalysisRun(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  body: JsonBody,
+  correlationId?: string,
+) {
+  return send(
+    agent,
+    "post",
+    `${requirementAnalysis(projectId)}/runs/${runId}/reprocess`,
+    body,
+    correlationId,
+  );
+}
+
+export function listRequirementAnalysisStages(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  query = "",
+) {
+  return get(agent, `${requirementAnalysis(projectId)}/runs/${runId}/stages${query}`);
+}
+
+export function listRequirementAnalysisBatches(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  query = "",
+) {
+  return get(agent, `${requirementAnalysis(projectId)}/runs/${runId}/batches${query}`);
+}
+
+export function listRequirementAnalysisRequirements(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  query = "",
+) {
+  return get(agent, `${requirementAnalysis(projectId)}/runs/${runId}/requirements${query}`);
+}
+
+export function getRequirementAnalysisRequirement(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  requirementId: string,
+) {
+  return get(
+    agent,
+    `${requirementAnalysis(projectId)}/runs/${runId}/requirements/${requirementId}`,
+  );
+}
+
+export function listRequirementAnalysisDeliveryItems(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  query = "",
+) {
+  return get(agent, `${requirementAnalysis(projectId)}/runs/${runId}/delivery-items${query}`);
+}
+
+export function getRequirementAnalysisDeliveryItem(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  itemId: string,
+) {
+  return get(agent, `${requirementAnalysis(projectId)}/runs/${runId}/delivery-items/${itemId}`);
+}
+
+export function listRequirementAnalysisCoverage(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  query = "",
+) {
+  return get(agent, `${requirementAnalysis(projectId)}/runs/${runId}/coverage${query}`);
+}
+
+export function listRequirementAnalysisCitations(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  query = "",
+) {
+  return get(agent, `${requirementAnalysis(projectId)}/runs/${runId}/citations${query}`);
+}
+
+export function getRequirementAnalysisEvidence(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  citationId: string,
+) {
+  return get(agent, `${requirementAnalysis(projectId)}/runs/${runId}/evidence/${citationId}`);
+}
+
+export function listRequirementAnalysisTraceability(
+  agent: TestAgent,
+  projectId: string,
+  runId: string,
+  query = "",
+) {
+  return get(agent, `${requirementAnalysis(projectId)}/runs/${runId}/traceability${query}`);
 }

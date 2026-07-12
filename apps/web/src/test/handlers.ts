@@ -10,6 +10,23 @@ import type {
   ProjectResponse,
 } from "@/features/api";
 import type {
+  AnalysisBatchListResponse,
+  AnalysisRunDetailResponse,
+  AnalysisRunListResponse,
+  AnalysisStageListResponse,
+  CitationEvidenceResponse,
+  CitationListResponse,
+  CoverageListResponse,
+  DeliveryItemDetailResponse,
+  DeliveryItemListResponse,
+  EligibleSourcePreviewResponse,
+  ProviderPolicyListResponse,
+  RequirementAnalysisCapabilitiesResponse,
+  RequirementDetailResponse,
+  RequirementListResponse,
+  TraceabilityListResponse,
+} from "@/features/requirement-analysis/requirement-analysis-api";
+import type {
   SourceChunkListResponse,
   SourceDetailResponse,
   SourceExtractionListResponse,
@@ -97,6 +114,111 @@ export const atlasHandlers = {
   createReferenceSource: (projectId: string, body: SourceDetailResponse) =>
     http.post(api(`/projects/${projectId}/source-documents/references`), () =>
       HttpResponse.json(body, { status: 201 }),
+    ),
+
+  /* ----------------------- Module 3: Requirement analysis ----------------------- */
+  requirementAnalysisCapabilities: (
+    projectId: string,
+    body: RequirementAnalysisCapabilitiesResponse,
+  ) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/capabilities`), () =>
+      HttpResponse.json(body),
+    ),
+  requirementAnalysisProviderPolicies: (projectId: string, body: ProviderPolicyListResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/provider-policies`), () =>
+      HttpResponse.json(body),
+    ),
+  requirementAnalysisEligibleSources: (projectId: string, body: EligibleSourcePreviewResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/eligible-sources`), () =>
+      HttpResponse.json(body),
+    ),
+  analysisRuns: (projectId: string, body: AnalysisRunListResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/runs`), () =>
+      HttpResponse.json(body),
+    ),
+  createAnalysisFreshRun: (projectId: string, body: AnalysisRunDetailResponse) =>
+    http.post(api(`/projects/${projectId}/requirement-analysis/runs`), () =>
+      HttpResponse.json(body, { status: 201 }),
+    ),
+  analysisRunDetail: (projectId: string, runId: string, body: AnalysisRunDetailResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/runs/${runId}`), () =>
+      HttpResponse.json(body),
+    ),
+  cancelAnalysisRun: (projectId: string, runId: string, body: AnalysisRunDetailResponse) =>
+    http.post(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/cancel`), () =>
+      HttpResponse.json(body),
+    ),
+  retryAnalysisRun: (projectId: string, runId: string, body: AnalysisRunDetailResponse) =>
+    http.post(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/retry`), () =>
+      HttpResponse.json(body, { status: 201 }),
+    ),
+  replayAnalysisRun: (projectId: string, runId: string, body: AnalysisRunDetailResponse) =>
+    http.post(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/replay`), () =>
+      HttpResponse.json(body, { status: 201 }),
+    ),
+  reprocessAnalysisRun: (projectId: string, runId: string, body: AnalysisRunDetailResponse) =>
+    http.post(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/reprocess`), () =>
+      HttpResponse.json(body, { status: 201 }),
+    ),
+  analysisStages: (projectId: string, runId: string, body: AnalysisStageListResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/stages`), () =>
+      HttpResponse.json(body),
+    ),
+  analysisBatches: (projectId: string, runId: string, body: AnalysisBatchListResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/batches`), () =>
+      HttpResponse.json(body),
+    ),
+  analysisRequirements: (projectId: string, runId: string, body: RequirementListResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/requirements`), () =>
+      HttpResponse.json(body),
+    ),
+  analysisRequirementDetail: (
+    projectId: string,
+    runId: string,
+    requirementId: string,
+    body: RequirementDetailResponse,
+  ) =>
+    http.get(
+      api(
+        `/projects/${projectId}/requirement-analysis/runs/${runId}/requirements/${requirementId}`,
+      ),
+      () => HttpResponse.json(body),
+    ),
+  analysisDeliveryItems: (projectId: string, runId: string, body: DeliveryItemListResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/delivery-items`), () =>
+      HttpResponse.json(body),
+    ),
+  analysisDeliveryItemDetail: (
+    projectId: string,
+    runId: string,
+    itemId: string,
+    body: DeliveryItemDetailResponse,
+  ) =>
+    http.get(
+      api(`/projects/${projectId}/requirement-analysis/runs/${runId}/delivery-items/${itemId}`),
+      () => HttpResponse.json(body),
+    ),
+  analysisCoverage: (projectId: string, runId: string, body: CoverageListResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/coverage`), () =>
+      HttpResponse.json(body),
+    ),
+  analysisCitations: (projectId: string, runId: string, body: CitationListResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/citations`), () =>
+      HttpResponse.json(body),
+    ),
+  analysisCitationEvidence: (
+    projectId: string,
+    runId: string,
+    citationId: string,
+    body: CitationEvidenceResponse,
+  ) =>
+    http.get(
+      api(`/projects/${projectId}/requirement-analysis/runs/${runId}/evidence/${citationId}`),
+      () => HttpResponse.json(body),
+    ),
+  analysisTraceability: (projectId: string, runId: string, body: TraceabilityListResponse) =>
+    http.get(api(`/projects/${projectId}/requirement-analysis/runs/${runId}/traceability`), () =>
+      HttpResponse.json(body),
     ),
 };
 

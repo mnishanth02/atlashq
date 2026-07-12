@@ -1,0 +1,23 @@
+{
+  "fixtureId": "gold-spreadsheet-tabular-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "schemaHash": "4816b7ecc0382553ebcd6d26d59c2373801dc3b2b959129804f7bdd9f3cfb3fd",
+  "pipelineHash": "accc3bb55cd62c93c5af26aaf6b6d6501c4d274e7f5aff688412b9e7d1d6dfe6",
+  "promptBundleHash": "e680e2cf4bfcd0ea4e82675cf634938fba4396f47ab3abb5dfe3eabc064d8162",
+  "promptAssetHash": "f5a719c2a1795440f30c6f41da3c3d287f407ff9be76f2d25c712e41200bc2ca",
+  "inputHash": "68f89e4519122b8d56d758a3b5ff19b098fd196b7714e09640fa57af309246af",
+  "rawResponsesHash": "f7f05da49c77ef199d9dda7c6469e882e9bae849916260a11f8fd88d0ce18ceb",
+  "attemptRequestHashes": ["1621f42be28271935911783405170a490bd80b202187631eebf1b254e34880d4"],
+  "expectedErrorCode": null,
+  "expectedOutputHash": "a3b48dc87f3371d90fce82fa5f9322f15ad7c088882679901d72e4e94b6e66ab",
+  "expectedShapeOnlyRepairUsed": false,
+  "expectedUsage": {
+    "inputTokens": 760,
+    "outputTokens": 390,
+    "totalTokens": 1150,
+    "costUsd": 0.00115
+  }
+}

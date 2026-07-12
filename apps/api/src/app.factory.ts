@@ -1,5 +1,11 @@
 import { type Auth, betterAuthExpressWildcardPath, createAuthNodeHandler } from "@atlashq/auth";
-import type { SourceVaultEnv } from "@atlashq/config";
+import type {
+  AiRequirementAnalysisBudgetEnv,
+  AiRequirementAnalysisDataHandlingEnv,
+  AiRequirementAnalysisFeatureFlagEnv,
+  AiRequirementAnalysisProviderEnv,
+  SourceVaultEnv,
+} from "@atlashq/config";
 import type { Database } from "@atlashq/db";
 import type { MinioObjectStorageClient } from "@atlashq/storage";
 import { NestFactory } from "@nestjs/core";
@@ -7,6 +13,7 @@ import type { NestExpressApplication } from "@nestjs/platform-express";
 import express, { type Express } from "express";
 import { AppModule } from "./modules/app.module.js";
 import { createPinoRequestLogger } from "./observability/request-logger.js";
+import type { RequirementAnalysisQueue } from "./runtime/requirement-analysis-runtime.js";
 import type { SourceDocumentQueue } from "./runtime/source-vault-runtime.js";
 import { applyGlobalApiPrefix, buildOpenApiDocument, setupSwaggerUi } from "./swagger.js";
 
@@ -25,8 +32,17 @@ export type CreateApiAppOptions = {
   storage?: MinioObjectStorageClient | null;
   /** Optional document-processing queue for the Source Vault feature. */
   documentQueue?: SourceDocumentQueue | null;
+  /** Optional ai-analysis queue for Module 3 run orchestration. */
+  analysisQueue?: RequirementAnalysisQueue | null;
   /** Optional validated Source Vault env for upload/download URL contracts. */
   sourceVault?: SourceVaultEnv | null;
+  /** Optional validated Module 3 AI-analysis env flags/budgets/provider settings. */
+  aiRequirementAnalysis?:
+    | (AiRequirementAnalysisFeatureFlagEnv &
+        AiRequirementAnalysisBudgetEnv &
+        AiRequirementAnalysisProviderEnv &
+        AiRequirementAnalysisDataHandlingEnv)
+    | null;
 };
 
 /**
@@ -41,7 +57,17 @@ export type CreateApiAppOptions = {
  * `app.listen()` and the integration harness calls `app.init()`.
  */
 export async function createApiApp(options: CreateApiAppOptions): Promise<NestExpressApplication> {
-  const { auth, db, webOrigin, setupSwagger = true, storage, documentQueue, sourceVault } = options;
+  const {
+    auth,
+    db,
+    webOrigin,
+    setupSwagger = true,
+    storage,
+    documentQueue,
+    analysisQueue,
+    sourceVault,
+    aiRequirementAnalysis,
+  } = options;
 
   // Disable Nest's body parser so Better Auth receives the raw request body.
   const app = await NestFactory.create<NestExpressApplication>(
@@ -50,7 +76,9 @@ export async function createApiApp(options: CreateApiAppOptions): Promise<NestEx
       db,
       storage: storage ?? null,
       documentQueue: documentQueue ?? null,
+      analysisQueue: analysisQueue ?? null,
       sourceVault: sourceVault ?? null,
+      aiRequirementAnalysis: aiRequirementAnalysis ?? null,
     }),
     {
       bodyParser: false,

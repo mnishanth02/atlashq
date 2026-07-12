@@ -1,0 +1,77 @@
+{
+  "fixtureId": "adv-schema-escape-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "responses": [
+    {
+      "output": {
+        "requirements": "invalid-shape",
+        "citations": [
+          {
+            "requirementKey": "req_schema_contract",
+            "organizationId": "org_secure",
+            "projectId": "proj_schema_guard",
+            "snapshotId": "snap_adv_schema_01",
+            "sourceDocumentId": "doc_schema_rule",
+            "sourceChunkId": "chunk_schema_rule",
+            "quote": "Responses must follow the approved JSON schema exactly.",
+            "verificationStatus": "verified_exact"
+          }
+        ],
+        "coverage": [
+          {
+            "categoryKey": "data_model_entities",
+            "status": "addressed"
+          }
+        ],
+        "conflicts": [],
+        "questions": []
+      },
+      "usage": {
+        "inputTokens": 150,
+        "outputTokens": 75
+      }
+    },
+    {
+      "output": {
+        "requirements": [
+          {
+            "key": "req_schema_contract",
+            "organizationId": "org_secure",
+            "projectId": "proj_schema_guard",
+            "requirementType": "functional",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          }
+        ],
+        "citations": [
+          {
+            "requirementKey": "req_schema_contract",
+            "organizationId": "org_secure",
+            "projectId": "proj_schema_guard",
+            "snapshotId": "snap_adv_schema_01",
+            "sourceDocumentId": "doc_schema_rule",
+            "sourceChunkId": "chunk_schema_rule",
+            "quote": "Responses must follow the approved JSON schema exactly.",
+            "verificationStatus": "verified_exact"
+          }
+        ],
+        "coverage": [
+          {
+            "categoryKey": "data_model_entities",
+            "status": "addressed"
+          }
+        ],
+        "conflicts": [],
+        "questions": []
+      },
+      "usage": {
+        "inputTokens": 150,
+        "outputTokens": 75
+      }
+    }
+  ]
+}

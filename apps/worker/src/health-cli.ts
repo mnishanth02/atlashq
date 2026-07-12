@@ -1,7 +1,7 @@
 import { getWorkerHealth } from "./health.js";
 import { createWorkerRuntimeContext } from "./runtime/context.js";
 
-const context = createWorkerRuntimeContext();
+const context = await createWorkerRuntimeContext();
 
 try {
   const health = await getWorkerHealth(context);

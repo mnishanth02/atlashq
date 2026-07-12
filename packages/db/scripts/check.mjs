@@ -108,12 +108,35 @@ const requiredTables = [
   "source_extraction",
   "source_chunk",
   "reference_artifact",
+  "organization_ai_provider_policy",
+  "requirement_analysis_run",
+  "requirement_analysis_snapshot",
+  "requirement_analysis_snapshot_source",
+  "requirement_analysis_snapshot_file",
+  "requirement_analysis_snapshot_chunk",
+  "requirement_analysis_stage",
+  "requirement_analysis_stage_dependency",
+  "requirement_analysis_batch",
+  "requirement_analysis_batch_chunk",
+  "requirement",
+  "citation",
+  "coverage_matrix_entry",
+  "delivery_item",
 ];
+
+// Link tables intentionally use a composite primary key instead of a synthetic id column
+// (module-03 §9.4): the natural key already uniquely identifies the row.
+const compositePrimaryKeyTables = new Set([
+  "requirement_analysis_stage_dependency",
+  "requirement_analysis_batch_chunk",
+]);
 
 for (const tableName of requiredTables) {
   const table = snapshot.tables?.[`public.${tableName}`];
   assert(table, `Latest Drizzle snapshot is missing table: ${tableName}`);
-  assert(table.columns?.id?.type === "uuid", `${tableName}.id must be a UUID.`);
+  if (!compositePrimaryKeyTables.has(tableName)) {
+    assert(table.columns?.id?.type === "uuid", `${tableName}.id must be a UUID.`);
+  }
   assert(
     new RegExp(`create\\s+table\\s+"${tableName}"`, "iu").test(migrations),
     `Migrations do not create table: ${tableName}`,
@@ -353,6 +376,107 @@ const requiredColumns = {
     "captured_at",
     "created_at",
   ],
+  organization_ai_provider_policy: [
+    "organization_id",
+    "provider",
+    "policy_name",
+    "status",
+    "approved_for_requirement_analysis",
+    "approved_by",
+    "approved_at",
+    "approval_note",
+    "max_usd_per_run",
+    "max_input_tokens_per_run",
+    "max_output_tokens_per_run",
+    "max_wall_clock_seconds",
+    "version",
+  ],
+  requirement_analysis_run: [
+    "organization_id",
+    "project_id",
+    "requested_by",
+    "mode",
+    "status",
+    "cancel_requested_at",
+    "cancel_requested_by",
+    "cancel_reason",
+    "source_snapshot_id",
+    "replay_of_run_id",
+    "reprocess_of_run_id",
+    "retry_of_run_id",
+    "provider_policy_id",
+    "max_usd",
+    "max_input_tokens",
+    "max_output_tokens",
+    "max_wall_clock_seconds",
+    "input_tokens_used",
+    "output_tokens_used",
+    "cost_usd",
+    "failure_code",
+    "failure_retryable",
+    "failed_stage_id",
+    "correlation_id",
+  ],
+  requirement_analysis_stage_dependency: [
+    "run_id",
+    "organization_id",
+    "project_id",
+    "stage_id",
+    "depends_on_stage_id",
+  ],
+  requirement_analysis_batch_chunk: [
+    "organization_id",
+    "project_id",
+    "batch_id",
+    "snapshot_chunk_id",
+  ],
+  requirement: [
+    "organization_id",
+    "project_id",
+    "analysis_run_id",
+    "stable_key",
+    "requirement_type",
+    "priority",
+    "epistemic_status",
+    "confidence_band",
+    "inference_basis",
+    "origin",
+    "lifecycle_state",
+    "parent_requirement_id",
+  ],
+  citation: [
+    "organization_id",
+    "project_id",
+    "analysis_run_id",
+    "requirement_id",
+    "coverage_matrix_entry_id",
+    "delivery_item_id",
+    "source_document_id",
+    "source_extraction_id",
+    "source_chunk_id",
+    "quote_hash",
+    "match_start_offset",
+    "match_end_offset",
+    "verification_status",
+  ],
+  coverage_matrix_entry: [
+    "organization_id",
+    "project_id",
+    "analysis_run_id",
+    "category_key",
+    "category_order",
+    "status",
+    "evidence_state",
+    "question_delivery_item_id",
+  ],
+  delivery_item: [
+    "organization_id",
+    "project_id",
+    "analysis_run_id",
+    "item_type",
+    "status",
+    "visibility",
+  ],
 };
 
 for (const [tableName, columnNames] of Object.entries(requiredColumns)) {
@@ -407,6 +531,27 @@ const requiredConstraints = [
   "reference_artifact_reference_kind_check",
   "reference_artifact_ip_review_status_check",
   "reference_artifact_capture_source_url_check",
+  "organization_ai_provider_policy_status_check",
+  "organization_ai_provider_policy_approval_fields_check",
+  "organization_ai_provider_policy_approved_flag_check",
+  "requirement_analysis_run_mode_check",
+  "requirement_analysis_run_status_check",
+  "requirement_analysis_run_mode_lineage_check",
+  "requirement_analysis_run_failure_fields_check",
+  "requirement_analysis_stage_status_check",
+  "requirement_analysis_batch_status_check",
+  "requirement_requirement_type_check",
+  "requirement_epistemic_status_check",
+  "requirement_lifecycle_state_check",
+  "requirement_assumed_inference_basis_check",
+  "requirement_unknown_conflicting_confidence_check",
+  "citation_exactly_one_target_check",
+  "citation_verification_status_check",
+  "citation_match_offset_check",
+  "coverage_matrix_entry_category_key_check",
+  "coverage_matrix_entry_category_order_check",
+  "coverage_matrix_entry_status_check",
+  "delivery_item_item_type_check",
 ];
 
 for (const constraintName of requiredConstraints) {
@@ -453,6 +598,19 @@ const requiredIndexes = [
   "source_chunk_extraction_sequence_uidx",
   "reference_artifact_source_document_id_uidx",
   "reference_artifact_project_ip_review_status_idx",
+  "organization_ai_provider_policy_org_name_uidx",
+  "organization_ai_provider_policy_org_status_idx",
+  "requirement_analysis_run_active_per_project_uidx",
+  "requirement_analysis_run_org_status_idx",
+  "requirement_analysis_snapshot_run_id_uidx",
+  "requirement_analysis_stage_dependency_stage_id_idx",
+  "requirement_analysis_stage_dependency_project_id_idx",
+  "requirement_analysis_batch_chunk_project_id_idx",
+  "requirement_analysis_run_stable_key_uidx",
+  "coverage_matrix_entry_run_category_uidx",
+  "citation_requirement_target_uidx",
+  "citation_coverage_target_uidx",
+  "citation_delivery_item_target_uidx",
 ];
 
 for (const indexName of requiredIndexes) {
@@ -625,6 +783,122 @@ assert(
     migrations,
   ),
   "Missing source_chunk scope guard BEFORE INSERT trigger.",
+);
+
+// Module 3 (AI Requirement Analyzer): frozen snapshot header/source/file/chunk rows and citation
+// rows are fully append-only after insert (module-03 §9.3, §9.6).
+assert(
+  /create\s+or\s+replace\s+function\s+requirement_analysis_prevent_mutation/iu.test(migrations),
+  "Missing shared requirement-analysis append-only trigger function migration.",
+);
+
+const requirementAnalysisAppendOnlyTables = [
+  "requirement_analysis_snapshot",
+  "requirement_analysis_snapshot_source",
+  "requirement_analysis_snapshot_file",
+  "requirement_analysis_snapshot_chunk",
+  "citation",
+];
+
+for (const tableName of requirementAnalysisAppendOnlyTables) {
+  assert(
+    new RegExp(
+      `drop\\s+trigger\\s+if\\s+exists\\s+${tableName}_no_update[\\s\\S]*?` +
+        `create\\s+trigger\\s+${tableName}_no_update\\s*\\n?before\\s+update\\s+on\\s+"${tableName}"`,
+      "iu",
+    ).test(migrations),
+    `Missing append-only UPDATE guard trigger for ${tableName}.`,
+  );
+  assert(
+    new RegExp(
+      `drop\\s+trigger\\s+if\\s+exists\\s+${tableName}_no_delete[\\s\\S]*?` +
+        `create\\s+trigger\\s+${tableName}_no_delete\\s*\\n?before\\s+delete\\s+on\\s+"${tableName}"`,
+      "iu",
+    ).test(migrations),
+    `Missing append-only DELETE guard trigger for ${tableName}.`,
+  );
+  assert(
+    new RegExp(
+      `drop\\s+trigger\\s+if\\s+exists\\s+${tableName}_no_truncate[\\s\\S]*?` +
+        `create\\s+trigger\\s+${tableName}_no_truncate\\s*\\n?before\\s+truncate\\s+on\\s+"${tableName}"`,
+      "iu",
+    ).test(migrations),
+    `Missing append-only TRUNCATE guard trigger for ${tableName}.`,
+  );
+}
+
+// requirement, coverage_matrix_entry, and delivery_item are derived truth: no hard DELETE/TRUNCATE,
+// but UPDATE stays open for a later module's lifecycle.
+for (const tableName of ["requirement", "coverage_matrix_entry", "delivery_item"]) {
+  assert(
+    new RegExp(`drop\\s+trigger\\s+if\\s+exists\\s+${tableName}_no_delete`, "iu").test(migrations),
+    `Missing derived-truth DELETE guard trigger for ${tableName}.`,
+  );
+  assert(
+    new RegExp(`drop\\s+trigger\\s+if\\s+exists\\s+${tableName}_no_truncate`, "iu").test(
+      migrations,
+    ),
+    `Missing derived-truth TRUNCATE guard trigger for ${tableName}.`,
+  );
+}
+
+// Scope/DAG-integrity guards: stage dependency edges, batches, batch chunks, and the frozen
+// snapshot chain must stay consistent with run/organization/project identity (module-03 §9.3-§9.4).
+const requirementAnalysisScopeGuardFunctions = [
+  "requirement_analysis_stage_dependency_scope_guard",
+  "requirement_analysis_batch_scope_guard",
+  "requirement_analysis_batch_chunk_scope_guard",
+  "requirement_analysis_snapshot_source_scope_guard",
+  "requirement_analysis_snapshot_file_scope_guard",
+  "requirement_analysis_snapshot_chunk_scope_guard",
+];
+
+for (const functionName of requirementAnalysisScopeGuardFunctions) {
+  assert(
+    new RegExp(`create\\s+or\\s+replace\\s+function\\s+${functionName}`, "iu").test(migrations),
+    `Missing Module 3 scope guard function: ${functionName}.`,
+  );
+  assert(
+    new RegExp(`create\\s+trigger\\s+${functionName}\\s*\\n?before\\s+insert`, "iu").test(
+      migrations,
+    ),
+    `Missing BEFORE INSERT trigger wiring for ${functionName}.`,
+  );
+}
+
+// Epistemic/finalization guards (module-03 §6.1, §8.5, §9.5, §9.7): confirmed requirements and
+// addressed coverage rows must have a verified citation by commit; a run may only finalize with
+// exactly 18 coverage rows and every partial/absent row question-linked; coverage rows freeze once
+// their run is terminal.
+assert(
+  /create\s+or\s+replace\s+function\s+requirement_confirmed_citation_guard/iu.test(migrations),
+  "Missing requirement_confirmed_citation_guard function.",
+);
+assert(
+  /create\s+constraint\s+trigger\s+requirement_confirmed_citation_guard[\s\S]*?deferrable\s+initially\s+deferred/iu.test(
+    migrations,
+  ),
+  "requirement_confirmed_citation_guard must be a DEFERRABLE INITIALLY DEFERRED constraint trigger.",
+);
+assert(
+  /create\s+or\s+replace\s+function\s+coverage_matrix_entry_addressed_citation_guard/iu.test(
+    migrations,
+  ),
+  "Missing coverage_matrix_entry_addressed_citation_guard function.",
+);
+assert(
+  /create\s+constraint\s+trigger\s+coverage_matrix_entry_addressed_citation_guard[\s\S]*?deferrable\s+initially\s+deferred/iu.test(
+    migrations,
+  ),
+  "coverage_matrix_entry_addressed_citation_guard must be a DEFERRABLE INITIALLY DEFERRED constraint trigger.",
+);
+assert(
+  /create\s+or\s+replace\s+function\s+requirement_analysis_run_completion_guard/iu.test(migrations),
+  "Missing requirement_analysis_run_completion_guard function (exactly-18-categories finalization check).",
+);
+assert(
+  /create\s+or\s+replace\s+function\s+coverage_matrix_entry_terminal_guard/iu.test(migrations),
+  "Missing coverage_matrix_entry_terminal_guard function (append-only after run finalization).",
 );
 
 console.log(

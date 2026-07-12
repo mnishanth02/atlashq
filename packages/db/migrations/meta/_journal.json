@@ -64,6 +64,34 @@
       "when": 1783693674860,
       "tag": "0008_source_document_vault_lineage_and_scope_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783752686357,
+      "tag": "0009_requirement_analysis_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783752966093,
+      "tag": "0010_requirement_analysis_append_only_guards",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1783752966094,
+      "tag": "0011_requirement_analysis_scope_guards",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1783752966095,
+      "tag": "0012_requirement_analysis_epistemic_guards",
+      "breakpoints": true
     }
   ]
 }

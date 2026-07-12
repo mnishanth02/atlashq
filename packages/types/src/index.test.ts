@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   type AuditMetadata,
+  analysisRunModeValues,
+  analysisRunStatusValues,
+  analysisStageKindValues,
+  analysisStageStatusValues,
   canProjectRole,
+  confidenceReasonCodeValues,
+  coverageCategoryDescriptors,
+  coverageCategoryKeyValues,
+  coverageStatusValues,
+  deliveryItemTypeValues,
   ipReviewStatusValues,
   isAiReviewStatus,
   isAiRunStatus,
@@ -19,6 +28,7 @@ import {
   isReferenceCaptureMethod,
   isReferenceIntendedUse,
   isReferenceKind,
+  isRequirementEpistemicStatus,
   isSourceDocumentFormat,
   isSourceExtractionStatus,
   isSourceFileScanStatus,
@@ -40,10 +50,16 @@ import {
   projectTypeValues,
   projectVisibilityValues,
   projectWritableStatusValues,
+  providerDataRetentionModeValues,
+  providerPolicyStatusValues,
   referenceAccessTypeValues,
   referenceCaptureMethodValues,
   referenceIntendedUseValues,
   referenceKindValues,
+  requirementEpistemicStatusValues,
+  requirementLifecycleStateValues,
+  requirementPriorityValues,
+  requirementTypeValues,
   rolePermissions,
   sourceDocumentFormatValues,
   sourceExtractionStatusValues,
@@ -66,6 +82,7 @@ describe("project roles", () => {
     expect(rolePermissions[projectRoles.developer]).toEqual([
       "project:read",
       "project:write",
+      "requirements:read",
       "sources:read",
     ]);
     expect(canProjectRole(projectRoles.developer, "project:write")).toBe(true);
@@ -74,6 +91,7 @@ describe("project roles", () => {
       projectRoles.clientViewerApprover,
     );
     expect(isMutationPermission("project:read")).toBe(false);
+    expect(isMutationPermission("requirements:read")).toBe(false);
   });
 
   it("rejects values outside the codified role set", () => {
@@ -118,6 +136,46 @@ describe("module 2 source permission matrix (module-02 §7, M2-DEC-006)", () => 
       projectRoles.admin,
       projectRoles.projectOwner,
     ]);
+  });
+});
+
+describe("module 3 requirements permissions (module-03 §12.2)", () => {
+  it("grants requirements:read to Admin, Project Owner, Architect, BA, Developer, and QA only", () => {
+    expect(projectRolesForPermission("requirements:read")).toEqual([
+      projectRoles.admin,
+      projectRoles.projectOwner,
+      projectRoles.architectTechLead,
+      projectRoles.businessAnalystCoordinator,
+      projectRoles.developer,
+      projectRoles.qa,
+    ]);
+    expect(canProjectRole(projectRoles.clientViewerApprover, "requirements:read")).toBe(false);
+  });
+
+  it("grants requirements:analyze only to Admin, Project Owner, Architect, and BA", () => {
+    expect(projectRolesForPermission("requirements:analyze")).toEqual([
+      projectRoles.admin,
+      projectRoles.projectOwner,
+      projectRoles.architectTechLead,
+      projectRoles.businessAnalystCoordinator,
+    ]);
+    expect(canProjectRole(projectRoles.developer, "requirements:analyze")).toBe(false);
+    expect(canProjectRole(projectRoles.qa, "requirements:analyze")).toBe(false);
+    expect(canProjectRole(projectRoles.clientViewerApprover, "requirements:analyze")).toBe(false);
+  });
+
+  it("keeps requirements:review unchanged for Module 4 handoff", () => {
+    expect(projectRolesForPermission("requirements:review")).toEqual([
+      projectRoles.admin,
+      projectRoles.projectOwner,
+      projectRoles.businessAnalystCoordinator,
+      projectRoles.qa,
+    ]);
+  });
+
+  it("treats requirements:read as non-mutation and requirements:analyze as mutation", () => {
+    expect(isMutationPermission("requirements:read")).toBe(false);
+    expect(isMutationPermission("requirements:analyze")).toBe(true);
   });
 });
 
@@ -296,6 +354,91 @@ describe("project controlled values", () => {
     expect(projectVisibilityValues).toEqual(["private", "organization"]);
     expect(isProjectVisibility("organization")).toBe(true);
     expect(isProjectVisibility("public")).toBe(false);
+  });
+});
+
+describe("module 3 controlled values", () => {
+  it("keeps epistemic statuses lowercase and rejects unknown values", () => {
+    expect(requirementEpistemicStatusValues).toEqual([
+      "confirmed",
+      "assumed",
+      "unknown",
+      "conflicting",
+    ]);
+    expect(isRequirementEpistemicStatus("confirmed")).toBe(true);
+    expect(isRequirementEpistemicStatus("Confirmed")).toBe(false);
+  });
+
+  it("keeps run and stage state machines stable", () => {
+    expect(analysisRunModeValues).toEqual(["fresh", "replay", "reprocess", "retry"]);
+    expect(analysisRunStatusValues).toEqual([
+      "requested",
+      "snapshotting",
+      "queued",
+      "running",
+      "waiting_retry",
+      "completed",
+      "completed_with_warnings",
+      "failed",
+      "canceled",
+    ]);
+    expect(analysisStageStatusValues).toEqual([
+      "pending",
+      "running",
+      "waiting_retry",
+      "completed",
+      "completed_with_warnings",
+      "failed",
+      "canceled",
+      "skipped",
+    ]);
+    expect(analysisStageKindValues).toContain("finalize_review_package");
+  });
+
+  it("keeps the fixed coverage rubric and statuses stable", () => {
+    expect(coverageStatusValues).toEqual(["addressed", "partial", "absent"]);
+    expect(coverageCategoryKeyValues).toHaveLength(18);
+    expect(coverageCategoryDescriptors).toHaveLength(18);
+    expect(coverageCategoryDescriptors[0]).toEqual({
+      key: "auth_identity",
+      label: "Auth/identity",
+      order: 1,
+    });
+    expect(coverageCategoryDescriptors[17]).toEqual({
+      key: "support_model",
+      label: "Support model",
+      order: 18,
+    });
+  });
+
+  it("keeps requirement/delivery/provider controlled values stable", () => {
+    expect(requirementTypeValues).toEqual([
+      "functional",
+      "non_functional",
+      "business_rule",
+      "data",
+      "integration",
+      "security",
+      "compliance",
+      "operational",
+    ]);
+    expect(requirementPriorityValues).toEqual(["must_have", "should_have", "could_have", "later"]);
+    expect(requirementLifecycleStateValues).toContain("ai_suggested");
+    expect(deliveryItemTypeValues).toEqual([
+      "question",
+      "risk",
+      "assumption",
+      "dependency",
+      "blocker",
+      "scope_change_candidate",
+    ]);
+    expect(providerPolicyStatusValues).toEqual(["draft", "approved", "inactive"]);
+    expect(providerDataRetentionModeValues).toEqual([
+      "provider_default",
+      "no_training",
+      "zero_retention",
+    ]);
+    expect(confidenceReasonCodeValues).toContain("verified_exact_citation");
   });
 });
 

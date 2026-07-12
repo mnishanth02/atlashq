@@ -1,0 +1,23 @@
+{
+  "fixtureId": "adv-fabricated-quote-negation-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "schemaHash": "4816b7ecc0382553ebcd6d26d59c2373801dc3b2b959129804f7bdd9f3cfb3fd",
+  "pipelineHash": "accc3bb55cd62c93c5af26aaf6b6d6501c4d274e7f5aff688412b9e7d1d6dfe6",
+  "promptBundleHash": "e680e2cf4bfcd0ea4e82675cf634938fba4396f47ab3abb5dfe3eabc064d8162",
+  "promptAssetHash": "f5a719c2a1795440f30c6f41da3c3d287f407ff9be76f2d25c712e41200bc2ca",
+  "inputHash": "9acbdd923531d76770615fba38004383985dfdd4506f20330e97a2f7038e9207",
+  "rawResponsesHash": "cdff3350118d0c014db908f3c717dabab5345265003c9c47ff8f32a749a70659",
+  "attemptRequestHashes": ["705961c9e9220ad2bd1661a6b089de47f843de83b5502e7815a0aa942a28622d"],
+  "expectedErrorCode": null,
+  "expectedOutputHash": "2e2a89c2f054e374baba7d4fdcdb9af97cc62db3c75a207ffefd24f55dc59ebd",
+  "expectedShapeOnlyRepairUsed": false,
+  "expectedUsage": {
+    "inputTokens": 250,
+    "outputTokens": 120,
+    "totalTokens": 370,
+    "costUsd": 0.00037
+  }
+}

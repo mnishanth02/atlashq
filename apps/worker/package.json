@@ -14,6 +14,7 @@
     "health": "node dist/health-cli.js"
   },
   "dependencies": {
+    "@atlashq/ai": "workspace:*",
     "@atlashq/config": "workspace:*",
     "@atlashq/db": "workspace:*",
     "@atlashq/jobs": "workspace:*",

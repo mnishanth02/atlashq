@@ -17,9 +17,9 @@ const EICAR_TEST_STRING = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS
 describe("integration: worker infrastructure (real MinIO + ClamAV + Redis + Postgres)", () => {
   let context: WorkerRuntimeContext;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     const env = inject("workerIntegrationEnv");
-    context = createWorkerRuntimeContext({
+    context = await createWorkerRuntimeContext({
       NODE_ENV: "test",
       ...env,
     });

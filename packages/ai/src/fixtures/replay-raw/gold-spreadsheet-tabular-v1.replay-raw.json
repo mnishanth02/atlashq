@@ -1,0 +1,100 @@
+{
+  "fixtureId": "gold-spreadsheet-tabular-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "responses": [
+    {
+      "output": {
+        "requirements": [
+          {
+            "key": "req_starter_quota",
+            "organizationId": "org_sheet",
+            "projectId": "proj_pricing",
+            "requirementType": "functional",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          },
+          {
+            "key": "req_growth_quota",
+            "organizationId": "org_sheet",
+            "projectId": "proj_pricing",
+            "requirementType": "functional",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          },
+          {
+            "key": "req_overage_rate",
+            "organizationId": "org_sheet",
+            "projectId": "proj_pricing",
+            "requirementType": "business_rule",
+            "priority": "should_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          }
+        ],
+        "citations": [
+          {
+            "requirementKey": "req_starter_quota",
+            "organizationId": "org_sheet",
+            "projectId": "proj_pricing",
+            "snapshotId": "snap_sheet_01",
+            "sourceDocumentId": "doc_pricing_sheet",
+            "sourceChunkId": "chunk_sheet_limits",
+            "quote": "Starter tier allows 10000 API calls per month.",
+            "verificationStatus": "verified_exact"
+          },
+          {
+            "requirementKey": "req_growth_quota",
+            "organizationId": "org_sheet",
+            "projectId": "proj_pricing",
+            "snapshotId": "snap_sheet_01",
+            "sourceDocumentId": "doc_pricing_sheet",
+            "sourceChunkId": "chunk_sheet_limits",
+            "quote": "Growth tier allows 100000 API calls per month.",
+            "verificationStatus": "verified_exact"
+          },
+          {
+            "requirementKey": "req_overage_rate",
+            "organizationId": "org_sheet",
+            "projectId": "proj_pricing",
+            "snapshotId": "snap_sheet_01",
+            "sourceDocumentId": "doc_pricing_sheet",
+            "sourceChunkId": "chunk_sheet_overage",
+            "quote": "Overage charges are billed at $0.01 per API call above plan quota.",
+            "verificationStatus": "verified_exact"
+          }
+        ],
+        "coverage": [
+          {
+            "categoryKey": "data_model_entities",
+            "status": "addressed"
+          },
+          {
+            "categoryKey": "reporting_analytics",
+            "status": "partial"
+          },
+          {
+            "categoryKey": "integrations",
+            "status": "addressed"
+          }
+        ],
+        "conflicts": [],
+        "questions": [
+          {
+            "questionKey": "q_reporting_granularity",
+            "linkedRequirementKeys": ["req_growth_quota"],
+            "linkedCoverageCategoryKeys": ["reporting_analytics"]
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 760,
+        "outputTokens": 390
+      }
+    }
+  ]
+}

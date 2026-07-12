@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { paginationQuerySchema, projectRoleSchema } from "./index.js";
+import { analysisRunStatusSchema, paginationQuerySchema, projectRoleSchema } from "./index.js";
 
 describe("shared validators barrel", () => {
   it("validates V1 project roles and paginated DTO defaults", () => {
@@ -11,5 +11,9 @@ describe("shared validators barrel", () => {
     expect(paginationQuerySchema.parse({ limit: "10" })).toEqual({ limit: 10 });
     expect(() => paginationQuerySchema.parse({ limit: "0" })).toThrow();
     expect(() => paginationQuerySchema.parse({ limit: "101" })).toThrow();
+  });
+
+  it("re-exports module 3 analyzer validators", () => {
+    expect(analysisRunStatusSchema.parse("running")).toBe("running");
   });
 });

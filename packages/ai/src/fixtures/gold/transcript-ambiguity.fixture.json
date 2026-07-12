@@ -1,0 +1,96 @@
+{
+  "id": "gold-transcript-ambiguity-v1",
+  "kind": "gold",
+  "tags": ["transcript_ambiguity", "partial_coverage", "question_linkage"],
+  "humanLabel": {
+    "title": "Transcript and email ambiguity",
+    "scenario": "Ambiguous localization language in stakeholder discussions",
+    "notes": "Hand-labeled to verify partial coverage and linked clarification questions.",
+    "ownedBy": "product-ba+architect"
+  },
+  "input": {
+    "context": {
+      "organizationId": "org_transcript",
+      "projectId": "proj_client_comms",
+      "snapshotId": "snap_transcript_01",
+      "referenceFeatureExtractionEnabled": false
+    },
+    "budget": {
+      "maxUsdPerRun": 3,
+      "maxInputTokensPerRun": 300000,
+      "maxOutputTokensPerRun": 30000,
+      "maxWallClockMs": 1800000
+    },
+    "evidenceBlocks": [
+      {
+        "blockId": "transcript_block_call",
+        "organizationId": "org_transcript",
+        "projectId": "proj_client_comms",
+        "snapshotId": "snap_transcript_01",
+        "sourceDocumentId": "doc_call_transcript",
+        "sourceChunkId": "chunk_transcript_call",
+        "chunkContentHash": "hash_transcript_call",
+        "origin": "source",
+        "text": "We might need multi-language support, but launch language is not confirmed."
+      },
+      {
+        "blockId": "transcript_block_email",
+        "organizationId": "org_transcript",
+        "projectId": "proj_client_comms",
+        "snapshotId": "snap_transcript_01",
+        "sourceDocumentId": "doc_followup_email",
+        "sourceChunkId": "chunk_transcript_email",
+        "chunkContentHash": "hash_transcript_email",
+        "origin": "source",
+        "text": "Launch must include English only; additional languages are phase two."
+      }
+    ]
+  },
+  "labels": {
+    "requirements": [
+      {
+        "key": "req_launch_english_only",
+        "requirementType": "functional",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      },
+      {
+        "key": "req_phase2_localization",
+        "requirementType": "functional",
+        "priority": "could_have",
+        "epistemicStatus": "assumed"
+      }
+    ],
+    "confirmedCitations": [
+      {
+        "requirementKey": "req_launch_english_only",
+        "sourceChunkId": "chunk_transcript_email",
+        "quote": "Launch must include English only; additional languages are phase two."
+      }
+    ],
+    "coverage": [
+      {
+        "categoryKey": "i18n_localization",
+        "status": "partial"
+      },
+      {
+        "categoryKey": "support_model",
+        "status": "partial"
+      }
+    ],
+    "conflicts": [],
+    "questions": [
+      {
+        "questionKey": "q_i18n_timeline",
+        "linkedRequirementKeys": ["req_phase2_localization"],
+        "linkedCoverageCategoryKeys": ["i18n_localization"]
+      }
+    ],
+    "unsupportedClaimKeys": ["claim_launch_in_spanish"]
+  },
+  "runtime": {
+    "stageKind": "confirmed_extraction",
+    "promptAssetKind": "confirmed_extraction",
+    "expectedErrorCode": null
+  }
+}

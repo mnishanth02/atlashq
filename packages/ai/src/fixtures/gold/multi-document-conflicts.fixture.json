@@ -1,0 +1,106 @@
+{
+  "id": "gold-multi-document-conflicts-v1",
+  "kind": "gold",
+  "tags": ["multi_document_conflicts", "conflict_detection", "policy_revision"],
+  "humanLabel": {
+    "title": "Conflicting policy revisions",
+    "scenario": "Two source documents disagree on a security rule",
+    "notes": "Hand-labeled conflict pair with linked clarification question.",
+    "ownedBy": "product-ba+architect"
+  },
+  "input": {
+    "context": {
+      "organizationId": "org_conflict",
+      "projectId": "proj_security_policy",
+      "snapshotId": "snap_conflict_01",
+      "referenceFeatureExtractionEnabled": false
+    },
+    "budget": {
+      "maxUsdPerRun": 3,
+      "maxInputTokensPerRun": 300000,
+      "maxOutputTokensPerRun": 30000,
+      "maxWallClockMs": 1800000
+    },
+    "evidenceBlocks": [
+      {
+        "blockId": "conflict_block_v1",
+        "organizationId": "org_conflict",
+        "projectId": "proj_security_policy",
+        "snapshotId": "snap_conflict_01",
+        "sourceDocumentId": "doc_policy_v1",
+        "sourceChunkId": "chunk_conflict_24h",
+        "chunkContentHash": "hash_conflict_24h",
+        "origin": "source",
+        "text": "Password reset tokens expire after 24 hours."
+      },
+      {
+        "blockId": "conflict_block_v2",
+        "organizationId": "org_conflict",
+        "projectId": "proj_security_policy",
+        "snapshotId": "snap_conflict_01",
+        "sourceDocumentId": "doc_policy_v2",
+        "sourceChunkId": "chunk_conflict_15m",
+        "chunkContentHash": "hash_conflict_15m",
+        "origin": "source",
+        "text": "Password reset tokens expire after 15 minutes."
+      }
+    ]
+  },
+  "labels": {
+    "requirements": [
+      {
+        "key": "req_reset_token_24h",
+        "requirementType": "security",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      },
+      {
+        "key": "req_reset_token_15m",
+        "requirementType": "security",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      }
+    ],
+    "confirmedCitations": [
+      {
+        "requirementKey": "req_reset_token_24h",
+        "sourceChunkId": "chunk_conflict_24h",
+        "quote": "Password reset tokens expire after 24 hours."
+      },
+      {
+        "requirementKey": "req_reset_token_15m",
+        "sourceChunkId": "chunk_conflict_15m",
+        "quote": "Password reset tokens expire after 15 minutes."
+      }
+    ],
+    "coverage": [
+      {
+        "categoryKey": "auth_identity",
+        "status": "addressed"
+      },
+      {
+        "categoryKey": "security_compliance",
+        "status": "addressed"
+      }
+    ],
+    "conflicts": [
+      {
+        "leftRequirementKey": "req_reset_token_24h",
+        "rightRequirementKey": "req_reset_token_15m"
+      }
+    ],
+    "questions": [
+      {
+        "questionKey": "q_reset_policy_resolution",
+        "linkedRequirementKeys": ["req_reset_token_24h", "req_reset_token_15m"],
+        "linkedCoverageCategoryKeys": ["security_compliance"]
+      }
+    ],
+    "unsupportedClaimKeys": []
+  },
+  "runtime": {
+    "stageKind": "confirmed_extraction",
+    "promptAssetKind": "confirmed_extraction",
+    "expectedErrorCode": null
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "fixtureId": "adv-reference-ip-verbatim-copy-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "schemaHash": "4816b7ecc0382553ebcd6d26d59c2373801dc3b2b959129804f7bdd9f3cfb3fd",
+  "pipelineHash": "accc3bb55cd62c93c5af26aaf6b6d6501c4d274e7f5aff688412b9e7d1d6dfe6",
+  "promptBundleHash": "e680e2cf4bfcd0ea4e82675cf634938fba4396f47ab3abb5dfe3eabc064d8162",
+  "promptAssetHash": "f5a719c2a1795440f30c6f41da3c3d287f407ff9be76f2d25c712e41200bc2ca",
+  "inputHash": "30747e5577c027d12bc971d0a2422ff607809cc1718055a1ccaa22de0113fe9f",
+  "rawResponsesHash": "2aa4addaaadd742b540a7738b39cb6fb2e11cafe33613e53a2ca1e543f18ec56",
+  "attemptRequestHashes": ["babcd6a590cc1ee824162ba3ba07a8cebf95f176d779f61c735c1827e9ce35f5"],
+  "expectedErrorCode": null,
+  "expectedOutputHash": "798dcd0f9a1fc9a494c364f800fdf4bf9d7c721ab2a45809440aa69c3f1bdad8",
+  "expectedShapeOnlyRepairUsed": false,
+  "expectedUsage": {
+    "inputTokens": 210,
+    "outputTokens": 95,
+    "totalTokens": 305,
+    "costUsd": 0.00030500000000000004
+  }
+}

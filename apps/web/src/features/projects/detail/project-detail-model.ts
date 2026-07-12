@@ -110,7 +110,7 @@ const DASHBOARD_CARD_META: Record<DashboardCardKey, DashboardCardMeta> = {
   },
   requirements: {
     tabKey: "requirements",
-    ctaLabel: "Open requirements",
+    ctaLabel: "Open requirement analysis",
     guidance: "Start capturing requirements against source evidence.",
     badgeVariant: "secondary",
   },
@@ -143,7 +143,7 @@ const DASHBOARD_CARD_META: Record<DashboardCardKey, DashboardCardMeta> = {
 export const PROJECT_WORKSPACE_TABS: WorkspaceTabDefinition[] = [
   { key: "overview", label: "Overview", kind: "live" },
   { key: "source-documents", label: "Source Documents", kind: "live" },
-  { key: "requirements", label: "Requirements", kind: "placeholder" },
+  { key: "requirements", label: "Requirements", kind: "live" },
   { key: "questions-risks", label: "Questions & Risks", kind: "placeholder" },
   { key: "architecture", label: "Architecture", kind: "placeholder" },
   { key: "baseline-handoff", label: "Baseline & Handoff", kind: "placeholder" },
@@ -152,17 +152,6 @@ export const PROJECT_WORKSPACE_TABS: WorkspaceTabDefinition[] = [
 ];
 
 export const PROJECT_PLACEHOLDER_TABS: WorkspacePlaceholderDefinition[] = [
-  {
-    key: "requirements",
-    label: "Requirements",
-    kind: "placeholder",
-    heading: "Requirements capture is planned for V1",
-    description:
-      "Requirements will land here once the workspace can link requirement statements back to recorded source material.",
-    upcomingModule:
-      "Upcoming V1 module: requirement drafting, acceptance criteria, and source-backed traceability.",
-    dashboardCardKeys: ["requirements"],
-  },
   {
     key: "questions-risks",
     label: "Questions & Risks",

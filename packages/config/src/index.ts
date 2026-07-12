@@ -8,8 +8,8 @@ const urlSchema = z.string().url();
 const frontendApiBaseUrlSchema = z.union([z.literal(""), urlSchema]);
 const optionalSecretSchema = z.string().min(1).optional();
 const booleanEnvSchema = z
-  .union([z.boolean(), z.literal("true"), z.literal("false")])
-  .transform((value) => value === true || value === "true");
+  .union([z.boolean(), z.literal("true"), z.literal("false"), z.literal("1"), z.literal("0")])
+  .transform((value) => value === true || value === "true" || value === "1");
 
 export const storageEnvSchema = z.object({
   S3_ENDPOINT: urlSchema,
@@ -29,6 +29,8 @@ export const webEnvSchema = z
   .object({
     VITE_API_BASE_URL: frontendApiBaseUrlSchema.default(""),
     VITE_APP_NAME: z.string().min(1).default("AtlasHQ"),
+    VITE_AI_REQUIREMENT_ANALYSIS_ENABLED: booleanEnvSchema.default(false),
+    VITE_AI_ANALYSIS_READS_ENABLED: booleanEnvSchema.default(true),
   })
   .strict();
 
@@ -116,6 +118,99 @@ export const referenceCaptureEnvSchema = z.object({
     .default(75 * 1024 * 1024),
 });
 
+// ---------------------------------------------------------------------------
+// Module 3: AI Requirement Analyzer environment contracts (module-03 §7, §20)
+// ---------------------------------------------------------------------------
+
+export const aiRequirementAnalysisFeatureFlagEnvSchema = z.object({
+  AI_REQUIREMENT_ANALYSIS_ENABLED: booleanEnvSchema.default(false),
+  AI_MODEL_CALLS_ENABLED: booleanEnvSchema.default(false),
+  AI_REFERENCE_FEATURE_EXTRACTION_ENABLED: booleanEnvSchema.default(false),
+  AI_EVAL_GATE_REQUIRED: booleanEnvSchema.default(true),
+  AI_ANALYSIS_READS_ENABLED: booleanEnvSchema.default(true),
+});
+
+export const aiRequirementAnalysisBudgetEnvSchema = z.object({
+  AI_ANALYSIS_MAX_USD_PER_RUN: z.coerce.number().positive().default(3),
+  AI_ANALYSIS_MAX_INPUT_TOKENS_PER_RUN: z.coerce.number().int().positive().default(300_000),
+  AI_ANALYSIS_MAX_OUTPUT_TOKENS_PER_RUN: z.coerce.number().int().positive().default(30_000),
+  AI_ANALYSIS_MAX_WALL_CLOCK_SECONDS: z.coerce.number().int().positive().default(1_800),
+  AI_ANALYSIS_MAX_ACTIVE_RUNS_PER_PROJECT: z.coerce.number().int().positive().default(1),
+  AI_ANALYSIS_MAX_ACTIVE_RUNS_PER_ORGANIZATION: z.coerce.number().int().positive().default(3),
+});
+
+const aiSdkProviderValues = ["openai", "anthropic", "openai-compatible", "local"] as const;
+const aiDataRetentionModeValues = ["provider_default", "no_training", "zero_retention"] as const;
+const aiProviderSelectionStrategyValues = ["explicit_policy_only"] as const;
+const aiSafeDisabledBehaviorValues = ["reject_new_runs_preserve_reads"] as const;
+
+export const aiRequirementAnalysisProviderEnvSchema = z.object({
+  AI_ANALYSIS_DEFAULT_PROVIDER: z.enum(aiSdkProviderValues).default("openai"),
+  AI_ANALYSIS_DEFAULT_MODEL_ALIAS: z.string().trim().min(1).default("gpt-4o-mini"),
+  AI_ANALYSIS_DEFAULT_RESOLVED_MODEL_ID: z.string().trim().min(1).default("gpt-4o-mini"),
+  AI_ANALYSIS_DEFAULT_DATA_RETENTION_MODE: z
+    .enum(aiDataRetentionModeValues)
+    .default("provider_default"),
+  AI_ANALYSIS_PROVIDER_SELECTION_STRATEGY: z
+    .enum(aiProviderSelectionStrategyValues)
+    .default("explicit_policy_only"),
+  AI_ANALYSIS_DISABLE_AUTOMATIC_FALLBACK: booleanEnvSchema.default(true),
+});
+
+export const aiRequirementAnalysisDataHandlingEnvSchema = z.object({
+  AI_ANALYSIS_LOG_PROMPTS: booleanEnvSchema.default(false),
+  AI_ANALYSIS_LOG_SOURCE_CHUNKS: booleanEnvSchema.default(false),
+  AI_ANALYSIS_LOG_MODEL_OUTPUTS: booleanEnvSchema.default(false),
+  AI_ANALYSIS_REDACT_SIGNED_URLS: booleanEnvSchema.default(true),
+  AI_ANALYSIS_SAFE_DISABLED_BEHAVIOR: z
+    .enum(aiSafeDisabledBehaviorValues)
+    .default("reject_new_runs_preserve_reads"),
+});
+
+export const aiRequirementAnalysisLogRetentionEnvSchema = z.object({
+  AI_ANALYSIS_LOG_RETENTION_DAYS: z.coerce.number().int().positive().default(30),
+});
+
+export const aiRequirementAnalysisEnvSchema = aiRequirementAnalysisFeatureFlagEnvSchema
+  .and(aiRequirementAnalysisBudgetEnvSchema)
+  .and(aiRequirementAnalysisProviderEnvSchema)
+  .and(aiRequirementAnalysisDataHandlingEnvSchema)
+  .and(aiRequirementAnalysisLogRetentionEnvSchema);
+
+export const aiRequirementAnalysisDefaults = {
+  featureFlags: {
+    aiRequirementAnalysisEnabled: false,
+    aiModelCallsEnabled: false,
+    aiReferenceFeatureExtractionEnabled: false,
+    aiEvalGateRequired: true,
+    aiAnalysisReadsEnabled: true,
+  },
+  budgets: {
+    maxUsdPerRun: 3,
+    maxInputTokensPerRun: 300_000,
+    maxOutputTokensPerRun: 30_000,
+    maxWallClockSeconds: 1_800,
+    maxActiveRunsPerProject: 1,
+    maxActiveRunsPerOrganization: 3,
+  },
+  providerSelection: {
+    provider: "openai",
+    modelAlias: "gpt-4o-mini",
+    resolvedModelId: "gpt-4o-mini",
+    dataRetentionMode: "provider_default",
+    strategy: "explicit_policy_only",
+    disableAutomaticFallback: true,
+  },
+  dataHandling: {
+    logPrompts: false,
+    logSourceChunks: false,
+    logModelOutputs: false,
+    redactSignedUrls: true,
+    safeDisabledBehavior: "reject_new_runs_preserve_reads",
+  },
+  logRetentionDays: 30,
+} as const;
+
 export const apiEnvSchema = z
   .object({
     NODE_ENV: nodeEnvSchema,
@@ -128,7 +223,8 @@ export const apiEnvSchema = z
     LOG_LEVEL: logLevelSchema,
   })
   .and(apiStorageEnvSchema)
-  .and(sourceVaultEnvSchema);
+  .and(sourceVaultEnvSchema)
+  .and(aiRequirementAnalysisEnvSchema);
 
 export const workerEnvSchema = z
   .object({
@@ -143,7 +239,8 @@ export const workerEnvSchema = z
   .and(storageEnvSchema)
   .and(sourceVaultEnvSchema)
   .and(clamAvEnvSchema)
-  .and(referenceCaptureEnvSchema);
+  .and(referenceCaptureEnvSchema)
+  .and(aiRequirementAnalysisEnvSchema);
 
 export type WebEnv = z.infer<typeof webEnvSchema>;
 export type ApiEnv = z.infer<typeof apiEnvSchema>;
@@ -151,6 +248,20 @@ export type WorkerEnv = z.infer<typeof workerEnvSchema>;
 export type SourceVaultEnv = z.infer<typeof sourceVaultEnvSchema>;
 export type ClamAvEnv = z.infer<typeof clamAvEnvSchema>;
 export type ReferenceCaptureEnv = z.infer<typeof referenceCaptureEnvSchema>;
+export type AiRequirementAnalysisFeatureFlagEnv = z.infer<
+  typeof aiRequirementAnalysisFeatureFlagEnvSchema
+>;
+export type AiRequirementAnalysisBudgetEnv = z.infer<typeof aiRequirementAnalysisBudgetEnvSchema>;
+export type AiRequirementAnalysisProviderEnv = z.infer<
+  typeof aiRequirementAnalysisProviderEnvSchema
+>;
+export type AiRequirementAnalysisDataHandlingEnv = z.infer<
+  typeof aiRequirementAnalysisDataHandlingEnvSchema
+>;
+export type AiRequirementAnalysisLogRetentionEnv = z.infer<
+  typeof aiRequirementAnalysisLogRetentionEnvSchema
+>;
+export type AiRequirementAnalysisEnv = z.infer<typeof aiRequirementAnalysisEnvSchema>;
 
 export function loadWebEnv(input: Record<string, unknown>): WebEnv {
   return webEnvSchema.parse(input);

@@ -2,6 +2,8 @@ import { type DynamicModule, Global, Module } from "@nestjs/common";
 import { DrizzleAuthDirectory } from "../auth/auth-directory.js";
 import { DrizzleProjectAccessQueries } from "../security/project-access.queries.js";
 import {
+  AI_ANALYSIS_QUEUE,
+  AI_REQUIREMENT_ANALYSIS_CONFIG,
   type ApiRuntime,
   AUTH_DIRECTORY,
   AUTH_INSTANCE,
@@ -42,7 +44,12 @@ export class RuntimeModule {
         },
         { provide: SOURCE_STORAGE, useValue: runtime.storage ?? null },
         { provide: SOURCE_DOCUMENT_QUEUE, useValue: runtime.documentQueue ?? null },
+        { provide: AI_ANALYSIS_QUEUE, useValue: runtime.analysisQueue ?? null },
         { provide: SOURCE_VAULT_CONFIG, useValue: runtime.sourceVault ?? null },
+        {
+          provide: AI_REQUIREMENT_ANALYSIS_CONFIG,
+          useValue: runtime.aiRequirementAnalysis ?? null,
+        },
       ],
       exports: [
         AUTH_INSTANCE,
@@ -51,7 +58,9 @@ export class RuntimeModule {
         AUTH_DIRECTORY,
         SOURCE_STORAGE,
         SOURCE_DOCUMENT_QUEUE,
+        AI_ANALYSIS_QUEUE,
         SOURCE_VAULT_CONFIG,
+        AI_REQUIREMENT_ANALYSIS_CONFIG,
       ],
     };
   }

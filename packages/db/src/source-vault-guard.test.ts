@@ -383,7 +383,7 @@ describe("source document vault guards", () => {
     );
     await expectGuardFailure(
       client,
-      `TRUNCATE TABLE source_document_file`,
+      `TRUNCATE TABLE source_document_file CASCADE`,
       [],
       /archive-only: TRUNCATE is not permitted/i,
     );
@@ -395,13 +395,13 @@ describe("source document vault guards", () => {
     );
     await expectGuardFailure(
       client,
-      `TRUNCATE TABLE source_chunk`,
+      `TRUNCATE TABLE source_chunk CASCADE`,
       [],
       /archive-only: TRUNCATE is not permitted/i,
     );
     await expectGuardFailure(
       client,
-      `TRUNCATE TABLE reference_artifact`,
+      `TRUNCATE TABLE reference_artifact CASCADE`,
       [],
       /archive-only: TRUNCATE is not permitted/i,
     );

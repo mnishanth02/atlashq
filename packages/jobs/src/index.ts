@@ -1,4 +1,4 @@
-import type { ProjectId, UserId } from "@atlashq/types";
+import { analysisStageKindValues } from "@atlashq/types";
 import { z } from "zod";
 
 export const queueNames = [
@@ -92,23 +92,99 @@ export function parseDocumentProcessingJobPayload(payload: unknown): DocumentPro
   return documentProcessingJobPayloadSchema.parse(payload);
 }
 
-export const aiAnalysisJobPayloadSchema = baseJobPayloadSchema.extend({
-  aiRunId: z.string().trim().min(1).optional(),
+// ---------------------------------------------------------------------------
+// Module 3: AI Requirement Analyzer queue contracts (module-03 §13)
+// ---------------------------------------------------------------------------
+
+const analysisJobBaseSchema = baseJobPayloadSchema.extend({
+  organizationId: requiredIdSchema,
+  projectId: requiredIdSchema,
+  runId: requiredIdSchema,
 });
+
+export const freezeSnapshotJobPayloadSchema = analysisJobBaseSchema.extend({
+  kind: z.literal("freeze-snapshot"),
+  actorId: requiredIdSchema,
+  sourceDocumentIds: z.array(requiredIdSchema).min(1).optional(),
+});
+
+export const planBatchesJobPayloadSchema = analysisJobBaseSchema.extend({
+  kind: z.literal("plan-batches"),
+  snapshotId: requiredIdSchema,
+});
+
+export const runStageJobPayloadSchema = analysisJobBaseSchema.extend({
+  kind: z.literal("run-stage"),
+  stageId: requiredIdSchema,
+  stageKind: z.enum(analysisStageKindValues),
+});
+
+export const runBatchJobPayloadSchema = analysisJobBaseSchema.extend({
+  kind: z.literal("run-batch"),
+  stageId: requiredIdSchema,
+  batchId: requiredIdSchema,
+});
+
+export const finalizeRunJobPayloadSchema = analysisJobBaseSchema.extend({
+  kind: z.literal("finalize-run"),
+});
+
+export const cancelRunJobPayloadSchema = analysisJobBaseSchema.extend({
+  kind: z.literal("cancel-run"),
+  actorId: requiredIdSchema,
+});
+
+export const requirementAnalysisJobPayloadSchema = z.discriminatedUnion("kind", [
+  freezeSnapshotJobPayloadSchema,
+  planBatchesJobPayloadSchema,
+  runStageJobPayloadSchema,
+  runBatchJobPayloadSchema,
+  finalizeRunJobPayloadSchema,
+  cancelRunJobPayloadSchema,
+]);
+
+/** Backward-compatible export name used by existing ai-analysis queue consumers. */
+export const aiAnalysisJobPayloadSchema = requirementAnalysisJobPayloadSchema;
+
+export type RequirementAnalysisJobKind = z.infer<
+  typeof requirementAnalysisJobPayloadSchema
+>["kind"];
+export type RequirementAnalysisJobPayload = z.infer<typeof requirementAnalysisJobPayloadSchema>;
+
+export function parseRequirementAnalysisJobPayload(
+  payload: unknown,
+): RequirementAnalysisJobPayload {
+  return requirementAnalysisJobPayloadSchema.parse(payload);
+}
+
+export const citationVerificationJobPayloadSchema = baseJobPayloadSchema.extend({
+  organizationId: requiredIdSchema,
+  projectId: requiredIdSchema,
+  runId: requiredIdSchema,
+  stageId: requiredIdSchema,
+  batchId: requiredIdSchema,
+});
+
+export type CitationVerificationJobPayload = z.infer<typeof citationVerificationJobPayloadSchema>;
+
+export function parseCitationVerificationJobPayload(
+  payload: unknown,
+): CitationVerificationJobPayload {
+  return citationVerificationJobPayloadSchema.parse(payload);
+}
 
 export const jobPayloadSchemas = {
   "document-processing": documentProcessingJobPayloadSchema,
-  "ai-analysis": aiAnalysisJobPayloadSchema,
-  "citation-verification": baseJobPayloadSchema,
+  "ai-analysis": requirementAnalysisJobPayloadSchema,
+  "citation-verification": citationVerificationJobPayloadSchema,
   "export-generation": baseJobPayloadSchema,
   "github-sync": baseJobPayloadSchema,
   maintenance: baseJobPayloadSchema,
 } as const satisfies Record<QueueName, z.ZodType>;
 
-export type AtlasJobPayload = z.infer<typeof baseJobPayloadSchema> & {
-  projectId?: ProjectId;
-  actorId?: UserId;
-};
+type JobPayloadSchemas = typeof jobPayloadSchemas;
+export type QueuePayload<Queue extends QueueName> = z.infer<JobPayloadSchemas[Queue]>;
+export type AtlasJobPayload = QueuePayload<QueueName>;
 
 export const defaultRetryPolicy = {
   attempts: 3,
@@ -130,8 +206,11 @@ export function createQueueRegistration(queueName: QueueName) {
   };
 }
 
-export function parseJobPayload(queueName: QueueName, payload: unknown): AtlasJobPayload {
-  return jobPayloadSchemas[queueName].parse(payload) as AtlasJobPayload;
+export function parseJobPayload<Queue extends QueueName>(
+  queueName: Queue,
+  payload: unknown,
+): QueuePayload<Queue> {
+  return jobPayloadSchemas[queueName].parse(payload) as QueuePayload<Queue>;
 }
 
 export function createIdempotencyKey(parts: {
@@ -140,4 +219,35 @@ export function createIdempotencyKey(parts: {
   operation: string;
 }) {
   return `${parts.queueName}:${parts.operation}:${parts.resourceId}`;
+}
+
+export function createRequirementAnalysisIdempotencyKey(parts: {
+  kind: RequirementAnalysisJobKind;
+  runId: string;
+  snapshotId?: string;
+  stageId?: string;
+  batchId?: string;
+}) {
+  const segments = ["ai-analysis", parts.kind, parts.runId];
+  if (parts.snapshotId) {
+    segments.push(parts.snapshotId);
+  }
+  if (parts.stageId) {
+    segments.push(parts.stageId);
+  }
+  if (parts.batchId) {
+    segments.push(parts.batchId);
+  }
+
+  return segments.join("_");
+}
+
+export function createCitationVerificationIdempotencyKey(parts: {
+  runId: string;
+  stageId: string;
+  batchId: string;
+}) {
+  return ["citation-verification", "verify-batch", parts.runId, parts.stageId, parts.batchId].join(
+    "_",
+  );
 }

@@ -7,6 +7,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import { DrizzleAuthDirectory } from "../auth/auth-directory.js";
 import { DrizzleProjectAccessQueries } from "../security/project-access.queries.js";
 import {
+  AI_ANALYSIS_QUEUE,
+  AI_REQUIREMENT_ANALYSIS_CONFIG,
   AUTH_DIRECTORY,
   AUTH_INSTANCE,
   DATABASE_CLIENT,
@@ -31,7 +33,9 @@ class FeatureService {
     @Inject(AUTH_DIRECTORY) readonly authDirectory: unknown,
     @Inject(SOURCE_STORAGE) readonly storage: unknown,
     @Inject(SOURCE_DOCUMENT_QUEUE) readonly queue: unknown,
+    @Inject(AI_ANALYSIS_QUEUE) readonly analysisQueue: unknown,
     @Inject(SOURCE_VAULT_CONFIG) readonly sourceVault: unknown,
+    @Inject(AI_REQUIREMENT_ANALYSIS_CONFIG) readonly analysisConfig: unknown,
   ) {}
 }
 
@@ -56,13 +60,17 @@ describe("RuntimeModule", () => {
     expect(app.get(DATABASE_CLIENT)).toBeNull();
     expect(app.get(SOURCE_STORAGE)).toBeNull();
     expect(app.get(SOURCE_DOCUMENT_QUEUE)).toBeNull();
+    expect(app.get(AI_ANALYSIS_QUEUE)).toBeNull();
     expect(app.get(SOURCE_VAULT_CONFIG)).toBeNull();
+    expect(app.get(AI_REQUIREMENT_ANALYSIS_CONFIG)).toBeNull();
     expect(NULL_RUNTIME).toEqual({
       auth: null,
       db: null,
       storage: null,
       documentQueue: null,
+      analysisQueue: null,
       sourceVault: null,
+      aiRequirementAnalysis: null,
     });
   });
 
@@ -89,7 +97,9 @@ describe("RuntimeModule", () => {
     expect(feature.authDirectory).toBeInstanceOf(DrizzleAuthDirectory);
     expect(feature.storage).toBeNull();
     expect(feature.queue).toBeNull();
+    expect(feature.analysisQueue).toBeNull();
     expect(feature.sourceVault).toBeNull();
+    expect(feature.analysisConfig).toBeNull();
   });
 
   it("passes through a supplied non-null runtime's auth/db/source-vault instances", async () => {
@@ -97,10 +107,22 @@ describe("RuntimeModule", () => {
     const db = { marker: "fake-db" } as unknown as Database;
     const storage = { marker: "fake-storage" } as unknown as never;
     const documentQueue = { marker: "fake-queue" } as unknown as never;
+    const analysisQueue = { marker: "fake-analysis-queue" } as unknown as never;
     const sourceVault = { marker: "fake-source-vault" } as unknown as never;
+    const aiRequirementAnalysis = { marker: "fake-ai-config" } as unknown as never;
 
     @Module({
-      imports: [RuntimeModule.forRoot({ auth, db, storage, documentQueue, sourceVault })],
+      imports: [
+        RuntimeModule.forRoot({
+          auth,
+          db,
+          storage,
+          documentQueue,
+          analysisQueue,
+          sourceVault,
+          aiRequirementAnalysis,
+        }),
+      ],
     })
     class RootModule {}
 
@@ -110,6 +132,8 @@ describe("RuntimeModule", () => {
     expect(app.get(DATABASE_CLIENT)).toBe(db);
     expect(app.get(SOURCE_STORAGE)).toBe(storage);
     expect(app.get(SOURCE_DOCUMENT_QUEUE)).toBe(documentQueue);
+    expect(app.get(AI_ANALYSIS_QUEUE)).toBe(analysisQueue);
     expect(app.get(SOURCE_VAULT_CONFIG)).toBe(sourceVault);
+    expect(app.get(AI_REQUIREMENT_ANALYSIS_CONFIG)).toBe(aiRequirementAnalysis);
   });
 });

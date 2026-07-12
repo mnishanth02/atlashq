@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  aiRequirementAnalysisBudgetEnvSchema,
+  aiRequirementAnalysisDataHandlingEnvSchema,
+  aiRequirementAnalysisDefaults,
+  aiRequirementAnalysisFeatureFlagEnvSchema,
+  aiRequirementAnalysisLogRetentionEnvSchema,
+  aiRequirementAnalysisProviderEnvSchema,
   apiEnvSchema,
   clamAvEnvSchema,
   referenceCaptureEnvSchema,
@@ -18,6 +24,12 @@ describe("web env schema", () => {
         DATABASE_URL: "postgres://example",
       }),
     ).toThrow();
+  });
+
+  it("defaults analyzer feature flags without exposing server secrets", () => {
+    const parsed = webEnvSchema.parse({});
+    expect(parsed.VITE_AI_REQUIREMENT_ANALYSIS_ENABLED).toBe(false);
+    expect(parsed.VITE_AI_ANALYSIS_READS_ENABLED).toBe(true);
   });
 });
 
@@ -104,6 +116,106 @@ describe("module 2 source vault env schema", () => {
     expect(parsed.SOURCE_UPLOAD_URL_TTL_SECONDS).toBe(15 * 60);
     expect(parsed.SOURCE_DOWNLOAD_URL_TTL_SECONDS).toBe(10 * 60);
     expect(parsed.S3_REQUIRE_BUCKET_VERSIONING).toBe(true);
+  });
+
+  describe("module 3 AI requirement-analysis env schemas", () => {
+    it("defaults feature flags to safe-disabled behavior", () => {
+      const parsed = aiRequirementAnalysisFeatureFlagEnvSchema.parse({});
+      expect(parsed.AI_REQUIREMENT_ANALYSIS_ENABLED).toBe(false);
+      expect(parsed.AI_MODEL_CALLS_ENABLED).toBe(false);
+      expect(parsed.AI_REFERENCE_FEATURE_EXTRACTION_ENABLED).toBe(false);
+      expect(parsed.AI_EVAL_GATE_REQUIRED).toBe(true);
+      expect(parsed.AI_ANALYSIS_READS_ENABLED).toBe(true);
+    });
+
+    it("defaults run budgets and concurrency limits from the plan", () => {
+      const parsed = aiRequirementAnalysisBudgetEnvSchema.parse({});
+      expect(parsed.AI_ANALYSIS_MAX_USD_PER_RUN).toBe(3);
+      expect(parsed.AI_ANALYSIS_MAX_INPUT_TOKENS_PER_RUN).toBe(300_000);
+      expect(parsed.AI_ANALYSIS_MAX_OUTPUT_TOKENS_PER_RUN).toBe(30_000);
+      expect(parsed.AI_ANALYSIS_MAX_WALL_CLOCK_SECONDS).toBe(1_800);
+      expect(parsed.AI_ANALYSIS_MAX_ACTIVE_RUNS_PER_PROJECT).toBe(1);
+      expect(parsed.AI_ANALYSIS_MAX_ACTIVE_RUNS_PER_ORGANIZATION).toBe(3);
+    });
+
+    it("defaults AI provider selection and data-retention handling", () => {
+      const provider = aiRequirementAnalysisProviderEnvSchema.parse({});
+      expect(provider.AI_ANALYSIS_DEFAULT_PROVIDER).toBe("openai");
+      expect(provider.AI_ANALYSIS_DEFAULT_MODEL_ALIAS).toBe("gpt-4o-mini");
+      expect(provider.AI_ANALYSIS_DEFAULT_RESOLVED_MODEL_ID).toBe("gpt-4o-mini");
+      expect(provider.AI_ANALYSIS_DEFAULT_DATA_RETENTION_MODE).toBe("provider_default");
+      expect(provider.AI_ANALYSIS_PROVIDER_SELECTION_STRATEGY).toBe("explicit_policy_only");
+      expect(provider.AI_ANALYSIS_DISABLE_AUTOMATIC_FALLBACK).toBe(true);
+
+      expect(
+        aiRequirementAnalysisProviderEnvSchema.parse({
+          AI_ANALYSIS_DEFAULT_PROVIDER: "openai-compatible",
+        }).AI_ANALYSIS_DEFAULT_PROVIDER,
+      ).toBe("openai-compatible");
+      expect(
+        aiRequirementAnalysisProviderEnvSchema.parse({
+          AI_ANALYSIS_DEFAULT_PROVIDER: "local",
+        }).AI_ANALYSIS_DEFAULT_PROVIDER,
+      ).toBe("local");
+
+      const dataHandling = aiRequirementAnalysisDataHandlingEnvSchema.parse({});
+      expect(dataHandling.AI_ANALYSIS_LOG_PROMPTS).toBe(false);
+      expect(dataHandling.AI_ANALYSIS_LOG_SOURCE_CHUNKS).toBe(false);
+      expect(dataHandling.AI_ANALYSIS_LOG_MODEL_OUTPUTS).toBe(false);
+      expect(dataHandling.AI_ANALYSIS_REDACT_SIGNED_URLS).toBe(true);
+      expect(dataHandling.AI_ANALYSIS_SAFE_DISABLED_BEHAVIOR).toBe(
+        "reject_new_runs_preserve_reads",
+      );
+
+      expect(
+        aiRequirementAnalysisLogRetentionEnvSchema.parse({}).AI_ANALYSIS_LOG_RETENTION_DAYS,
+      ).toBe(30);
+    });
+
+    it("coerces kill switches from 1/0 env values", () => {
+      const parsed = aiRequirementAnalysisFeatureFlagEnvSchema.parse({
+        AI_REQUIREMENT_ANALYSIS_ENABLED: "1",
+        AI_MODEL_CALLS_ENABLED: "0",
+      });
+      expect(parsed.AI_REQUIREMENT_ANALYSIS_ENABLED).toBe(true);
+      expect(parsed.AI_MODEL_CALLS_ENABLED).toBe(false);
+    });
+
+    it("exposes typed defaults for feature flags, budgets, provider policy, and retention", () => {
+      expect(aiRequirementAnalysisDefaults).toEqual({
+        featureFlags: {
+          aiRequirementAnalysisEnabled: false,
+          aiModelCallsEnabled: false,
+          aiReferenceFeatureExtractionEnabled: false,
+          aiEvalGateRequired: true,
+          aiAnalysisReadsEnabled: true,
+        },
+        budgets: {
+          maxUsdPerRun: 3,
+          maxInputTokensPerRun: 300_000,
+          maxOutputTokensPerRun: 30_000,
+          maxWallClockSeconds: 1_800,
+          maxActiveRunsPerProject: 1,
+          maxActiveRunsPerOrganization: 3,
+        },
+        providerSelection: {
+          provider: "openai",
+          modelAlias: "gpt-4o-mini",
+          resolvedModelId: "gpt-4o-mini",
+          dataRetentionMode: "provider_default",
+          strategy: "explicit_policy_only",
+          disableAutomaticFallback: true,
+        },
+        dataHandling: {
+          logPrompts: false,
+          logSourceChunks: false,
+          logModelOutputs: false,
+          redactSignedUrls: true,
+          safeDisabledBehavior: "reject_new_runs_preserve_reads",
+        },
+        logRetentionDays: 30,
+      });
+    });
   });
 
   it("rejects a signed upload URL TTL beyond the 15-minute maximum", () => {

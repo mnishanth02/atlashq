@@ -1,0 +1,6 @@
+services:
+  api:
+    environment:
+      AI_REQUIREMENT_ANALYSIS_ENABLED: "true"
+      AI_MODEL_CALLS_ENABLED: "true"
+      AI_ANALYSIS_READS_ENABLED: "true"

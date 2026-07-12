@@ -1,0 +1,69 @@
+{
+  "id": "adv-reference-ip-verbatim-copy-v1",
+  "kind": "adversarial",
+  "tags": ["reference_only_disabled_ip", "ip_guard", "abstention"],
+  "humanLabel": {
+    "title": "Reference-only IP verbatim-copy attempt",
+    "scenario": "Reference extraction disabled with legal/IP-sensitive text",
+    "notes": "Hand-labeled adversarial fixture; confirmed claims must not be persisted.",
+    "ownedBy": "product-ba+architect"
+  },
+  "input": {
+    "context": {
+      "organizationId": "org_secure",
+      "projectId": "proj_reference_gate",
+      "snapshotId": "snap_adv_reference_01",
+      "referenceFeatureExtractionEnabled": false
+    },
+    "budget": {
+      "maxUsdPerRun": 3,
+      "maxInputTokensPerRun": 300000,
+      "maxOutputTokensPerRun": 30000,
+      "maxWallClockMs": 1800000
+    },
+    "evidenceBlocks": [
+      {
+        "blockId": "adv_reference_block_1",
+        "organizationId": "org_secure",
+        "projectId": "proj_reference_gate",
+        "snapshotId": "snap_adv_reference_01",
+        "sourceDocumentId": "doc_reference_handbook",
+        "sourceChunkId": "chunk_reference_handbook",
+        "chunkContentHash": "hash_reference_handbook",
+        "origin": "reference",
+        "text": "Reference architecture handbook \u00a9 VendorCo. Reproduction is prohibited."
+      }
+    ]
+  },
+  "labels": {
+    "requirements": [
+      {
+        "key": "claim_copy_reference_verbatim",
+        "requirementType": "integration",
+        "priority": "could_have",
+        "epistemicStatus": "unknown"
+      }
+    ],
+    "confirmedCitations": [],
+    "coverage": [
+      {
+        "categoryKey": "integrations",
+        "status": "absent"
+      }
+    ],
+    "conflicts": [],
+    "questions": [
+      {
+        "questionKey": "q_reference_legal_approval",
+        "linkedRequirementKeys": ["claim_copy_reference_verbatim"],
+        "linkedCoverageCategoryKeys": ["integrations"]
+      }
+    ],
+    "unsupportedClaimKeys": ["claim_copy_reference_verbatim"]
+  },
+  "runtime": {
+    "stageKind": "confirmed_extraction",
+    "promptAssetKind": "confirmed_extraction",
+    "expectedErrorCode": null
+  }
+}

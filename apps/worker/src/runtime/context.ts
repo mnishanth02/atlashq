@@ -1,3 +1,4 @@
+import type { ProviderRegistry } from "@atlashq/ai";
 import { loadWorkerEnv, type WorkerEnv } from "@atlashq/config";
 import { createDatabaseClient, type Database, type DatabaseClient } from "@atlashq/db";
 import {
@@ -8,6 +9,10 @@ import {
 } from "@atlashq/storage";
 import type { CaptureAdapter } from "../capture/capture-adapter.js";
 import { createPlaywrightCaptureAdapter } from "../capture/playwright-adapter.js";
+import {
+  type AiProviderRuntimeConfig,
+  createAiProviderRegistry,
+} from "../requirement-analysis/provider-runtime.js";
 
 /**
  * Redis connection options shared by every BullMQ `Queue`/`Worker` instance. `maxRetriesPerRequest:
@@ -38,12 +43,28 @@ export type WorkerRuntimeContext = {
    */
   captureEnabled: boolean;
   captureAdapter: CaptureAdapter;
+  /**
+   * Wired from whichever of `OPENAI_API_KEY`/`ANTHROPIC_API_KEY`/openai-compatible base URL are
+   * actually configured (module-03 §7.1, worker task item 1: "no automatic fallback") -- a run
+   * whose frozen policy resolves to a provider that was never registered here fails fast from
+   * `@atlashq/ai`'s `ProviderRegistry` instead of silently falling back to a different one.
+   */
+  aiProviderRegistry: ProviderRegistry;
+  /** Feature flags read once at boot so handlers never read `process.env` directly (task item 1). */
+  featureFlags: {
+    referenceFeatureExtractionEnabled: boolean;
+  };
+  /** Per-queue BullMQ concurrency; `@atlashq/config` only models `WORKER_CONCURRENCY` (module-02's
+   * document-processing default), so the Module 3 queues' concurrency is worker-local raw env,
+   * mirroring `captureEnabled`'s convention below. */
+  aiAnalysisQueueConcurrency: number;
+  citationVerificationQueueConcurrency: number;
   close(): Promise<void>;
 };
 
-export function createWorkerRuntimeContext(
+export async function createWorkerRuntimeContext(
   input: Record<string, unknown> = process.env,
-): WorkerRuntimeContext {
+): Promise<WorkerRuntimeContext> {
   const env = loadWorkerEnv(input);
   const databaseClient = createDatabaseClient({ connectionString: env.DATABASE_URL });
   const storage = createMinioStorageClient({
@@ -58,6 +79,38 @@ export function createWorkerRuntimeContext(
     timeoutMs: env.CLAMAV_TIMEOUT_MS,
   });
 
+  const providerConfig: AiProviderRuntimeConfig = {};
+  if (env.OPENAI_API_KEY) {
+    providerConfig.openai = { apiKey: env.OPENAI_API_KEY };
+  }
+  if (env.ANTHROPIC_API_KEY) {
+    providerConfig.anthropic = { apiKey: env.ANTHROPIC_API_KEY };
+  }
+  const openAiCompatibleBaseUrl =
+    typeof input.AI_ANALYSIS_OPENAI_COMPATIBLE_BASE_URL === "string"
+      ? input.AI_ANALYSIS_OPENAI_COMPATIBLE_BASE_URL
+      : undefined;
+  if (openAiCompatibleBaseUrl) {
+    const openAiCompatibleApiKey =
+      typeof input.AI_ANALYSIS_OPENAI_COMPATIBLE_API_KEY === "string"
+        ? input.AI_ANALYSIS_OPENAI_COMPATIBLE_API_KEY
+        : undefined;
+    providerConfig.openAiCompatible = {
+      baseUrl: openAiCompatibleBaseUrl,
+      ...(openAiCompatibleApiKey ? { apiKey: openAiCompatibleApiKey } : {}),
+    };
+  }
+  const aiProviderRegistry = await createAiProviderRegistry(providerConfig);
+
+  const aiAnalysisQueueConcurrency =
+    typeof input.AI_ANALYSIS_QUEUE_CONCURRENCY === "string"
+      ? Number.parseInt(input.AI_ANALYSIS_QUEUE_CONCURRENCY, 10)
+      : env.WORKER_CONCURRENCY;
+  const citationVerificationQueueConcurrency =
+    typeof input.CITATION_VERIFICATION_QUEUE_CONCURRENCY === "string"
+      ? Number.parseInt(input.CITATION_VERIFICATION_QUEUE_CONCURRENCY, 10)
+      : env.WORKER_CONCURRENCY;
+
   return {
     env,
     db: databaseClient.db,
@@ -67,6 +120,12 @@ export function createWorkerRuntimeContext(
     redisConnection: { url: env.REDIS_URL, maxRetriesPerRequest: null },
     captureEnabled: input.REFERENCE_CAPTURE_ENABLED === "true",
     captureAdapter: createPlaywrightCaptureAdapter(),
+    aiProviderRegistry,
+    featureFlags: {
+      referenceFeatureExtractionEnabled: env.AI_REFERENCE_FEATURE_EXTRACTION_ENABLED,
+    },
+    aiAnalysisQueueConcurrency,
+    citationVerificationQueueConcurrency,
     async close() {
       await databaseClient.close();
     },

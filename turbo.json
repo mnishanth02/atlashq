@@ -29,6 +29,26 @@
       "dependsOn": ["build"],
       "outputs": []
     },
+    "eval": {
+      "dependsOn": ["build", "^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tsconfig.base.json"],
+      "outputs": ["$TURBO_ROOT$/test-results/ai-eval/**"]
+    },
+    "eval:check": {
+      "dependsOn": ["eval"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tsconfig.base.json"],
+      "outputs": ["$TURBO_ROOT$/test-results/ai-eval/**"]
+    },
+    "eval:baseline": {
+      "dependsOn": ["eval"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tsconfig.base.json"],
+      "outputs": ["$TURBO_ROOT$/test-results/ai-eval/**"]
+    },
+    "eval:live": {
+      "dependsOn": ["build", "^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tsconfig.base.json"],
+      "outputs": ["$TURBO_ROOT$/test-results/ai-eval/**"]
+    },
     "format": {
       "cache": false,
       "outputs": []

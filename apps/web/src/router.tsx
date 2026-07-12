@@ -19,6 +19,10 @@ import { SessionLoadingState } from "./routes/auth/session-states";
 import { LoginRoute, loginBeforeLoad, loginSearchSchema } from "./routes/login/login-route";
 import { ProjectDetailRoute } from "./routes/projects/project-detail-route";
 import { ProjectsRoute } from "./routes/projects/projects-route";
+import {
+  requirementAnalysisDetailSearchSchema,
+  requirementAnalysisSearchSchema,
+} from "./routes/projects/requirement-analysis-search";
 import { sourceDocumentsSearchSchema } from "./routes/projects/source-documents-search";
 import { RootLayout } from "./routes/root-layout";
 import { queryClient } from "./state/query-client";
@@ -108,12 +112,43 @@ const sourceDetailRoute = createRoute({
   ),
 });
 
+/**
+ * Module 3 AI Requirement Analyzer — main surface: capabilities, eligible
+ * source preview, fresh-run launch, and run history for a project.
+ */
+const requirementAnalysisRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/projects/$projectId/requirement-analysis",
+  validateSearch: requirementAnalysisSearchSchema,
+  component: lazyRouteComponent(
+    () => import("./routes/projects/requirement-analysis-route"),
+    "RequirementAnalysisRoute",
+  ),
+});
+
+/**
+ * Module 3 AI Requirement Analyzer — run detail surface: stage timeline,
+ * read-only requirements/delivery items, coverage matrix, citations, and
+ * traceability for one analysis run.
+ */
+const requirementAnalysisDetailRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/projects/$projectId/requirement-analysis/$runId",
+  validateSearch: requirementAnalysisDetailSearchSchema,
+  component: lazyRouteComponent(
+    () => import("./routes/projects/requirement-analysis-detail-route"),
+    "RequirementAnalysisDetailRoute",
+  ),
+});
+
 const authenticatedRoute = authenticatedLayoutRoute.addChildren([
   indexRoute,
   projectsRoute,
   projectDetailRoute,
   sourceDocumentsRoute,
   sourceDetailRoute,
+  requirementAnalysisRoute,
+  requirementAnalysisDetailRoute,
 ]);
 
 const routeTree = import.meta.env.DEV

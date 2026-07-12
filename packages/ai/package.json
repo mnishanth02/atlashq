@@ -17,15 +17,24 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "eval": "node dist/eval/cli.js --mode=report --report-path=../../test-results/ai-eval/report.json",
+    "eval:check": "node dist/eval/cli.js --mode=check --report-path=../../test-results/ai-eval/report.json",
+    "eval:baseline": "node dist/eval/cli.js --mode=baseline --report-path=../../test-results/ai-eval/report.json --baseline-path=../../test-results/ai-eval/baseline.json",
+    "eval:live": "node dist/eval/cli.js --mode=live --report-path=../../test-results/ai-eval/live-report.json",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.0",
+    "@ai-sdk/openai": "^4.0.0",
+    "@ai-sdk/openai-compatible": "^3.0.0",
     "@atlashq/types": "workspace:*",
+    "ai": "^7.0.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@types/node": "24.13.2",
     "vitest": "4.1.10"
   }
 }

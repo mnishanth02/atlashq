@@ -16,6 +16,7 @@
     "openapi:check": "pnpm build && node dist/openapi.js --check"
   },
   "dependencies": {
+    "@atlashq/ai": "workspace:*",
     "@atlashq/auth": "workspace:*",
     "@atlashq/config": "workspace:*",
     "@atlashq/db": "workspace:*",

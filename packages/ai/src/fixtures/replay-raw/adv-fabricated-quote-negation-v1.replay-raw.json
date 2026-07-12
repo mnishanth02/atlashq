@@ -1,0 +1,54 @@
+{
+  "fixtureId": "adv-fabricated-quote-negation-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "responses": [
+    {
+      "output": {
+        "requirements": [
+          {
+            "key": "claim_data_not_encrypted",
+            "organizationId": "org_secure",
+            "projectId": "proj_quote_guard",
+            "requirementType": "security",
+            "priority": "must_have",
+            "epistemicStatus": "unknown",
+            "persisted": true
+          }
+        ],
+        "citations": [
+          {
+            "requirementKey": "claim_data_not_encrypted",
+            "organizationId": "org_secure",
+            "projectId": "proj_quote_guard",
+            "snapshotId": "snap_adv_quote_01",
+            "sourceDocumentId": "doc_quote_guard",
+            "sourceChunkId": "chunk_quote_guard",
+            "quote": "Data is not encrypted at rest.",
+            "verificationStatus": "failed"
+          }
+        ],
+        "coverage": [
+          {
+            "categoryKey": "security_compliance",
+            "status": "absent"
+          }
+        ],
+        "conflicts": [],
+        "questions": [
+          {
+            "questionKey": "q_confirm_encryption",
+            "linkedRequirementKeys": ["claim_data_not_encrypted"],
+            "linkedCoverageCategoryKeys": ["security_compliance"]
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 250,
+        "outputTokens": 120
+      }
+    }
+  ]
+}

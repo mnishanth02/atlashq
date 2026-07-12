@@ -1,0 +1,116 @@
+{
+  "id": "gold-spreadsheet-tabular-v1",
+  "kind": "gold",
+  "tags": ["spreadsheet_tabular", "pricing_matrix", "must_have_functional"],
+  "humanLabel": {
+    "title": "Spreadsheet-heavy pricing requirements",
+    "scenario": "Tabular limits and overage rules",
+    "notes": "Hand-labeled from compact table-like source snippets.",
+    "ownedBy": "product-ba+architect"
+  },
+  "input": {
+    "context": {
+      "organizationId": "org_sheet",
+      "projectId": "proj_pricing",
+      "snapshotId": "snap_sheet_01",
+      "referenceFeatureExtractionEnabled": false
+    },
+    "budget": {
+      "maxUsdPerRun": 3,
+      "maxInputTokensPerRun": 300000,
+      "maxOutputTokensPerRun": 30000,
+      "maxWallClockMs": 1800000
+    },
+    "evidenceBlocks": [
+      {
+        "blockId": "sheet_block_limits",
+        "organizationId": "org_sheet",
+        "projectId": "proj_pricing",
+        "snapshotId": "snap_sheet_01",
+        "sourceDocumentId": "doc_pricing_sheet",
+        "sourceChunkId": "chunk_sheet_limits",
+        "chunkContentHash": "hash_sheet_limits",
+        "origin": "source",
+        "text": "Starter tier allows 10000 API calls per month. Growth tier allows 100000 API calls per month."
+      },
+      {
+        "blockId": "sheet_block_overage",
+        "organizationId": "org_sheet",
+        "projectId": "proj_pricing",
+        "snapshotId": "snap_sheet_01",
+        "sourceDocumentId": "doc_pricing_sheet",
+        "sourceChunkId": "chunk_sheet_overage",
+        "chunkContentHash": "hash_sheet_overage",
+        "origin": "source",
+        "text": "Overage charges are billed at $0.01 per API call above plan quota."
+      }
+    ]
+  },
+  "labels": {
+    "requirements": [
+      {
+        "key": "req_starter_quota",
+        "requirementType": "functional",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      },
+      {
+        "key": "req_growth_quota",
+        "requirementType": "functional",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      },
+      {
+        "key": "req_overage_rate",
+        "requirementType": "business_rule",
+        "priority": "should_have",
+        "epistemicStatus": "confirmed"
+      }
+    ],
+    "confirmedCitations": [
+      {
+        "requirementKey": "req_starter_quota",
+        "sourceChunkId": "chunk_sheet_limits",
+        "quote": "Starter tier allows 10000 API calls per month."
+      },
+      {
+        "requirementKey": "req_growth_quota",
+        "sourceChunkId": "chunk_sheet_limits",
+        "quote": "Growth tier allows 100000 API calls per month."
+      },
+      {
+        "requirementKey": "req_overage_rate",
+        "sourceChunkId": "chunk_sheet_overage",
+        "quote": "Overage charges are billed at $0.01 per API call above plan quota."
+      }
+    ],
+    "coverage": [
+      {
+        "categoryKey": "data_model_entities",
+        "status": "addressed"
+      },
+      {
+        "categoryKey": "reporting_analytics",
+        "status": "partial"
+      },
+      {
+        "categoryKey": "integrations",
+        "status": "addressed"
+      }
+    ],
+    "conflicts": [],
+    "questions": [
+      {
+        "questionKey": "q_reporting_granularity",
+        "linkedRequirementKeys": ["req_growth_quota"],
+        "linkedCoverageCategoryKeys": ["reporting_analytics"]
+      }
+    ],
+    "unsupportedClaimKeys": ["claim_unlimited_plan"]
+  },
+  "runtime": {
+    "stageKind": "confirmed_extraction",
+    "promptAssetKind": "confirmed_extraction",
+    "expectedErrorCode": null
+  }
+}

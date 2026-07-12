@@ -1,7 +1,14 @@
 import type { Auth } from "@atlashq/auth";
-import type { SourceVaultEnv } from "@atlashq/config";
+import type {
+  AiRequirementAnalysisBudgetEnv,
+  AiRequirementAnalysisDataHandlingEnv,
+  AiRequirementAnalysisFeatureFlagEnv,
+  AiRequirementAnalysisProviderEnv,
+  SourceVaultEnv,
+} from "@atlashq/config";
 import type { Database } from "@atlashq/db";
 import type { MinioObjectStorageClient } from "@atlashq/storage";
+import type { RequirementAnalysisQueue } from "./requirement-analysis-runtime.js";
 import type { SourceDocumentQueue } from "./source-vault-runtime.js";
 
 /**
@@ -20,7 +27,14 @@ export type ApiRuntime = {
   db: Database | null;
   storage?: MinioObjectStorageClient | null;
   documentQueue?: SourceDocumentQueue | null;
+  analysisQueue?: RequirementAnalysisQueue | null;
   sourceVault?: SourceVaultEnv | null;
+  aiRequirementAnalysis?:
+    | (AiRequirementAnalysisFeatureFlagEnv &
+        AiRequirementAnalysisBudgetEnv &
+        AiRequirementAnalysisProviderEnv &
+        AiRequirementAnalysisDataHandlingEnv)
+    | null;
 };
 
 export const NULL_RUNTIME: ApiRuntime = {
@@ -28,7 +42,9 @@ export const NULL_RUNTIME: ApiRuntime = {
   db: null,
   storage: null,
   documentQueue: null,
+  analysisQueue: null,
   sourceVault: null,
+  aiRequirementAnalysis: null,
 };
 
 /** Injection token for the composed Better Auth instance (`Auth | null`). */
@@ -57,7 +73,19 @@ export const SOURCE_STORAGE = "ATLASHQ_SOURCE_STORAGE";
 export const SOURCE_DOCUMENT_QUEUE = "ATLASHQ_SOURCE_DOCUMENT_QUEUE";
 
 /**
+ * Injection token for the requirement-analysis orchestration queue (`RequirementAnalysisQueue | null`).
+ * `null` in offline mode; analysis run creation degrades with stable safe-disabled errors.
+ */
+export const AI_ANALYSIS_QUEUE = "ATLASHQ_AI_ANALYSIS_QUEUE";
+
+/**
  * Injection token for the validated Source Vault environment (`SourceVaultEnv | null`).
  * Carries the upload size / session TTL / signed URL TTL config; `null` for offline mode.
  */
 export const SOURCE_VAULT_CONFIG = "ATLASHQ_SOURCE_VAULT_CONFIG";
+
+/**
+ * Injection token for Module 3 AI requirement-analysis feature/config flags and budgets.
+ * `null` in offline mode or core-only boot.
+ */
+export const AI_REQUIREMENT_ANALYSIS_CONFIG = "ATLASHQ_AI_REQUIREMENT_ANALYSIS_CONFIG";

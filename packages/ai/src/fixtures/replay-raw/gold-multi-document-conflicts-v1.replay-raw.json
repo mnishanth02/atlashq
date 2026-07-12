@@ -1,0 +1,82 @@
+{
+  "fixtureId": "gold-multi-document-conflicts-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "responses": [
+    {
+      "output": {
+        "requirements": [
+          {
+            "key": "req_reset_token_24h",
+            "organizationId": "org_conflict",
+            "projectId": "proj_security_policy",
+            "requirementType": "security",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          },
+          {
+            "key": "req_reset_token_15m",
+            "organizationId": "org_conflict",
+            "projectId": "proj_security_policy",
+            "requirementType": "security",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          }
+        ],
+        "citations": [
+          {
+            "requirementKey": "req_reset_token_24h",
+            "organizationId": "org_conflict",
+            "projectId": "proj_security_policy",
+            "snapshotId": "snap_conflict_01",
+            "sourceDocumentId": "doc_policy_v1",
+            "sourceChunkId": "chunk_conflict_24h",
+            "quote": "Password reset tokens expire after 24 hours.",
+            "verificationStatus": "verified_exact"
+          },
+          {
+            "requirementKey": "req_reset_token_15m",
+            "organizationId": "org_conflict",
+            "projectId": "proj_security_policy",
+            "snapshotId": "snap_conflict_01",
+            "sourceDocumentId": "doc_policy_v2",
+            "sourceChunkId": "chunk_conflict_15m",
+            "quote": "Password reset tokens expire after 15 minutes.",
+            "verificationStatus": "verified_exact"
+          }
+        ],
+        "coverage": [
+          {
+            "categoryKey": "auth_identity",
+            "status": "addressed"
+          },
+          {
+            "categoryKey": "security_compliance",
+            "status": "addressed"
+          }
+        ],
+        "conflicts": [
+          {
+            "leftRequirementKey": "req_reset_token_24h",
+            "rightRequirementKey": "req_reset_token_15m"
+          }
+        ],
+        "questions": [
+          {
+            "questionKey": "q_reset_policy_resolution",
+            "linkedRequirementKeys": ["req_reset_token_24h", "req_reset_token_15m"],
+            "linkedCoverageCategoryKeys": ["security_compliance"]
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 710,
+        "outputTokens": 360
+      }
+    }
+  ]
+}

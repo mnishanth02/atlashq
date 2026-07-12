@@ -1,0 +1,115 @@
+{
+  "id": "gold-sparse-unknown-heavy-v1",
+  "kind": "gold",
+  "tags": ["sparse_unknown_heavy", "abstention", "clarification_required"],
+  "humanLabel": {
+    "title": "Sparse discovery notes",
+    "scenario": "Minimal detail with many unknowns",
+    "notes": "Hand-labeled to reward abstention and question generation.",
+    "ownedBy": "product-ba+architect"
+  },
+  "input": {
+    "context": {
+      "organizationId": "org_sparse",
+      "projectId": "proj_discovery",
+      "snapshotId": "snap_sparse_01",
+      "referenceFeatureExtractionEnabled": false
+    },
+    "budget": {
+      "maxUsdPerRun": 3,
+      "maxInputTokensPerRun": 300000,
+      "maxOutputTokensPerRun": 30000,
+      "maxWallClockMs": 1800000
+    },
+    "evidenceBlocks": [
+      {
+        "blockId": "sparse_block_scope",
+        "organizationId": "org_sparse",
+        "projectId": "proj_discovery",
+        "snapshotId": "snap_sparse_01",
+        "sourceDocumentId": "doc_sparse_notes",
+        "sourceChunkId": "chunk_sparse_scope",
+        "chunkContentHash": "hash_sparse_scope",
+        "origin": "source",
+        "text": "The team needs a customer portal this quarter."
+      },
+      {
+        "blockId": "sparse_block_reporting",
+        "organizationId": "org_sparse",
+        "projectId": "proj_discovery",
+        "snapshotId": "snap_sparse_01",
+        "sourceDocumentId": "doc_sparse_notes",
+        "sourceChunkId": "chunk_sparse_reporting",
+        "chunkContentHash": "hash_sparse_reporting",
+        "origin": "source",
+        "text": "Reporting details are undecided and require follow-up."
+      }
+    ]
+  },
+  "labels": {
+    "requirements": [
+      {
+        "key": "req_customer_portal",
+        "requirementType": "functional",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      },
+      {
+        "key": "req_auth_method",
+        "requirementType": "security",
+        "priority": "must_have",
+        "epistemicStatus": "unknown"
+      },
+      {
+        "key": "req_reporting_dimensions",
+        "requirementType": "functional",
+        "priority": "should_have",
+        "epistemicStatus": "unknown"
+      }
+    ],
+    "confirmedCitations": [
+      {
+        "requirementKey": "req_customer_portal",
+        "sourceChunkId": "chunk_sparse_scope",
+        "quote": "The team needs a customer portal this quarter."
+      }
+    ],
+    "coverage": [
+      {
+        "categoryKey": "auth_identity",
+        "status": "absent"
+      },
+      {
+        "categoryKey": "reporting_analytics",
+        "status": "partial"
+      },
+      {
+        "categoryKey": "security_compliance",
+        "status": "absent"
+      },
+      {
+        "categoryKey": "data_model_entities",
+        "status": "absent"
+      }
+    ],
+    "conflicts": [],
+    "questions": [
+      {
+        "questionKey": "q_auth_method",
+        "linkedRequirementKeys": ["req_auth_method"],
+        "linkedCoverageCategoryKeys": ["auth_identity", "security_compliance"]
+      },
+      {
+        "questionKey": "q_reporting_dimensions",
+        "linkedRequirementKeys": ["req_reporting_dimensions"],
+        "linkedCoverageCategoryKeys": ["reporting_analytics"]
+      }
+    ],
+    "unsupportedClaimKeys": ["claim_offline_mode", "claim_third_party_api"]
+  },
+  "runtime": {
+    "stageKind": "confirmed_extraction",
+    "promptAssetKind": "confirmed_extraction",
+    "expectedErrorCode": null
+  }
+}

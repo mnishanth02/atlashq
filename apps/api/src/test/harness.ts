@@ -1,10 +1,17 @@
 import type { Server } from "node:http";
 import { type Auth, createAuth } from "@atlashq/auth";
-import type { SourceVaultEnv } from "@atlashq/config";
+import type {
+  AiRequirementAnalysisBudgetEnv,
+  AiRequirementAnalysisDataHandlingEnv,
+  AiRequirementAnalysisFeatureFlagEnv,
+  AiRequirementAnalysisProviderEnv,
+  SourceVaultEnv,
+} from "@atlashq/config";
 import { createDatabaseClient, type Database, type DatabaseClient } from "@atlashq/db";
 import type { MinioObjectStorageClient } from "@atlashq/storage";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { createApiApp } from "../app.factory.js";
+import type { RequirementAnalysisQueue } from "../runtime/requirement-analysis-runtime.js";
 import type { SourceDocumentQueue } from "../runtime/source-vault-runtime.js";
 
 /**
@@ -40,6 +47,20 @@ const ALL_TABLES = [
   "source_extraction",
   "source_chunk",
   "reference_artifact",
+  "organization_ai_provider_policy",
+  "requirement_analysis_run",
+  "requirement_analysis_snapshot",
+  "requirement_analysis_snapshot_source",
+  "requirement_analysis_snapshot_file",
+  "requirement_analysis_snapshot_chunk",
+  "requirement_analysis_stage",
+  "requirement_analysis_stage_dependency",
+  "requirement_analysis_batch",
+  "requirement_analysis_batch_chunk",
+  "requirement",
+  "citation",
+  "coverage_matrix_entry",
+  "delivery_item",
 ] as const;
 
 const AUDIT_EVENT_TRUNCATE_TRIGGER = "audit_event_no_truncate";
@@ -51,6 +72,18 @@ const SOURCE_VAULT_ARCHIVE_ONLY_TABLES = [
   "source_extraction",
   "source_chunk",
   "reference_artifact",
+] as const;
+
+/** Module 3 append-only tables carry BEFORE TRUNCATE guards in migrations 0010/0012. */
+const REQUIREMENT_ANALYSIS_APPEND_ONLY_TABLES = [
+  "requirement_analysis_snapshot",
+  "requirement_analysis_snapshot_source",
+  "requirement_analysis_snapshot_file",
+  "requirement_analysis_snapshot_chunk",
+  "citation",
+  "requirement",
+  "coverage_matrix_entry",
+  "delivery_item",
 ] as const;
 
 export type IntegrationHarness = {
@@ -89,7 +122,14 @@ export type IntegrationHarness = {
 export type SourceVaultOverride = {
   storage?: MinioObjectStorageClient | null;
   documentQueue?: SourceDocumentQueue | null;
+  analysisQueue?: RequirementAnalysisQueue | null;
   sourceVault?: SourceVaultEnv | null;
+  aiRequirementAnalysis?:
+    | (AiRequirementAnalysisFeatureFlagEnv &
+        AiRequirementAnalysisBudgetEnv &
+        AiRequirementAnalysisProviderEnv &
+        AiRequirementAnalysisDataHandlingEnv)
+    | null;
 };
 
 export async function createIntegrationHarness(
@@ -113,7 +153,9 @@ export async function createIntegrationHarness(
     setupSwagger: false,
     storage: overrides.storage ?? null,
     documentQueue: overrides.documentQueue ?? null,
+    analysisQueue: overrides.analysisQueue ?? null,
     sourceVault: overrides.sourceVault ?? null,
+    aiRequirementAnalysis: overrides.aiRequirementAnalysis ?? null,
   });
   await app.init();
 
@@ -138,8 +180,14 @@ export async function createIntegrationHarness(
         for (const table of SOURCE_VAULT_ARCHIVE_ONLY_TABLES) {
           await connection.query(`ALTER TABLE "${table}" DISABLE TRIGGER USER`);
         }
+        for (const table of REQUIREMENT_ANALYSIS_APPEND_ONLY_TABLES) {
+          await connection.query(`ALTER TABLE "${table}" DISABLE TRIGGER USER`);
+        }
         await connection.query(`TRUNCATE TABLE ${quoted} RESTART IDENTITY CASCADE`);
         for (const table of SOURCE_VAULT_ARCHIVE_ONLY_TABLES) {
+          await connection.query(`ALTER TABLE "${table}" ENABLE TRIGGER USER`);
+        }
+        for (const table of REQUIREMENT_ANALYSIS_APPEND_ONLY_TABLES) {
           await connection.query(`ALTER TABLE "${table}" ENABLE TRIGGER USER`);
         }
         await connection.query(

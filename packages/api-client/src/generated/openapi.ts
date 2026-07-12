@@ -593,6 +593,358 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/organizations/current/ai-provider-policies": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisOrganizationController_listProviderPolicies"];
+    put?: never;
+    post: operations["RequirementAnalysisOrganizationController_createProviderPolicy"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/organizations/current/ai-provider-policies/{policyId}/approve": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["RequirementAnalysisOrganizationController_approveProviderPolicy"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/organizations/current/ai-provider-policies/{policyId}/deactivate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["RequirementAnalysisOrganizationController_deactivateProviderPolicy"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/capabilities": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_getCapabilities"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/provider-policies": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_listProjectProviderPolicies"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/eligible-sources": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_previewEligibleSources"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_listRuns"];
+    put?: never;
+    post: operations["RequirementAnalysisController_createFreshRun"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_getRunDetail"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/cancel": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["RequirementAnalysisController_cancelRun"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/retry": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["RequirementAnalysisController_retryRun"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/replay": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["RequirementAnalysisController_replayRun"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/reprocess": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["RequirementAnalysisController_reprocessRun"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/stages": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_listStages"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/batches": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_listBatches"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/requirements": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_listRequirements"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/requirements/{requirementId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_getRequirement"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/delivery-items": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_listDeliveryItems"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/delivery-items/{itemId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_getDeliveryItem"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/coverage": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_listCoverage"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/citations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_listCitations"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/evidence/{citationId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_getCitationEvidence"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/requirement-analysis/runs/{runId}/traceability": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["RequirementAnalysisController_listTraceability"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -1383,6 +1735,805 @@ export interface components {
       version: number;
       ipReviewStatus: "cleared" | "restricted";
       reason: string;
+    };
+    ProviderPolicyListResponseDto_Output: {
+      items: Array<{
+        id: string;
+        organizationId: string;
+        version: number;
+        provider: "openai" | "anthropic" | "openai-compatible" | "local";
+        policyName: string;
+        modelAlias: string;
+        resolvedModelId: string;
+        dataRetentionMode: "provider_default" | "no_training" | "zero_retention";
+        status: "draft" | "approved" | "inactive";
+        approvedForRequirementAnalysis: boolean;
+        approvedBy: string | null;
+        approvedAt: string | null;
+        approvalNote: string | null;
+        providerTermsSnapshotHash: string | null;
+        maxUsdPerRun: number;
+        maxInputTokensPerRun: number;
+        maxOutputTokensPerRun: number;
+        maxWallClockSeconds: number;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+      pageInfo: {
+        limit: number;
+        nextCursor: string | null;
+        hasMore: boolean;
+        total?: number;
+      };
+    };
+    ProviderPolicyCreateBodyDto: {
+      provider: "openai" | "anthropic" | "openai-compatible" | "local";
+      policyName: string;
+      modelAlias: string;
+      resolvedModelId: string;
+      dataRetentionMode: "provider_default" | "no_training" | "zero_retention";
+      providerTermsSnapshotHash?: string;
+      approvalNote?: string;
+      maxUsdPerRun?: number;
+      maxInputTokensPerRun?: number;
+      maxOutputTokensPerRun?: number;
+      maxWallClockSeconds?: number;
+    };
+    ProviderPolicyResponseDto_Output: {
+      id: string;
+      organizationId: string;
+      version: number;
+      provider: "openai" | "anthropic" | "openai-compatible" | "local";
+      policyName: string;
+      modelAlias: string;
+      resolvedModelId: string;
+      dataRetentionMode: "provider_default" | "no_training" | "zero_retention";
+      status: "draft" | "approved" | "inactive";
+      approvedForRequirementAnalysis: boolean;
+      approvedBy: string | null;
+      approvedAt: string | null;
+      approvalNote: string | null;
+      providerTermsSnapshotHash: string | null;
+      maxUsdPerRun: number;
+      maxInputTokensPerRun: number;
+      maxOutputTokensPerRun: number;
+      maxWallClockSeconds: number;
+      createdAt: string;
+      updatedAt: string;
+    };
+    ProviderPolicyApproveBodyDto: {
+      approvalNote?: string;
+      providerTermsSnapshotHash?: string;
+      version: number;
+    };
+    ProviderPolicyDeactivateBodyDto: {
+      reason: string;
+      version: number;
+    };
+    RequirementAnalysisCapabilitiesResponseDto_Output: {
+      analysisEnabled: boolean;
+      readsEnabled: boolean;
+      referenceFeatureExtractionEnabled: boolean;
+      queueAvailable: boolean;
+      approvedProviderPolicyAvailable: boolean;
+      safeDisabled: boolean;
+      safeDisabledReason: "analysis_feature_disabled" | "provider_not_approved" | "queue_unavailable" | "reads_disabled" | null;
+    };
+    EligibleSourcePreviewResponseDto_Output: {
+      sources: Array<{
+        sourceDocumentId: string;
+        sourceLineageId: string;
+        sourceVersionNumber: number;
+        sourceType: "document" | "reference" | "manual";
+        documentFormat: "pdf" | "docx" | "txt" | "md" | "xlsx" | "csv" | "pptx" | "png" | "jpg" | "jpeg" | "webp" | null;
+        title: string;
+        contentHash: string;
+        sourceExtractionId: string | null;
+        sourceExtractionVersion: number | null;
+        chunkerVersion: string | null;
+        chunkCount: number;
+        totalCharacterCount: number;
+        referenceIpReviewStatus: "not_reviewed" | "cleared" | "restricted" | null;
+        included: boolean;
+        exclusionReason: "not_ready" | "archived" | "non_head_version" | "missing_successful_extraction" | "reference_not_cleared" | "reference_feature_extraction_disabled" | null;
+      }>;
+      includedCount: number;
+      excludedCount: number;
+      generatedAt: string;
+    };
+    AnalysisRunFreshBodyDto: {
+      providerPolicyId: string;
+      sourceDocumentIds?: Array<string>;
+    };
+    AnalysisRunDetailResponseDto_Output: {
+      id: string;
+      organizationId: string;
+      projectId: string;
+      requestedBy: string;
+      mode: "fresh" | "replay" | "reprocess" | "retry";
+      status: "requested" | "snapshotting" | "queued" | "running" | "waiting_retry" | "completed" | "completed_with_warnings" | "failed" | "canceled";
+      sourceSnapshotId: string | null;
+      replayOfRunId: string | null;
+      reprocessOfRunId: string | null;
+      retryOfRunId: string | null;
+      warningCodes: Array<string>;
+      failureCode: string | null;
+      failureDetail: string | null;
+      failureRetryable: boolean;
+      failedStageId: string | null;
+      cancelRequestedAt: string | null;
+      cancelRequestedBy: string | null;
+      cancelReason: string | null;
+      startedAt: string | null;
+      completedAt: string | null;
+      createdAt: string;
+      updatedAt: string;
+      correlationId: string;
+      providerPolicy: {
+        providerPolicyId: string;
+        provider: "openai" | "anthropic" | "openai-compatible" | "local";
+        modelAlias: string;
+        resolvedModelId: string;
+        dataRetentionMode: "provider_default" | "no_training" | "zero_retention";
+      };
+      provenance: {
+        promptBundleVersion: string;
+        promptBundleHash: string;
+        schemaBundleVersion: string;
+        schemaBundleHash: string;
+        pipelineVersion: string;
+        pipelineHash: string;
+        modelPolicyHash: string;
+      };
+      budgets: {
+        maxUsd: number;
+        maxInputTokens: number;
+        maxOutputTokens: number;
+        maxWallClockSeconds: number;
+      };
+      usage: {
+        inputTokensUsed: number;
+        outputTokensUsed: number;
+        costUsd: number;
+      };
+      artifactCounts: {
+        requirements: number;
+        citations: number;
+        coverageEntries: number;
+        deliveryItems: number;
+      };
+      snapshot: {
+        id: string;
+        snapshotHash: string;
+        sourceCount: number;
+        chunkCount: number;
+        totalCharacterCount: number;
+        eligibilityRulesVersion: string;
+        createdAt: string;
+      } | null;
+      readNotices: Array<string>;
+    };
+    AnalysisRunListResponseDto_Output: {
+      items: Array<{
+        id: string;
+        organizationId: string;
+        projectId: string;
+        requestedBy: string;
+        mode: "fresh" | "replay" | "reprocess" | "retry";
+        status: "requested" | "snapshotting" | "queued" | "running" | "waiting_retry" | "completed" | "completed_with_warnings" | "failed" | "canceled";
+        sourceSnapshotId: string | null;
+        replayOfRunId: string | null;
+        reprocessOfRunId: string | null;
+        retryOfRunId: string | null;
+        warningCodes: Array<string>;
+        failureCode: string | null;
+        failureDetail: string | null;
+        failureRetryable: boolean;
+        failedStageId: string | null;
+        cancelRequestedAt: string | null;
+        cancelRequestedBy: string | null;
+        cancelReason: string | null;
+        startedAt: string | null;
+        completedAt: string | null;
+        createdAt: string;
+        updatedAt: string;
+        correlationId: string;
+        providerPolicy: {
+          providerPolicyId: string;
+          provider: "openai" | "anthropic" | "openai-compatible" | "local";
+          modelAlias: string;
+          resolvedModelId: string;
+          dataRetentionMode: "provider_default" | "no_training" | "zero_retention";
+        };
+        provenance: {
+          promptBundleVersion: string;
+          promptBundleHash: string;
+          schemaBundleVersion: string;
+          schemaBundleHash: string;
+          pipelineVersion: string;
+          pipelineHash: string;
+          modelPolicyHash: string;
+        };
+        budgets: {
+          maxUsd: number;
+          maxInputTokens: number;
+          maxOutputTokens: number;
+          maxWallClockSeconds: number;
+        };
+        usage: {
+          inputTokensUsed: number;
+          outputTokensUsed: number;
+          costUsd: number;
+        };
+        artifactCounts: {
+          requirements: number;
+          citations: number;
+          coverageEntries: number;
+          deliveryItems: number;
+        };
+      }>;
+      pageInfo: {
+        limit: number;
+        nextCursor: string | null;
+        hasMore: boolean;
+        total?: number;
+      };
+    };
+    AnalysisRunCancelBodyDto: {
+      reason?: string;
+    };
+    AnalysisRunRetryBodyDto: {
+      reason?: string;
+    };
+    AnalysisRunReplayBodyDto: {
+      reason?: string;
+    };
+    AnalysisRunReprocessBodyDto: {
+      providerPolicyId: string;
+      promptBundleVersion: string;
+      schemaBundleVersion: string;
+      pipelineVersion: string;
+      reason?: string;
+    };
+    AnalysisStageListResponseDto_Output: {
+      items: Array<{
+        id: string;
+        runId: string;
+        organizationId: string;
+        projectId: string;
+        kind: "freeze_snapshot" | "batch_planning" | "confirmed_extraction" | "citation_verification" | "reference_feature_extraction" | "normalization_deduplication" | "conflict_detection" | "coverage_analysis" | "delivery_item_extraction" | "question_generation" | "finalize_review_package";
+        status: "pending" | "running" | "waiting_retry" | "completed" | "completed_with_warnings" | "failed" | "canceled" | "skipped";
+        attemptNumber: number;
+        idempotencyKey: string;
+        inputHash: string | null;
+        outputHash: string | null;
+        startedAt: string | null;
+        completedAt: string | null;
+        retryAfter: string | null;
+        failureCode: string | null;
+        failureDetail: string | null;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+      pageInfo: {
+        limit: number;
+        nextCursor: string | null;
+        hasMore: boolean;
+        total?: number;
+      };
+    };
+    AnalysisBatchListResponseDto_Output: {
+      items: Array<{
+        id: string;
+        stageId: string;
+        runId: string;
+        organizationId: string;
+        projectId: string;
+        batchOrder: number;
+        sourceChunkStartSequence: number;
+        sourceChunkEndSequence: number;
+        inputTokenEstimate: number;
+        maxOutputTokens: number;
+        status: "pending" | "running" | "waiting_retry" | "completed" | "completed_with_warnings" | "failed" | "canceled" | "skipped";
+        attemptNumber: number;
+        aiRunId: string | null;
+        repairOfBatchId: string | null;
+        shapeOnlyRepairUsed: boolean;
+        cacheKey: string | null;
+        cacheHitOfBatchId: string | null;
+        failureCode: string | null;
+        failureDetail: string | null;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+      pageInfo: {
+        limit: number;
+        nextCursor: string | null;
+        hasMore: boolean;
+        total?: number;
+      };
+    };
+    RequirementListResponseDto_Output: {
+      items: Array<{
+        id: string;
+        organizationId: string;
+        projectId: string;
+        analysisRunId: string;
+        stableKey: string;
+        title: string;
+        description: string;
+        requirementType: "functional" | "non_functional" | "business_rule" | "data" | "integration" | "security" | "compliance" | "operational";
+        priority: "must_have" | "should_have" | "could_have" | "later" | null;
+        epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+        confidenceBand: "low" | "medium" | "high" | null;
+        confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+        inferenceBasis: string | null;
+        origin: "source" | "reference" | "manual";
+        lifecycleState: "ai_suggested" | "under_review" | "accepted" | "needs_clarification" | "rejected" | "approved" | "changed" | "deprecated";
+        dedupeGroupKey: string | null;
+        parentRequirementId: string | null;
+        sourceSummary: string | null;
+        createdByAiRunId: string;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+      pageInfo: {
+        limit: number;
+        nextCursor: string | null;
+        hasMore: boolean;
+        total?: number;
+      };
+    };
+    RequirementResponseDto_Output: {
+      id: string;
+      organizationId: string;
+      projectId: string;
+      analysisRunId: string;
+      stableKey: string;
+      title: string;
+      description: string;
+      requirementType: "functional" | "non_functional" | "business_rule" | "data" | "integration" | "security" | "compliance" | "operational";
+      priority: "must_have" | "should_have" | "could_have" | "later" | null;
+      epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+      confidenceBand: "low" | "medium" | "high" | null;
+      confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+      inferenceBasis: string | null;
+      origin: "source" | "reference" | "manual";
+      lifecycleState: "ai_suggested" | "under_review" | "accepted" | "needs_clarification" | "rejected" | "approved" | "changed" | "deprecated";
+      dedupeGroupKey: string | null;
+      parentRequirementId: string | null;
+      sourceSummary: string | null;
+      createdByAiRunId: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    DeliveryItemListResponseDto_Output: {
+      items: Array<{
+        id: string;
+        organizationId: string;
+        projectId: string;
+        analysisRunId: string;
+        title: string;
+        description: string;
+        epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+        confidenceBand: "low" | "medium" | "high" | null;
+        confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+        severity: "low" | "medium" | "high" | null;
+        priority: "low" | "medium" | "high" | null;
+        status: "open";
+        visibility: "internal";
+        sourceRequirementId: string | null;
+        createdByAiRunId: string;
+        createdAt: string;
+        updatedAt: string;
+        itemType: "question";
+        attributes: {
+          questionText: string;
+          whyItMatters: string;
+          suggestedResponseFormat: string;
+          impactIfUnanswered: string;
+          linkedCoverageEntryIds: Array<string>;
+          linkedRequirementIds: Array<string>;
+          linkedConflictDeliveryItemIds: Array<string>;
+        };
+      } | {
+        id: string;
+        organizationId: string;
+        projectId: string;
+        analysisRunId: string;
+        title: string;
+        description: string;
+        epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+        confidenceBand: "low" | "medium" | "high" | null;
+        confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+        severity: "low" | "medium" | "high" | null;
+        priority: "low" | "medium" | "high" | null;
+        status: "open";
+        visibility: "internal";
+        sourceRequirementId: string | null;
+        createdByAiRunId: string;
+        createdAt: string;
+        updatedAt: string;
+        itemType: "risk";
+        attributes: {
+          category: string;
+          probabilityBand: "low" | "medium" | "high";
+          impactBand: "low" | "medium" | "high";
+          mitigationPrompt: string;
+          trigger: string;
+        };
+      } | {
+        id: string;
+        organizationId: string;
+        projectId: string;
+        analysisRunId: string;
+        title: string;
+        description: string;
+        epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+        confidenceBand: "low" | "medium" | "high" | null;
+        confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+        severity: "low" | "medium" | "high" | null;
+        priority: "low" | "medium" | "high" | null;
+        status: "open";
+        visibility: "internal";
+        sourceRequirementId: string | null;
+        createdByAiRunId: string;
+        createdAt: string;
+        updatedAt: string;
+        itemType: "assumption";
+        attributes: {
+          inferenceBasis: string;
+          validationNeeded: boolean;
+          validationMethod: string;
+        };
+      } | {
+        id: string;
+        organizationId: string;
+        projectId: string;
+        analysisRunId: string;
+        title: string;
+        description: string;
+        epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+        confidenceBand: "low" | "medium" | "high" | null;
+        confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+        severity: "low" | "medium" | "high" | null;
+        priority: "low" | "medium" | "high" | null;
+        status: "open";
+        visibility: "internal";
+        sourceRequirementId: string | null;
+        createdByAiRunId: string;
+        createdAt: string;
+        updatedAt: string;
+        itemType: "dependency";
+        attributes: {
+          dependencyName: string;
+          dependencyDirection: "internal" | "external";
+          blockedArea: string;
+          riskIfDelayed: string;
+        };
+      } | {
+        id: string;
+        organizationId: string;
+        projectId: string;
+        analysisRunId: string;
+        title: string;
+        description: string;
+        epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+        confidenceBand: "low" | "medium" | "high" | null;
+        confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+        severity: "low" | "medium" | "high" | null;
+        priority: "low" | "medium" | "high" | null;
+        status: "open";
+        visibility: "internal";
+        sourceRequirementId: string | null;
+        createdByAiRunId: string;
+        createdAt: string;
+        updatedAt: string;
+        itemType: "blocker";
+        attributes: {
+          subtype: "conflict";
+          contradictionSummary: string;
+          conflictingCitationIds: Array<string>;
+          suggestedResolutionQuestion: string;
+        };
+      } | {
+        id: string;
+        organizationId: string;
+        projectId: string;
+        analysisRunId: string;
+        title: string;
+        description: string;
+        epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+        confidenceBand: "low" | "medium" | "high" | null;
+        confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+        severity: "low" | "medium" | "high" | null;
+        priority: "low" | "medium" | "high" | null;
+        status: "open";
+        visibility: "internal";
+        sourceRequirementId: string | null;
+        createdByAiRunId: string;
+        createdAt: string;
+        updatedAt: string;
+        itemType: "scope_change_candidate";
+        attributes: {
+          classification: "scope_creep";
+          changeSource: string;
+          baselineImpactHypothesis: string;
+          approvalNeeded: boolean;
+        } | {
+          classification: "out_of_scope";
+          exclusionBasis: string;
+          supportingRationale: string;
+        };
+      }>;
+      pageInfo: {
+        limit: number;
+        nextCursor: string | null;
+        hasMore: boolean;
+        total?: number;
+      };
+    };
+    AugmentedZodDto_Output: {
+      id: string;
+      organizationId: string;
+      projectId: string;
+      analysisRunId: string;
+      title: string;
+      description: string;
+      epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+      confidenceBand: "low" | "medium" | "high" | null;
+      confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+      severity: "low" | "medium" | "high" | null;
+      priority: "low" | "medium" | "high" | null;
+      status: "open";
+      visibility: "internal";
+      sourceRequirementId: string | null;
+      createdByAiRunId: string;
+      createdAt: string;
+      updatedAt: string;
+      itemType: "question";
+      attributes: {
+        questionText: string;
+        whyItMatters: string;
+        suggestedResponseFormat: string;
+        impactIfUnanswered: string;
+        linkedCoverageEntryIds: Array<string>;
+        linkedRequirementIds: Array<string>;
+        linkedConflictDeliveryItemIds: Array<string>;
+      };
+    } | {
+      id: string;
+      organizationId: string;
+      projectId: string;
+      analysisRunId: string;
+      title: string;
+      description: string;
+      epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+      confidenceBand: "low" | "medium" | "high" | null;
+      confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+      severity: "low" | "medium" | "high" | null;
+      priority: "low" | "medium" | "high" | null;
+      status: "open";
+      visibility: "internal";
+      sourceRequirementId: string | null;
+      createdByAiRunId: string;
+      createdAt: string;
+      updatedAt: string;
+      itemType: "risk";
+      attributes: {
+        category: string;
+        probabilityBand: "low" | "medium" | "high";
+        impactBand: "low" | "medium" | "high";
+        mitigationPrompt: string;
+        trigger: string;
+      };
+    } | {
+      id: string;
+      organizationId: string;
+      projectId: string;
+      analysisRunId: string;
+      title: string;
+      description: string;
+      epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+      confidenceBand: "low" | "medium" | "high" | null;
+      confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+      severity: "low" | "medium" | "high" | null;
+      priority: "low" | "medium" | "high" | null;
+      status: "open";
+      visibility: "internal";
+      sourceRequirementId: string | null;
+      createdByAiRunId: string;
+      createdAt: string;
+      updatedAt: string;
+      itemType: "assumption";
+      attributes: {
+        inferenceBasis: string;
+        validationNeeded: boolean;
+        validationMethod: string;
+      };
+    } | {
+      id: string;
+      organizationId: string;
+      projectId: string;
+      analysisRunId: string;
+      title: string;
+      description: string;
+      epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+      confidenceBand: "low" | "medium" | "high" | null;
+      confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+      severity: "low" | "medium" | "high" | null;
+      priority: "low" | "medium" | "high" | null;
+      status: "open";
+      visibility: "internal";
+      sourceRequirementId: string | null;
+      createdByAiRunId: string;
+      createdAt: string;
+      updatedAt: string;
+      itemType: "dependency";
+      attributes: {
+        dependencyName: string;
+        dependencyDirection: "internal" | "external";
+        blockedArea: string;
+        riskIfDelayed: string;
+      };
+    } | {
+      id: string;
+      organizationId: string;
+      projectId: string;
+      analysisRunId: string;
+      title: string;
+      description: string;
+      epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+      confidenceBand: "low" | "medium" | "high" | null;
+      confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+      severity: "low" | "medium" | "high" | null;
+      priority: "low" | "medium" | "high" | null;
+      status: "open";
+      visibility: "internal";
+      sourceRequirementId: string | null;
+      createdByAiRunId: string;
+      createdAt: string;
+      updatedAt: string;
+      itemType: "blocker";
+      attributes: {
+        subtype: "conflict";
+        contradictionSummary: string;
+        conflictingCitationIds: Array<string>;
+        suggestedResolutionQuestion: string;
+      };
+    } | {
+      id: string;
+      organizationId: string;
+      projectId: string;
+      analysisRunId: string;
+      title: string;
+      description: string;
+      epistemicStatus: "confirmed" | "assumed" | "unknown" | "conflicting";
+      confidenceBand: "low" | "medium" | "high" | null;
+      confidenceReasonCodes: Array<"verified_exact_citation" | "multiple_source_corroboration" | "evidence_span_complete" | "evidence_span_ambiguous" | "stage_agreement" | "stage_disagreement" | "coverage_addressed" | "inference_basis_present" | "supporting_context_citation_verified" | "supporting_context_citation_missing">;
+      severity: "low" | "medium" | "high" | null;
+      priority: "low" | "medium" | "high" | null;
+      status: "open";
+      visibility: "internal";
+      sourceRequirementId: string | null;
+      createdByAiRunId: string;
+      createdAt: string;
+      updatedAt: string;
+      itemType: "scope_change_candidate";
+      attributes: {
+        classification: "scope_creep";
+        changeSource: string;
+        baselineImpactHypothesis: string;
+        approvalNeeded: boolean;
+      } | {
+        classification: "out_of_scope";
+        exclusionBasis: string;
+        supportingRationale: string;
+      };
+    };
+    CoverageListResponseDto_Output: {
+      items: Array<{
+        id: string;
+        organizationId: string;
+        projectId: string;
+        analysisRunId: string;
+        categoryKey: "auth_identity" | "roles_permissions" | "data_model_entities" | "integrations" | "notifications" | "reporting_analytics" | "admin" | "error_handling" | "audit_logging" | "nfr_performance_scale_availability" | "security_compliance" | "deployment_environments" | "data_migration" | "i18n_localization" | "accessibility" | "backup_disaster_recovery" | "slas" | "support_model";
+        categoryLabel: string;
+        categoryOrder: number;
+        status: "addressed" | "partial" | "absent";
+        rationale: string;
+        evidenceState: "verified_citation" | "none_found" | "downgraded";
+        questionDeliveryItemId: string | null;
+        createdByAiRunId: string;
+        createdAt: string;
+      }>;
+    };
+    CitationListResponseDto_Output: {
+      items: Array<{
+        id: string;
+        organizationId: string;
+        projectId: string;
+        analysisRunId: string;
+        requirementId: string | null;
+        coverageMatrixEntryId: string | null;
+        deliveryItemId: string | null;
+        sourceDocumentId: string;
+        sourceVersionNumber: number;
+        sourceContentHash: string;
+        sourceExtractionId: string;
+        sourceExtractionVersion: number;
+        sourceChunkId: string;
+        sourceChunkSequence: number;
+        chunkContentHash: string;
+        locator: {
+          [key: string]: string | number | boolean | null;
+        };
+        quoteTextOriginal: string;
+        quoteTextNormalized: string;
+        quoteHash: string;
+        matchStartOffset: number;
+        matchEndOffset: number;
+        normalizationMode: string;
+        verificationStatus: "verified_exact" | "downgraded_fuzzy" | "failed";
+        createdByAiRunId: string;
+        createdAt: string;
+      }>;
+      pageInfo: {
+        limit: number;
+        nextCursor: string | null;
+        hasMore: boolean;
+        total?: number;
+      };
+    };
+    CitationEvidenceResponseDto_Output: {
+      id: string;
+      organizationId: string;
+      projectId: string;
+      analysisRunId: string;
+      requirementId: string | null;
+      coverageMatrixEntryId: string | null;
+      deliveryItemId: string | null;
+      sourceDocumentId: string;
+      sourceVersionNumber: number;
+      sourceContentHash: string;
+      sourceExtractionId: string;
+      sourceExtractionVersion: number;
+      sourceChunkId: string;
+      sourceChunkSequence: number;
+      chunkContentHash: string;
+      locator: {
+        [key: string]: string | number | boolean | null;
+      };
+      quoteTextOriginal: string;
+      quoteTextNormalized: string;
+      quoteHash: string;
+      matchStartOffset: number;
+      matchEndOffset: number;
+      normalizationMode: string;
+      verificationStatus: "verified_exact" | "downgraded_fuzzy" | "failed";
+      createdByAiRunId: string;
+      createdAt: string;
+      sourceTitle: string;
+      sourceVersionLabel: string;
+    };
+    TraceabilityListResponseDto_Output: {
+      items: Array<{
+        id: string;
+        organizationId: string;
+        fromType: string;
+        fromId: string;
+        toType: string;
+        toId: string;
+        relation: string;
+        createdBy: string | null;
+        createdAt: string;
+      }>;
+      pageInfo: {
+        limit: number;
+        nextCursor: string | null;
+        hasMore: boolean;
+        total?: number;
+      };
     };
   };
   responses: never;
@@ -3890,6 +5041,1589 @@ export interface operations {
         };
       };
       409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisOrganizationController_listProviderPolicies: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+        status?: "draft" | "approved" | "inactive";
+        provider?: "openai" | "anthropic" | "openai-compatible" | "local";
+        includeInactive?: boolean | "true" | "false" | "1" | "0";
+        search?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProviderPolicyListResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisOrganizationController_createProviderPolicy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProviderPolicyCreateBodyDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProviderPolicyResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisOrganizationController_approveProviderPolicy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        policyId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProviderPolicyApproveBodyDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProviderPolicyResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisOrganizationController_deactivateProviderPolicy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        policyId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProviderPolicyDeactivateBodyDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProviderPolicyResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_getCapabilities: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RequirementAnalysisCapabilitiesResponseDto_Output"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_listProjectProviderPolicies: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+        status?: "draft" | "approved" | "inactive";
+        provider?: "openai" | "anthropic" | "openai-compatible" | "local";
+        includeInactive?: boolean | "true" | "false" | "1" | "0";
+        search?: string;
+      };
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProviderPolicyListResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_previewEligibleSources: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EligibleSourcePreviewResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_listRuns: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+        status?: "requested" | "snapshotting" | "queued" | "running" | "waiting_retry" | "completed" | "completed_with_warnings" | "failed" | "canceled";
+        mode?: "fresh" | "replay" | "reprocess" | "retry";
+        requestedBy?: string;
+        providerPolicyId?: string;
+        createdAfter?: string;
+        createdBefore?: string;
+      };
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisRunListResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_createFreshRun: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AnalysisRunFreshBodyDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisRunDetailResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_getRunDetail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisRunDetailResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_cancelRun: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AnalysisRunCancelBodyDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisRunDetailResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_retryRun: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AnalysisRunRetryBodyDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisRunDetailResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_replayRun: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AnalysisRunReplayBodyDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisRunDetailResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_reprocessRun: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AnalysisRunReprocessBodyDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisRunDetailResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_listStages: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+        status?: "pending" | "running" | "waiting_retry" | "completed" | "completed_with_warnings" | "failed" | "canceled" | "skipped";
+        kind?: "freeze_snapshot" | "batch_planning" | "confirmed_extraction" | "citation_verification" | "reference_feature_extraction" | "normalization_deduplication" | "conflict_detection" | "coverage_analysis" | "delivery_item_extraction" | "question_generation" | "finalize_review_package";
+      };
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisStageListResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_listBatches: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+        stageId?: string;
+        status?: "pending" | "running" | "waiting_retry" | "completed" | "completed_with_warnings" | "failed" | "canceled" | "skipped";
+      };
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AnalysisBatchListResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_listRequirements: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+        requirementType?: "functional" | "non_functional" | "business_rule" | "data" | "integration" | "security" | "compliance" | "operational";
+        priority?: "must_have" | "should_have" | "could_have" | "later";
+        epistemicStatus?: "confirmed" | "assumed" | "unknown" | "conflicting";
+        lifecycleState?: "ai_suggested" | "under_review" | "accepted" | "needs_clarification" | "rejected" | "approved" | "changed" | "deprecated";
+        search?: string;
+      };
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RequirementListResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_getRequirement: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+        requirementId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RequirementResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_listDeliveryItems: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+        itemType?: "question" | "risk" | "assumption" | "dependency" | "blocker" | "scope_change_candidate";
+        status?: "open";
+        severity?: "low" | "medium" | "high";
+        priority?: "low" | "medium" | "high";
+        sourceRequirementId?: string;
+        search?: string;
+      };
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DeliveryItemListResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_getDeliveryItem: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+        itemId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AugmentedZodDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_listCoverage: {
+    parameters: {
+      query?: {
+        status?: "addressed" | "partial" | "absent";
+        categoryKey?: "auth_identity" | "roles_permissions" | "data_model_entities" | "integrations" | "notifications" | "reporting_analytics" | "admin" | "error_handling" | "audit_logging" | "nfr_performance_scale_availability" | "security_compliance" | "deployment_environments" | "data_migration" | "i18n_localization" | "accessibility" | "backup_disaster_recovery" | "slas" | "support_model";
+      };
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CoverageListResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_listCitations: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+        verificationStatus?: "verified_exact" | "downgraded_fuzzy" | "failed";
+        requirementId?: string;
+        coverageMatrixEntryId?: string;
+        deliveryItemId?: string;
+        sourceDocumentId?: string;
+      };
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CitationListResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_getCitationEvidence: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+        citationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CitationEvidenceResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+    };
+  };
+  RequirementAnalysisController_listTraceability: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+        relation?: string;
+      };
+      header?: never;
+      path: {
+        projectId: string;
+        runId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TraceabilityListResponseDto_Output"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"];
+        };
+      };
+      404: {
         headers: {
           [name: string]: unknown;
         };

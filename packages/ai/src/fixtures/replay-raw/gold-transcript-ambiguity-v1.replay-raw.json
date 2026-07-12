@@ -1,0 +1,67 @@
+{
+  "fixtureId": "gold-transcript-ambiguity-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "responses": [
+    {
+      "output": {
+        "requirements": [
+          {
+            "key": "req_launch_english_only",
+            "organizationId": "org_transcript",
+            "projectId": "proj_client_comms",
+            "requirementType": "functional",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          },
+          {
+            "key": "req_phase2_localization",
+            "organizationId": "org_transcript",
+            "projectId": "proj_client_comms",
+            "requirementType": "functional",
+            "priority": "could_have",
+            "epistemicStatus": "assumed",
+            "persisted": true
+          }
+        ],
+        "citations": [
+          {
+            "requirementKey": "req_launch_english_only",
+            "organizationId": "org_transcript",
+            "projectId": "proj_client_comms",
+            "snapshotId": "snap_transcript_01",
+            "sourceDocumentId": "doc_followup_email",
+            "sourceChunkId": "chunk_transcript_email",
+            "quote": "Launch must include English only; additional languages are phase two.",
+            "verificationStatus": "verified_exact"
+          }
+        ],
+        "coverage": [
+          {
+            "categoryKey": "i18n_localization",
+            "status": "partial"
+          },
+          {
+            "categoryKey": "support_model",
+            "status": "partial"
+          }
+        ],
+        "conflicts": [],
+        "questions": [
+          {
+            "questionKey": "q_i18n_timeline",
+            "linkedRequirementKeys": ["req_phase2_localization"],
+            "linkedCoverageCategoryKeys": ["i18n_localization"]
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 680,
+        "outputTokens": 320
+      }
+    }
+  ]
+}

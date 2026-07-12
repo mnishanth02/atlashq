@@ -46,6 +46,8 @@ export type ProjectPermission =
   | "project:read"
   | "project:write"
   | "project:admin"
+  | "requirements:read"
+  | "requirements:analyze"
   | "requirements:review"
   | "architecture:review"
   | "sources:read"
@@ -62,6 +64,8 @@ export const rolePermissions = {
     "project:read",
     "project:write",
     "project:admin",
+    "requirements:read",
+    "requirements:analyze",
     "requirements:review",
     "architecture:review",
     "sources:read",
@@ -71,6 +75,8 @@ export const rolePermissions = {
     "project:read",
     "project:write",
     "project:admin",
+    "requirements:read",
+    "requirements:analyze",
     "requirements:review",
     "architecture:review",
     "sources:read",
@@ -79,6 +85,8 @@ export const rolePermissions = {
   [projectRoles.architectTechLead]: [
     "project:read",
     "project:write",
+    "requirements:read",
+    "requirements:analyze",
     "architecture:review",
     "sources:read",
     "sources:write",
@@ -86,12 +94,14 @@ export const rolePermissions = {
   [projectRoles.businessAnalystCoordinator]: [
     "project:read",
     "project:write",
+    "requirements:read",
+    "requirements:analyze",
     "requirements:review",
     "sources:read",
     "sources:write",
   ],
-  [projectRoles.developer]: ["project:read", "project:write", "sources:read"],
-  [projectRoles.qa]: ["project:read", "requirements:review", "sources:read"],
+  [projectRoles.developer]: ["project:read", "project:write", "requirements:read", "sources:read"],
+  [projectRoles.qa]: ["project:read", "requirements:read", "requirements:review", "sources:read"],
   [projectRoles.clientViewerApprover]: [],
 } as const satisfies Record<ProjectRole, readonly ProjectPermission[]>;
 
@@ -103,9 +113,13 @@ export function projectRolesForPermission(permission: ProjectPermission): Projec
   return projectRoleValues.filter((role) => canProjectRole(role, permission));
 }
 
-/** `project:read` and `sources:read` are the only non-mutating permissions (module-02 §7). */
+/** Read permissions stay non-mutating so archived projects remain readable with least privilege. */
 export function isMutationPermission(permission: ProjectPermission): boolean {
-  return permission !== "project:read" && permission !== "sources:read";
+  return (
+    permission !== "project:read" &&
+    permission !== "requirements:read" &&
+    permission !== "sources:read"
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -406,3 +420,636 @@ export type IpReviewStatus = (typeof ipReviewStatusValues)[number];
 export function isIpReviewStatus(value: string): value is IpReviewStatus {
   return ipReviewStatusValues.includes(value as IpReviewStatus);
 }
+
+// ---------------------------------------------------------------------------
+// Module 3: AI Requirement Analyzer controlled values (module-03 §6-§13)
+// ---------------------------------------------------------------------------
+
+/** Requirement evidence grounding state. */
+export const requirementEpistemicStatusValues = [
+  "confirmed",
+  "assumed",
+  "unknown",
+  "conflicting",
+] as const;
+export type RequirementEpistemicStatus = (typeof requirementEpistemicStatusValues)[number];
+export function isRequirementEpistemicStatus(value: string): value is RequirementEpistemicStatus {
+  return requirementEpistemicStatusValues.includes(value as RequirementEpistemicStatus);
+}
+
+/** Deterministic confidence band; raw model percentages are never exposed. */
+export const confidenceBandValues = ["low", "medium", "high"] as const;
+export type ConfidenceBand = (typeof confidenceBandValues)[number];
+export function isConfidenceBand(value: string): value is ConfidenceBand {
+  return confidenceBandValues.includes(value as ConfidenceBand);
+}
+
+/** Typed rubric signals persisted with every non-null confidence band. */
+export const confidenceReasonCodeValues = [
+  "verified_exact_citation",
+  "multiple_source_corroboration",
+  "evidence_span_complete",
+  "evidence_span_ambiguous",
+  "stage_agreement",
+  "stage_disagreement",
+  "coverage_addressed",
+  "inference_basis_present",
+  "supporting_context_citation_verified",
+  "supporting_context_citation_missing",
+] as const;
+export type ConfidenceReasonCode = (typeof confidenceReasonCodeValues)[number];
+export function isConfidenceReasonCode(value: string): value is ConfidenceReasonCode {
+  return confidenceReasonCodeValues.includes(value as ConfidenceReasonCode);
+}
+
+/** Top-level run mode. */
+export const analysisRunModeValues = ["fresh", "replay", "reprocess", "retry"] as const;
+export type AnalysisRunMode = (typeof analysisRunModeValues)[number];
+export function isAnalysisRunMode(value: string): value is AnalysisRunMode {
+  return analysisRunModeValues.includes(value as AnalysisRunMode);
+}
+
+/** `requirement_analysis_run.status` state machine values. */
+export const analysisRunStatusValues = [
+  "requested",
+  "snapshotting",
+  "queued",
+  "running",
+  "waiting_retry",
+  "completed",
+  "completed_with_warnings",
+  "failed",
+  "canceled",
+] as const;
+export type AnalysisRunStatus = (typeof analysisRunStatusValues)[number];
+export function isAnalysisRunStatus(value: string): value is AnalysisRunStatus {
+  return analysisRunStatusValues.includes(value as AnalysisRunStatus);
+}
+
+/** `requirement_analysis_stage.status` state machine values. */
+export const analysisStageStatusValues = [
+  "pending",
+  "running",
+  "waiting_retry",
+  "completed",
+  "completed_with_warnings",
+  "failed",
+  "canceled",
+  "skipped",
+] as const;
+export type AnalysisStageStatus = (typeof analysisStageStatusValues)[number];
+export function isAnalysisStageStatus(value: string): value is AnalysisStageStatus {
+  return analysisStageStatusValues.includes(value as AnalysisStageStatus);
+}
+
+/** `requirement_analysis_stage.kind` values. */
+export const analysisStageKindValues = [
+  "freeze_snapshot",
+  "batch_planning",
+  "confirmed_extraction",
+  "citation_verification",
+  "reference_feature_extraction",
+  "normalization_deduplication",
+  "conflict_detection",
+  "coverage_analysis",
+  "delivery_item_extraction",
+  "question_generation",
+  "finalize_review_package",
+] as const;
+export type AnalysisStageKind = (typeof analysisStageKindValues)[number];
+export function isAnalysisStageKind(value: string): value is AnalysisStageKind {
+  return analysisStageKindValues.includes(value as AnalysisStageKind);
+}
+
+/** Batch statuses mirror stage statuses for run-local execution tracking. */
+export const analysisBatchStatusValues = analysisStageStatusValues;
+export type AnalysisBatchStatus = AnalysisStageStatus;
+export function isAnalysisBatchStatus(value: string): value is AnalysisBatchStatus {
+  return isAnalysisStageStatus(value);
+}
+
+/** `organization_ai_provider_policy.status`. */
+export const providerPolicyStatusValues = ["draft", "approved", "inactive"] as const;
+export type ProviderPolicyStatus = (typeof providerPolicyStatusValues)[number];
+export function isProviderPolicyStatus(value: string): value is ProviderPolicyStatus {
+  return providerPolicyStatusValues.includes(value as ProviderPolicyStatus);
+}
+
+/** Deployment-approved provider data handling modes. */
+export const providerDataRetentionModeValues = [
+  "provider_default",
+  "no_training",
+  "zero_retention",
+] as const;
+export type ProviderDataRetentionMode = (typeof providerDataRetentionModeValues)[number];
+export function isProviderDataRetentionMode(value: string): value is ProviderDataRetentionMode {
+  return providerDataRetentionModeValues.includes(value as ProviderDataRetentionMode);
+}
+
+/** Allowlisted provider identifiers for policy/config selection. */
+export const analysisProviderValues = [
+  "openai",
+  "anthropic",
+  "openai-compatible",
+  "local",
+] as const;
+export type AnalysisProvider = (typeof analysisProviderValues)[number];
+export function isAnalysisProvider(value: string): value is AnalysisProvider {
+  return analysisProviderValues.includes(value as AnalysisProvider);
+}
+
+/** Source inclusion/exclusion reasons returned by eligible-source preview. */
+export const analysisEligibleSourceExclusionReasonValues = [
+  "not_ready",
+  "archived",
+  "non_head_version",
+  "missing_successful_extraction",
+  "reference_not_cleared",
+  "reference_feature_extraction_disabled",
+] as const;
+export type AnalysisEligibleSourceExclusionReason =
+  (typeof analysisEligibleSourceExclusionReasonValues)[number];
+export function isAnalysisEligibleSourceExclusionReason(
+  value: string,
+): value is AnalysisEligibleSourceExclusionReason {
+  return analysisEligibleSourceExclusionReasonValues.includes(
+    value as AnalysisEligibleSourceExclusionReason,
+  );
+}
+
+/** Shared artifact origin vocabulary across requirements, citations, and delivery items. */
+export const analysisArtifactOriginValues = ["source", "reference", "manual"] as const;
+export type AnalysisArtifactOrigin = (typeof analysisArtifactOriginValues)[number];
+export function isAnalysisArtifactOrigin(value: string): value is AnalysisArtifactOrigin {
+  return analysisArtifactOriginValues.includes(value as AnalysisArtifactOrigin);
+}
+
+/** Citation verification outcome from deterministic quote matching. */
+export const citationVerificationStatusValues = [
+  "verified_exact",
+  "downgraded_fuzzy",
+  "failed",
+] as const;
+export type CitationVerificationStatus = (typeof citationVerificationStatusValues)[number];
+export function isCitationVerificationStatus(value: string): value is CitationVerificationStatus {
+  return citationVerificationStatusValues.includes(value as CitationVerificationStatus);
+}
+
+/** Coverage matrix status for each fixed rubric row. */
+export const coverageStatusValues = ["addressed", "partial", "absent"] as const;
+export type CoverageStatus = (typeof coverageStatusValues)[number];
+export function isCoverageStatus(value: string): value is CoverageStatus {
+  return coverageStatusValues.includes(value as CoverageStatus);
+}
+
+/** Coverage evidence state emitted by deterministic verification and downgrade logic. */
+export const coverageEvidenceStateValues = [
+  "verified_citation",
+  "none_found",
+  "downgraded",
+] as const;
+export type CoverageEvidenceState = (typeof coverageEvidenceStateValues)[number];
+export function isCoverageEvidenceState(value: string): value is CoverageEvidenceState {
+  return coverageEvidenceStateValues.includes(value as CoverageEvidenceState);
+}
+
+/** Fixed rubric categories; exactly 18 are required before run completion. */
+export const coverageCategoryKeyValues = [
+  "auth_identity",
+  "roles_permissions",
+  "data_model_entities",
+  "integrations",
+  "notifications",
+  "reporting_analytics",
+  "admin",
+  "error_handling",
+  "audit_logging",
+  "nfr_performance_scale_availability",
+  "security_compliance",
+  "deployment_environments",
+  "data_migration",
+  "i18n_localization",
+  "accessibility",
+  "backup_disaster_recovery",
+  "slas",
+  "support_model",
+] as const;
+export type CoverageCategoryKey = (typeof coverageCategoryKeyValues)[number];
+export function isCoverageCategoryKey(value: string): value is CoverageCategoryKey {
+  return coverageCategoryKeyValues.includes(value as CoverageCategoryKey);
+}
+
+export const coverageCategoryDescriptors = [
+  { key: "auth_identity", label: "Auth/identity", order: 1 },
+  { key: "roles_permissions", label: "Roles and permissions", order: 2 },
+  { key: "data_model_entities", label: "Data model and entities", order: 3 },
+  { key: "integrations", label: "Integrations", order: 4 },
+  { key: "notifications", label: "Notifications", order: 5 },
+  { key: "reporting_analytics", label: "Reporting/analytics", order: 6 },
+  { key: "admin", label: "Admin", order: 7 },
+  { key: "error_handling", label: "Error handling", order: 8 },
+  { key: "audit_logging", label: "Audit/logging", order: 9 },
+  {
+    key: "nfr_performance_scale_availability",
+    label: "NFRs: performance, scale, availability",
+    order: 10,
+  },
+  { key: "security_compliance", label: "Security/compliance", order: 11 },
+  { key: "deployment_environments", label: "Deployment/environments", order: 12 },
+  { key: "data_migration", label: "Data migration", order: 13 },
+  { key: "i18n_localization", label: "i18n/localization", order: 14 },
+  { key: "accessibility", label: "Accessibility", order: 15 },
+  { key: "backup_disaster_recovery", label: "Backup/DR", order: 16 },
+  { key: "slas", label: "SLAs", order: 17 },
+  { key: "support_model", label: "Support model", order: 18 },
+] as const satisfies ReadonlyArray<{ key: CoverageCategoryKey; label: string; order: number }>;
+
+/** Canonical requirement typing created by Module 3 analyzer stages. */
+export const requirementTypeValues = [
+  "functional",
+  "non_functional",
+  "business_rule",
+  "data",
+  "integration",
+  "security",
+  "compliance",
+  "operational",
+] as const;
+export type RequirementType = (typeof requirementTypeValues)[number];
+export function isRequirementType(value: string): value is RequirementType {
+  return requirementTypeValues.includes(value as RequirementType);
+}
+
+/** MoSCoW-like requirement priority values used for analyzer output. */
+export const requirementPriorityValues = [
+  "must_have",
+  "should_have",
+  "could_have",
+  "later",
+] as const;
+export type RequirementPriority = (typeof requirementPriorityValues)[number];
+export function isRequirementPriority(value: string): value is RequirementPriority {
+  return requirementPriorityValues.includes(value as RequirementPriority);
+}
+
+/** Requirement lifecycle states shared across Module 3 suggestions and Module 4 review flow. */
+export const requirementLifecycleStateValues = [
+  "ai_suggested",
+  "under_review",
+  "accepted",
+  "needs_clarification",
+  "rejected",
+  "approved",
+  "changed",
+  "deprecated",
+] as const;
+export type RequirementLifecycleState = (typeof requirementLifecycleStateValues)[number];
+export function isRequirementLifecycleState(value: string): value is RequirementLifecycleState {
+  return requirementLifecycleStateValues.includes(value as RequirementLifecycleState);
+}
+
+/** Shared delivery-item vocabulary (module-03 and Module 4 handoff). */
+export const deliveryItemTypeValues = [
+  "question",
+  "risk",
+  "assumption",
+  "dependency",
+  "blocker",
+  "scope_change_candidate",
+] as const;
+export type DeliveryItemType = (typeof deliveryItemTypeValues)[number];
+export function isDeliveryItemType(value: string): value is DeliveryItemType {
+  return deliveryItemTypeValues.includes(value as DeliveryItemType);
+}
+
+/** Module 3 delivery items are open/internal, with Module 4 controlling later lifecycle changes. */
+export const deliveryItemStatusValues = ["open"] as const;
+export type DeliveryItemStatus = (typeof deliveryItemStatusValues)[number];
+export function isDeliveryItemStatus(value: string): value is DeliveryItemStatus {
+  return deliveryItemStatusValues.includes(value as DeliveryItemStatus);
+}
+
+export const deliveryItemVisibilityValues = ["internal"] as const;
+export type DeliveryItemVisibility = (typeof deliveryItemVisibilityValues)[number];
+export function isDeliveryItemVisibility(value: string): value is DeliveryItemVisibility {
+  return deliveryItemVisibilityValues.includes(value as DeliveryItemVisibility);
+}
+
+export const deliveryItemSeverityValues = ["low", "medium", "high"] as const;
+export type DeliveryItemSeverity = (typeof deliveryItemSeverityValues)[number];
+export function isDeliveryItemSeverity(value: string): value is DeliveryItemSeverity {
+  return deliveryItemSeverityValues.includes(value as DeliveryItemSeverity);
+}
+
+export const deliveryItemPriorityValues = ["low", "medium", "high"] as const;
+export type DeliveryItemPriority = (typeof deliveryItemPriorityValues)[number];
+export function isDeliveryItemPriority(value: string): value is DeliveryItemPriority {
+  return deliveryItemPriorityValues.includes(value as DeliveryItemPriority);
+}
+
+export const dependencyDirectionValues = ["internal", "external"] as const;
+export type DependencyDirection = (typeof dependencyDirectionValues)[number];
+export function isDependencyDirection(value: string): value is DependencyDirection {
+  return dependencyDirectionValues.includes(value as DependencyDirection);
+}
+
+export const blockerSubtypeValues = ["conflict"] as const;
+export type BlockerSubtype = (typeof blockerSubtypeValues)[number];
+export function isBlockerSubtype(value: string): value is BlockerSubtype {
+  return blockerSubtypeValues.includes(value as BlockerSubtype);
+}
+
+export const scopeChangeClassificationValues = ["scope_creep", "out_of_scope"] as const;
+export type ScopeChangeClassification = (typeof scopeChangeClassificationValues)[number];
+export function isScopeChangeClassification(value: string): value is ScopeChangeClassification {
+  return scopeChangeClassificationValues.includes(value as ScopeChangeClassification);
+}
+
+// ---------------------------------------------------------------------------
+// Module 3 delivery-item attribute contracts
+// ---------------------------------------------------------------------------
+
+export type RiskDeliveryItemAttributes = {
+  category: string;
+  probabilityBand: DeliveryItemSeverity;
+  impactBand: DeliveryItemSeverity;
+  mitigationPrompt: string;
+  trigger: string;
+};
+
+export type AssumptionDeliveryItemAttributes = {
+  inferenceBasis: string;
+  validationNeeded: boolean;
+  validationMethod: string;
+};
+
+export type DependencyDeliveryItemAttributes = {
+  dependencyName: string;
+  dependencyDirection: DependencyDirection;
+  blockedArea: string;
+  riskIfDelayed: string;
+};
+
+export type BlockerDeliveryItemAttributes = {
+  subtype: "conflict";
+  contradictionSummary: string;
+  conflictingCitationIds: EntityId[];
+  suggestedResolutionQuestion: string;
+};
+
+export type QuestionDeliveryItemAttributes = {
+  questionText: string;
+  whyItMatters: string;
+  suggestedResponseFormat: string;
+  impactIfUnanswered: string;
+  linkedCoverageEntryIds: EntityId[];
+  linkedRequirementIds: EntityId[];
+  linkedConflictDeliveryItemIds: EntityId[];
+};
+
+export type ScopeCreepDeliveryItemAttributes = {
+  classification: "scope_creep";
+  changeSource: string;
+  baselineImpactHypothesis: string;
+  approvalNeeded: boolean;
+};
+
+export type OutOfScopeDeliveryItemAttributes = {
+  classification: "out_of_scope";
+  exclusionBasis: string;
+  supportingRationale: string;
+};
+
+export type ScopeChangeCandidateDeliveryItemAttributes =
+  | ScopeCreepDeliveryItemAttributes
+  | OutOfScopeDeliveryItemAttributes;
+
+export type DeliveryItemAttributes =
+  | RiskDeliveryItemAttributes
+  | AssumptionDeliveryItemAttributes
+  | DependencyDeliveryItemAttributes
+  | BlockerDeliveryItemAttributes
+  | QuestionDeliveryItemAttributes
+  | ScopeChangeCandidateDeliveryItemAttributes;
+
+// ---------------------------------------------------------------------------
+// Module 3 API-facing shared descriptors
+// ---------------------------------------------------------------------------
+
+export type AnalysisSnapshotDescriptor = {
+  id: EntityId;
+  snapshotHash: string;
+  sourceCount: number;
+  chunkCount: number;
+  totalCharacterCount: number;
+  eligibilityRulesVersion: string;
+  createdAt: ISODateTimeString;
+};
+
+export type AnalysisProviderPolicyDescriptor = {
+  providerPolicyId: EntityId;
+  provider: AnalysisProvider;
+  modelAlias: string;
+  resolvedModelId: string;
+  dataRetentionMode: ProviderDataRetentionMode;
+};
+
+export type AnalysisRunProvenanceDescriptor = {
+  promptBundleVersion: string;
+  promptBundleHash: string;
+  schemaBundleVersion: string;
+  schemaBundleHash: string;
+  pipelineVersion: string;
+  pipelineHash: string;
+  modelPolicyHash: string;
+};
+
+export type AnalysisRunBudgetDescriptor = {
+  maxUsd: number;
+  maxInputTokens: number;
+  maxOutputTokens: number;
+  maxWallClockSeconds: number;
+};
+
+export type AnalysisRunUsageDescriptor = {
+  inputTokensUsed: number;
+  outputTokensUsed: number;
+  costUsd: number;
+};
+
+export type AnalysisRunArtifactCounts = {
+  requirements: number;
+  citations: number;
+  coverageEntries: number;
+  deliveryItems: number;
+};
+
+export type AnalysisRunSummary = {
+  id: EntityId;
+  organizationId: OrganizationId;
+  projectId: ProjectId;
+  requestedBy: UserId;
+  mode: AnalysisRunMode;
+  status: AnalysisRunStatus;
+  sourceSnapshotId: EntityId | null;
+  replayOfRunId: EntityId | null;
+  reprocessOfRunId: EntityId | null;
+  retryOfRunId: EntityId | null;
+  warningCodes: string[];
+  failureCode: string | null;
+  failureDetail: string | null;
+  failureRetryable: boolean;
+  failedStageId: EntityId | null;
+  cancelRequestedAt: ISODateTimeString | null;
+  cancelRequestedBy: UserId | null;
+  cancelReason: string | null;
+  startedAt: ISODateTimeString | null;
+  completedAt: ISODateTimeString | null;
+  createdAt: ISODateTimeString;
+  updatedAt: ISODateTimeString;
+  correlationId: string;
+  providerPolicy: AnalysisProviderPolicyDescriptor;
+  provenance: AnalysisRunProvenanceDescriptor;
+  budgets: AnalysisRunBudgetDescriptor;
+  usage: AnalysisRunUsageDescriptor;
+  artifactCounts: AnalysisRunArtifactCounts;
+};
+
+export type AnalysisRunDetail = AnalysisRunSummary & {
+  snapshot: AnalysisSnapshotDescriptor | null;
+  readNotices: string[];
+};
+
+export type AnalysisStageDescriptor = {
+  id: EntityId;
+  runId: EntityId;
+  organizationId: OrganizationId;
+  projectId: ProjectId;
+  kind: AnalysisStageKind;
+  status: AnalysisStageStatus;
+  attemptNumber: number;
+  idempotencyKey: string;
+  inputHash: string | null;
+  outputHash: string | null;
+  startedAt: ISODateTimeString | null;
+  completedAt: ISODateTimeString | null;
+  retryAfter: ISODateTimeString | null;
+  failureCode: string | null;
+  failureDetail: string | null;
+  createdAt: ISODateTimeString;
+  updatedAt: ISODateTimeString;
+};
+
+export type AnalysisBatchDescriptor = {
+  id: EntityId;
+  stageId: EntityId;
+  runId: EntityId;
+  organizationId: OrganizationId;
+  projectId: ProjectId;
+  batchOrder: number;
+  sourceChunkStartSequence: number;
+  sourceChunkEndSequence: number;
+  inputTokenEstimate: number;
+  maxOutputTokens: number;
+  status: AnalysisBatchStatus;
+  attemptNumber: number;
+  aiRunId: AiRunId | null;
+  repairOfBatchId: EntityId | null;
+  shapeOnlyRepairUsed: boolean;
+  cacheKey: string | null;
+  cacheHitOfBatchId: EntityId | null;
+  failureCode: string | null;
+  failureDetail: string | null;
+  createdAt: ISODateTimeString;
+  updatedAt: ISODateTimeString;
+};
+
+export type RequirementDescriptor = {
+  id: EntityId;
+  organizationId: OrganizationId;
+  projectId: ProjectId;
+  analysisRunId: EntityId;
+  stableKey: string;
+  title: string;
+  description: string;
+  requirementType: RequirementType;
+  priority: RequirementPriority | null;
+  epistemicStatus: RequirementEpistemicStatus;
+  confidenceBand: ConfidenceBand | null;
+  confidenceReasonCodes: ConfidenceReasonCode[];
+  inferenceBasis: string | null;
+  origin: AnalysisArtifactOrigin;
+  lifecycleState: RequirementLifecycleState;
+  dedupeGroupKey: string | null;
+  parentRequirementId: EntityId | null;
+  sourceSummary: string | null;
+  createdByAiRunId: AiRunId;
+  createdAt: ISODateTimeString;
+  updatedAt: ISODateTimeString;
+};
+
+export type CitationDescriptor = {
+  id: EntityId;
+  organizationId: OrganizationId;
+  projectId: ProjectId;
+  analysisRunId: EntityId;
+  requirementId: EntityId | null;
+  coverageMatrixEntryId: EntityId | null;
+  deliveryItemId: EntityId | null;
+  sourceDocumentId: EntityId;
+  sourceVersionNumber: number;
+  sourceContentHash: string;
+  sourceExtractionId: EntityId;
+  sourceExtractionVersion: number;
+  sourceChunkId: EntityId;
+  sourceChunkSequence: number;
+  chunkContentHash: string;
+  locator: JsonObject;
+  quoteTextOriginal: string;
+  quoteTextNormalized: string;
+  quoteHash: string;
+  matchStartOffset: number;
+  matchEndOffset: number;
+  normalizationMode: string;
+  verificationStatus: CitationVerificationStatus;
+  createdByAiRunId: AiRunId;
+  createdAt: ISODateTimeString;
+};
+
+export type CoverageMatrixEntryDescriptor = {
+  id: EntityId;
+  organizationId: OrganizationId;
+  projectId: ProjectId;
+  analysisRunId: EntityId;
+  categoryKey: CoverageCategoryKey;
+  categoryLabel: string;
+  categoryOrder: number;
+  status: CoverageStatus;
+  rationale: string;
+  evidenceState: CoverageEvidenceState;
+  questionDeliveryItemId: EntityId | null;
+  createdByAiRunId: AiRunId;
+  createdAt: ISODateTimeString;
+};
+
+export type DeliveryItemDescriptor = {
+  id: EntityId;
+  organizationId: OrganizationId;
+  projectId: ProjectId;
+  analysisRunId: EntityId;
+  itemType: DeliveryItemType;
+  title: string;
+  description: string;
+  epistemicStatus: RequirementEpistemicStatus;
+  confidenceBand: ConfidenceBand | null;
+  confidenceReasonCodes: ConfidenceReasonCode[];
+  severity: DeliveryItemSeverity | null;
+  priority: DeliveryItemPriority | null;
+  status: DeliveryItemStatus;
+  visibility: DeliveryItemVisibility;
+  attributes: DeliveryItemAttributes;
+  sourceRequirementId: EntityId | null;
+  createdByAiRunId: AiRunId;
+  createdAt: ISODateTimeString;
+  updatedAt: ISODateTimeString;
+};

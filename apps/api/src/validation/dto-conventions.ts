@@ -76,6 +76,28 @@ export const apiErrorCodes = {
   sourceCaptureUrlBlocked: "SOURCE_CAPTURE_URL_BLOCKED",
   sourceProcessingNotRetryable: "SOURCE_PROCESSING_NOT_RETRYABLE",
   sourceStorageUnavailable: "SOURCE_STORAGE_UNAVAILABLE",
+  // Module 3: AI Requirement Analyzer stable error codes (module-03 §12.3).
+  aiAnalysisDisabled: "AI_ANALYSIS_DISABLED",
+  aiProviderNotApproved: "AI_PROVIDER_NOT_APPROVED",
+  aiProviderPolicyInactive: "AI_PROVIDER_POLICY_INACTIVE",
+  aiProviderPolicyMismatch: "AI_PROVIDER_POLICY_MISMATCH",
+  aiRunBudgetExceeded: "AI_RUN_BUDGET_EXCEEDED",
+  aiRunConcurrencyExceeded: "AI_RUN_CONCURRENCY_EXCEEDED",
+  aiRunNotCancelable: "AI_RUN_NOT_CANCELABLE",
+  aiRunNotRetryable: "AI_RUN_NOT_RETRYABLE",
+  aiRunSnapshotEmpty: "AI_RUN_SNAPSHOT_EMPTY",
+  aiRunSourceNotEligible: "AI_RUN_SOURCE_NOT_ELIGIBLE",
+  aiRunSourceSnapshotStale: "AI_RUN_SOURCE_SNAPSHOT_STALE",
+  aiRunSchemaValidationFailed: "AI_RUN_SCHEMA_VALIDATION_FAILED",
+  aiRunSemanticValidationFailed: "AI_RUN_SEMANTIC_VALIDATION_FAILED",
+  aiRunCitationVerificationFailed: "AI_RUN_CITATION_VERIFICATION_FAILED",
+  aiRunPromptInjectionGuardTriggered: "AI_RUN_PROMPT_INJECTION_GUARD_TRIGGERED",
+  aiRunTransientProviderFailure: "AI_RUN_TRANSIENT_PROVIDER_FAILURE",
+  aiRunProviderTimeout: "AI_RUN_PROVIDER_TIMEOUT",
+  aiRunProviderRateLimited: "AI_RUN_PROVIDER_RATE_LIMITED",
+  aiRunReferenceFeatureExtractionDisabled: "AI_RUN_REFERENCE_FEATURE_EXTRACTION_DISABLED",
+  aiArtifactNotFound: "AI_ARTIFACT_NOT_FOUND",
+  aiEvidenceAccessDenied: "AI_EVIDENCE_ACCESS_DENIED",
 } as const;
 
 export type ApiErrorCode = (typeof apiErrorCodes)[keyof typeof apiErrorCodes];

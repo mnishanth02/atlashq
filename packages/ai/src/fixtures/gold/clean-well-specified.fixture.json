@@ -1,0 +1,131 @@
+{
+  "id": "gold-clean-well-specified-v1",
+  "kind": "gold",
+  "tags": ["clean_well_specified", "client_portal", "must_have_functional"],
+  "humanLabel": {
+    "title": "Clean client portal specification",
+    "scenario": "Well-scoped project brief with direct evidence",
+    "notes": "Hand-labeled from compact non-proprietary planning notes.",
+    "ownedBy": "product-ba+architect"
+  },
+  "input": {
+    "context": {
+      "organizationId": "org_clean",
+      "projectId": "proj_client_portal",
+      "snapshotId": "snap_clean_01",
+      "referenceFeatureExtractionEnabled": false
+    },
+    "budget": {
+      "maxUsdPerRun": 3,
+      "maxInputTokensPerRun": 300000,
+      "maxOutputTokensPerRun": 30000,
+      "maxWallClockMs": 1800000
+    },
+    "evidenceBlocks": [
+      {
+        "blockId": "clean_block_auth",
+        "organizationId": "org_clean",
+        "projectId": "proj_client_portal",
+        "snapshotId": "snap_clean_01",
+        "sourceDocumentId": "doc_clean_spec",
+        "sourceChunkId": "chunk_clean_auth",
+        "chunkContentHash": "hash_clean_auth",
+        "origin": "source",
+        "text": "Users must sign in with company SSO and MFA."
+      },
+      {
+        "blockId": "clean_block_export",
+        "organizationId": "org_clean",
+        "projectId": "proj_client_portal",
+        "snapshotId": "snap_clean_01",
+        "sourceDocumentId": "doc_clean_spec",
+        "sourceChunkId": "chunk_clean_export",
+        "chunkContentHash": "hash_clean_export",
+        "origin": "source",
+        "text": "The system must export invoices as CSV in under five seconds."
+      },
+      {
+        "blockId": "clean_block_audit",
+        "organizationId": "org_clean",
+        "projectId": "proj_client_portal",
+        "snapshotId": "snap_clean_01",
+        "sourceDocumentId": "doc_clean_spec",
+        "sourceChunkId": "chunk_clean_audit",
+        "chunkContentHash": "hash_clean_audit",
+        "origin": "source",
+        "text": "All administrator actions are written to immutable audit logs."
+      }
+    ]
+  },
+  "labels": {
+    "requirements": [
+      {
+        "key": "req_sso_mfa",
+        "requirementType": "functional",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      },
+      {
+        "key": "req_csv_export_speed",
+        "requirementType": "functional",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      },
+      {
+        "key": "req_admin_audit_logs",
+        "requirementType": "security",
+        "priority": "should_have",
+        "epistemicStatus": "confirmed"
+      }
+    ],
+    "confirmedCitations": [
+      {
+        "requirementKey": "req_sso_mfa",
+        "sourceChunkId": "chunk_clean_auth",
+        "quote": "Users must sign in with company SSO and MFA."
+      },
+      {
+        "requirementKey": "req_csv_export_speed",
+        "sourceChunkId": "chunk_clean_export",
+        "quote": "The system must export invoices as CSV in under five seconds."
+      },
+      {
+        "requirementKey": "req_admin_audit_logs",
+        "sourceChunkId": "chunk_clean_audit",
+        "quote": "All administrator actions are written to immutable audit logs."
+      }
+    ],
+    "coverage": [
+      {
+        "categoryKey": "auth_identity",
+        "status": "addressed"
+      },
+      {
+        "categoryKey": "reporting_analytics",
+        "status": "addressed"
+      },
+      {
+        "categoryKey": "security_compliance",
+        "status": "addressed"
+      },
+      {
+        "categoryKey": "slas",
+        "status": "partial"
+      }
+    ],
+    "conflicts": [],
+    "questions": [
+      {
+        "questionKey": "q_sla_target",
+        "linkedRequirementKeys": ["req_csv_export_speed"],
+        "linkedCoverageCategoryKeys": ["slas"]
+      }
+    ],
+    "unsupportedClaimKeys": ["claim_native_mobile_app"]
+  },
+  "runtime": {
+    "stageKind": "confirmed_extraction",
+    "promptAssetKind": "confirmed_extraction",
+    "expectedErrorCode": null
+  }
+}

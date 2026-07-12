@@ -15,6 +15,8 @@ describe("rolePermissions matrix", () => {
       "project:read",
       "project:write",
       "project:admin",
+      "requirements:read",
+      "requirements:analyze",
       "requirements:review",
       "architecture:review",
       "sources:read",
@@ -26,13 +28,37 @@ describe("rolePermissions matrix", () => {
     expect(rolePermissions[projectRoles.clientViewerApprover]).toEqual([]);
   });
 
-  it("scopes developer to read/write plus source-read only", () => {
+  it("scopes developer to read/write plus read-only requirements and sources", () => {
     expect(canProjectRole(projectRoles.developer, "project:read")).toBe(true);
     expect(canProjectRole(projectRoles.developer, "project:write")).toBe(true);
     expect(canProjectRole(projectRoles.developer, "project:admin")).toBe(false);
+    expect(canProjectRole(projectRoles.developer, "requirements:read")).toBe(true);
+    expect(canProjectRole(projectRoles.developer, "requirements:analyze")).toBe(false);
     expect(canProjectRole(projectRoles.developer, "architecture:review")).toBe(false);
     expect(canProjectRole(projectRoles.developer, "sources:read")).toBe(true);
     expect(canProjectRole(projectRoles.developer, "sources:write")).toBe(false);
+  });
+
+  it("grants requirements:read exactly to Admin, Project Owner, Architect, BA, Developer, and QA", () => {
+    expect(canProjectRole(projectRoles.admin, "requirements:read")).toBe(true);
+    expect(canProjectRole(projectRoles.projectOwner, "requirements:read")).toBe(true);
+    expect(canProjectRole(projectRoles.architectTechLead, "requirements:read")).toBe(true);
+    expect(canProjectRole(projectRoles.businessAnalystCoordinator, "requirements:read")).toBe(true);
+    expect(canProjectRole(projectRoles.developer, "requirements:read")).toBe(true);
+    expect(canProjectRole(projectRoles.qa, "requirements:read")).toBe(true);
+    expect(canProjectRole(projectRoles.clientViewerApprover, "requirements:read")).toBe(false);
+  });
+
+  it("grants requirements:analyze only to Admin, Project Owner, Architect, and BA", () => {
+    expect(canProjectRole(projectRoles.admin, "requirements:analyze")).toBe(true);
+    expect(canProjectRole(projectRoles.projectOwner, "requirements:analyze")).toBe(true);
+    expect(canProjectRole(projectRoles.architectTechLead, "requirements:analyze")).toBe(true);
+    expect(canProjectRole(projectRoles.businessAnalystCoordinator, "requirements:analyze")).toBe(
+      true,
+    );
+    expect(canProjectRole(projectRoles.developer, "requirements:analyze")).toBe(false);
+    expect(canProjectRole(projectRoles.qa, "requirements:analyze")).toBe(false);
+    expect(canProjectRole(projectRoles.clientViewerApprover, "requirements:analyze")).toBe(false);
   });
 
   it.each([
@@ -68,10 +94,12 @@ describe("rolePermissions matrix", () => {
     ).toBe(true);
   });
 
-  it("treats every non-read permission as a mutation, except sources:read", () => {
+  it("treats project/sources/requirements reads as non-mutations", () => {
     expect(isMutationPermission("project:read")).toBe(false);
+    expect(isMutationPermission("requirements:read")).toBe(false);
     expect(isMutationPermission("sources:read")).toBe(false);
     expect(isMutationPermission("project:write")).toBe(true);
+    expect(isMutationPermission("requirements:analyze")).toBe(true);
     expect(isMutationPermission("project:admin")).toBe(true);
     expect(isMutationPermission("requirements:review")).toBe(true);
     expect(isMutationPermission("sources:write")).toBe(true);
@@ -221,6 +249,36 @@ describe("evaluateProjectAccess (deny-by-default)", () => {
       }),
     );
     expect(decision).toEqual({ allowed: true, reason: "project_membership" });
+  });
+
+  it.each([
+    projectRoles.architectTechLead,
+    projectRoles.businessAnalystCoordinator,
+    projectRoles.developer,
+    projectRoles.qa,
+  ])("allows %s to read analyzer artifacts on an archived project", (role) => {
+    const decision = evaluateProjectAccess(
+      input({
+        permission: "requirements:read",
+        project: { organizationId: "org-1", status: "archived", softDeletedAt: null },
+        membership: { role, status: "active", softDeletedAt: null },
+      }),
+    );
+    expect(decision).toEqual({ allowed: true, reason: "project_membership" });
+  });
+
+  it.each([
+    projectRoles.architectTechLead,
+    projectRoles.businessAnalystCoordinator,
+  ])("freezes requirements:analyze on an archived project for %s", (role) => {
+    const decision = evaluateProjectAccess(
+      input({
+        permission: "requirements:analyze",
+        project: { organizationId: "org-1", status: "archived", softDeletedAt: null },
+        membership: { role, status: "active", softDeletedAt: null },
+      }),
+    );
+    expect(decision).toEqual({ allowed: false, reason: "project_archived_mutation" });
   });
 
   it.each([

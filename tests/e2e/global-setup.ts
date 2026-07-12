@@ -502,6 +502,7 @@ export default async function globalSetup(_config: FullConfig): Promise<() => Pr
       S3_SECRET_ACCESS_KEY: MINIO_SECRET_ACCESS_KEY,
       S3_BUCKET: MINIO_BUCKET,
     };
+    process.env.E2E_DATABASE_URL = container.getConnectionUri();
 
     const apiProcess = startProcess(
       "api",
@@ -518,6 +519,14 @@ export default async function globalSetup(_config: FullConfig): Promise<() => Pr
         AUTH_URL: E2E_BASE_URL,
         WEB_ORIGIN: E2E_BASE_URL,
         LOG_LEVEL: "info",
+        AI_REQUIREMENT_ANALYSIS_ENABLED: "true",
+        AI_ANALYSIS_READS_ENABLED: "true",
+        AI_MODEL_CALLS_ENABLED: "true",
+        AI_REFERENCE_FEATURE_EXTRACTION_ENABLED: "false",
+        AI_ANALYSIS_DEFAULT_PROVIDER: "openai",
+        AI_ANALYSIS_DEFAULT_MODEL_ALIAS: "gpt-4o-mini",
+        AI_ANALYSIS_DEFAULT_RESOLVED_MODEL_ID: "gpt-4o-mini",
+        AI_ANALYSIS_DEFAULT_DATA_RETENTION_MODE: "provider_default",
       },
     );
     await waitForHttp(`${E2E_API_URL}/api/v1/health`, apiProcess, async (response) => {

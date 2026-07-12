@@ -650,6 +650,13 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
       });
       return;
     }
+    if (next === "requirements") {
+      void navigate({
+        to: "/projects/$projectId/requirement-analysis",
+        params: { projectId },
+      });
+      return;
+    }
     setActiveTab(next);
   };
   const projectQuery = useProjectQuery(projectId);

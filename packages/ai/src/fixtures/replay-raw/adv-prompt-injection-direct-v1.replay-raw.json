@@ -1,0 +1,8 @@
+{
+  "fixtureId": "adv-prompt-injection-direct-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "responses": []
+}

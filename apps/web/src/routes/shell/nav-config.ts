@@ -40,4 +40,6 @@ export const ROUTE_BREADCRUMB_LABELS: Record<string, string> = {
   "/projects/$projectId": "Project",
   "/projects/$projectId/source-documents": "Source documents",
   "/projects/$projectId/source-documents/$sourceId": "Source document",
+  "/projects/$projectId/requirement-analysis": "Requirement analysis",
+  "/projects/$projectId/requirement-analysis/$runId": "Run",
 };

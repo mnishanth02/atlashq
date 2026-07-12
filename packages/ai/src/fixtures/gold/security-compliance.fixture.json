@@ -1,0 +1,127 @@
+{
+  "id": "gold-security-compliance-v1",
+  "kind": "gold",
+  "tags": ["security_compliance", "audit_logging", "must_have_controls"],
+  "humanLabel": {
+    "title": "Security and compliance focused scope",
+    "scenario": "Explicit controls with one backup gap",
+    "notes": "Hand-labeled controls-heavy fixture for compliance grounding.",
+    "ownedBy": "product-ba+architect"
+  },
+  "input": {
+    "context": {
+      "organizationId": "org_security",
+      "projectId": "proj_controls",
+      "snapshotId": "snap_security_01",
+      "referenceFeatureExtractionEnabled": false
+    },
+    "budget": {
+      "maxUsdPerRun": 3,
+      "maxInputTokensPerRun": 300000,
+      "maxOutputTokensPerRun": 30000,
+      "maxWallClockMs": 1800000
+    },
+    "evidenceBlocks": [
+      {
+        "blockId": "security_block_retention",
+        "organizationId": "org_security",
+        "projectId": "proj_controls",
+        "snapshotId": "snap_security_01",
+        "sourceDocumentId": "doc_security_spec",
+        "sourceChunkId": "chunk_security_retention",
+        "chunkContentHash": "hash_security_retention",
+        "origin": "source",
+        "text": "Audit logs must be retained for 365 days."
+      },
+      {
+        "blockId": "security_block_encryption",
+        "organizationId": "org_security",
+        "projectId": "proj_controls",
+        "snapshotId": "snap_security_01",
+        "sourceDocumentId": "doc_security_spec",
+        "sourceChunkId": "chunk_security_encryption",
+        "chunkContentHash": "hash_security_encryption",
+        "origin": "source",
+        "text": "All PII fields must be encrypted at rest and in transit."
+      },
+      {
+        "blockId": "security_block_soc2",
+        "organizationId": "org_security",
+        "projectId": "proj_controls",
+        "snapshotId": "snap_security_01",
+        "sourceDocumentId": "doc_security_spec",
+        "sourceChunkId": "chunk_security_soc2",
+        "chunkContentHash": "hash_security_soc2",
+        "origin": "source",
+        "text": "SOC2 Type II evidence package is required each quarter."
+      }
+    ]
+  },
+  "labels": {
+    "requirements": [
+      {
+        "key": "req_audit_retention_365d",
+        "requirementType": "security",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      },
+      {
+        "key": "req_encrypt_pii",
+        "requirementType": "security",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      },
+      {
+        "key": "req_soc2_evidence_quarterly",
+        "requirementType": "compliance",
+        "priority": "must_have",
+        "epistemicStatus": "confirmed"
+      }
+    ],
+    "confirmedCitations": [
+      {
+        "requirementKey": "req_audit_retention_365d",
+        "sourceChunkId": "chunk_security_retention",
+        "quote": "Audit logs must be retained for 365 days."
+      },
+      {
+        "requirementKey": "req_encrypt_pii",
+        "sourceChunkId": "chunk_security_encryption",
+        "quote": "All PII fields must be encrypted at rest and in transit."
+      },
+      {
+        "requirementKey": "req_soc2_evidence_quarterly",
+        "sourceChunkId": "chunk_security_soc2",
+        "quote": "SOC2 Type II evidence package is required each quarter."
+      }
+    ],
+    "coverage": [
+      {
+        "categoryKey": "security_compliance",
+        "status": "addressed"
+      },
+      {
+        "categoryKey": "audit_logging",
+        "status": "addressed"
+      },
+      {
+        "categoryKey": "backup_disaster_recovery",
+        "status": "absent"
+      }
+    ],
+    "conflicts": [],
+    "questions": [
+      {
+        "questionKey": "q_backup_rto_rpo",
+        "linkedRequirementKeys": [],
+        "linkedCoverageCategoryKeys": ["backup_disaster_recovery"]
+      }
+    ],
+    "unsupportedClaimKeys": ["claim_public_bucket_access"]
+  },
+  "runtime": {
+    "stageKind": "confirmed_extraction",
+    "promptAssetKind": "confirmed_extraction",
+    "expectedErrorCode": null
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "fixtureId": "adv-reference-ip-verbatim-copy-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "responses": [
+    {
+      "output": {
+        "requirements": [
+          {
+            "key": "claim_copy_reference_verbatim",
+            "organizationId": "org_secure",
+            "projectId": "proj_reference_gate",
+            "requirementType": "integration",
+            "priority": "could_have",
+            "epistemicStatus": "unknown",
+            "persisted": true
+          }
+        ],
+        "citations": [],
+        "coverage": [
+          {
+            "categoryKey": "integrations",
+            "status": "absent"
+          }
+        ],
+        "conflicts": [],
+        "questions": [
+          {
+            "questionKey": "q_reference_legal_approval",
+            "linkedRequirementKeys": ["claim_copy_reference_verbatim"],
+            "linkedCoverageCategoryKeys": ["integrations"]
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 210,
+        "outputTokens": 95
+      }
+    }
+  ]
+}

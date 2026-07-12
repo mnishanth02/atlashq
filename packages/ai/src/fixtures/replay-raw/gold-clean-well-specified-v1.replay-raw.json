@@ -1,0 +1,104 @@
+{
+  "fixtureId": "gold-clean-well-specified-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "responses": [
+    {
+      "output": {
+        "requirements": [
+          {
+            "key": "req_sso_mfa",
+            "organizationId": "org_clean",
+            "projectId": "proj_client_portal",
+            "requirementType": "functional",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          },
+          {
+            "key": "req_csv_export_speed",
+            "organizationId": "org_clean",
+            "projectId": "proj_client_portal",
+            "requirementType": "functional",
+            "priority": "must_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          },
+          {
+            "key": "req_admin_audit_logs",
+            "organizationId": "org_clean",
+            "projectId": "proj_client_portal",
+            "requirementType": "security",
+            "priority": "should_have",
+            "epistemicStatus": "confirmed",
+            "persisted": true
+          }
+        ],
+        "citations": [
+          {
+            "requirementKey": "req_sso_mfa",
+            "organizationId": "org_clean",
+            "projectId": "proj_client_portal",
+            "snapshotId": "snap_clean_01",
+            "sourceDocumentId": "doc_clean_spec",
+            "sourceChunkId": "chunk_clean_auth",
+            "quote": "Users must sign in with company SSO and MFA.",
+            "verificationStatus": "verified_exact"
+          },
+          {
+            "requirementKey": "req_csv_export_speed",
+            "organizationId": "org_clean",
+            "projectId": "proj_client_portal",
+            "snapshotId": "snap_clean_01",
+            "sourceDocumentId": "doc_clean_spec",
+            "sourceChunkId": "chunk_clean_export",
+            "quote": "The system must export invoices as CSV in under five seconds.",
+            "verificationStatus": "verified_exact"
+          },
+          {
+            "requirementKey": "req_admin_audit_logs",
+            "organizationId": "org_clean",
+            "projectId": "proj_client_portal",
+            "snapshotId": "snap_clean_01",
+            "sourceDocumentId": "doc_clean_spec",
+            "sourceChunkId": "chunk_clean_audit",
+            "quote": "All administrator actions are written to immutable audit logs.",
+            "verificationStatus": "verified_exact"
+          }
+        ],
+        "coverage": [
+          {
+            "categoryKey": "auth_identity",
+            "status": "addressed"
+          },
+          {
+            "categoryKey": "reporting_analytics",
+            "status": "addressed"
+          },
+          {
+            "categoryKey": "security_compliance",
+            "status": "addressed"
+          },
+          {
+            "categoryKey": "slas",
+            "status": "partial"
+          }
+        ],
+        "conflicts": [],
+        "questions": [
+          {
+            "questionKey": "q_sla_target",
+            "linkedRequirementKeys": ["req_csv_export_speed"],
+            "linkedCoverageCategoryKeys": ["slas"]
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 980,
+        "outputTokens": 430
+      }
+    }
+  ]
+}

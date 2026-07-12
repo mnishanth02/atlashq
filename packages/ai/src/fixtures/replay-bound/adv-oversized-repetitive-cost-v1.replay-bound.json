@@ -1,0 +1,18 @@
+{
+  "fixtureId": "adv-oversized-repetitive-cost-v1",
+  "stageKind": "confirmed_extraction",
+  "promptAssetKind": "confirmed_extraction",
+  "schemaName": "EvalReplayOutput",
+  "schemaVersion": "1.0.0",
+  "schemaHash": "4816b7ecc0382553ebcd6d26d59c2373801dc3b2b959129804f7bdd9f3cfb3fd",
+  "pipelineHash": "accc3bb55cd62c93c5af26aaf6b6d6501c4d274e7f5aff688412b9e7d1d6dfe6",
+  "promptBundleHash": "e680e2cf4bfcd0ea4e82675cf634938fba4396f47ab3abb5dfe3eabc064d8162",
+  "promptAssetHash": "f5a719c2a1795440f30c6f41da3c3d287f407ff9be76f2d25c712e41200bc2ca",
+  "inputHash": "e31e2d72524a7900c8b60c3fb732f790e5f4252e1866d8ed0f91100533c0a489",
+  "rawResponsesHash": "f9ed03d651673fb927570595206a68feb5d48c5ef059e2e5adbecfd6e5b30eb7",
+  "attemptRequestHashes": [],
+  "expectedErrorCode": "AI_RUN_BUDGET_EXCEEDED",
+  "expectedOutputHash": null,
+  "expectedShapeOnlyRepairUsed": false,
+  "expectedUsage": null
+}
